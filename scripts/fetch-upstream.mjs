@@ -45,7 +45,15 @@ const zipPath = path.join(outDir, 'cbdb.zip');
 await download(pins.cbdb.zipUrl, zipPath);
 
 const sqlitePath = path.join(outDir, 'cbdb.sqlite3');
-execFileSync('sh', ['-c', `unzip -p "${zipPath}" > "${sqlitePath}"`], {
+const zipEntries = execFileSync('unzip', ['-Z1', zipPath], { encoding: 'utf8' })
+  .trim()
+  .split('\n')
+  .filter(Boolean);
+const sqliteEntry = zipEntries.find((name) => name.endsWith('.sqlite3'));
+if (!sqliteEntry) {
+  throw new Error(`No .sqlite3 entry in CBDB zip (entries: ${zipEntries.join(', ')})`);
+}
+execFileSync('sh', ['-c', `unzip -p "${zipPath}" "${sqliteEntry}" > "${sqlitePath}"`], {
   stdio: 'inherit',
   maxBuffer: 1024 * 1024 * 1024,
 });
