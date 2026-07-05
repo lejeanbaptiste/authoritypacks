@@ -17,6 +17,16 @@ Single source of truth: [`upstream/pins.json`](../upstream/pins.json) (mirrors l
 
 Bump pins when CBDB or DILA releases a new dump, then re-run the pipeline.
 
+## Tests in CI
+
+CBDB unit tests use a committed **`cbdb/fixtures/sample.sqlite3`** (~25 KB) so the test job does not download the 600 MB dump. The optional integration test (`full dump person count`) runs only when a full sqlite is present locally or in `build-packs`.
+
+Regenerate the fixture after compile-rule changes:
+
+```bash
+npm run create:cbdb-fixture   # needs full CBDB sqlite locally
+```
+
 ## Local (same as CI)
 
 ```bash

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
@@ -7,10 +8,27 @@ import { compileCbdbPersons } from './compileRecords.mjs';
 import { loadCbdbDynastyMap } from '../shared/dynastyMap.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const sqlitePath = path.resolve(__dirname, '../../leaf-writer/databases/cbdb_20260627.sqlite3');
+const repoRoot = path.resolve(__dirname, '..');
+
+/** CI-safe fixture (committed). Full dump used locally when present for integration test. */
+const FIXTURE_SQLITE = path.join(__dirname, 'fixtures/sample.sqlite3');
+
+const FULL_SQLITE_CANDIDATES = [
+  process.env.CBDB_SQLITE,
+  path.join(repoRoot, '.upstream/cbdb.sqlite3'),
+  path.resolve(repoRoot, '../leaf-writer/test_project/authority-databases/cbdb.sqlite3'),
+  path.resolve(repoRoot, '../leaf-writer/databases/cbdb_20260627.sqlite3'),
+]
+  .filter(Boolean)
+  .find((p) => fs.existsSync(p));
+
+function openDb(filePath) {
+  return new Database(filePath, { readonly: true });
+}
 
 test('CBDB compile — 王安石 (person 1762)', () => {
-  const db = new Database(sqlitePath, { readonly: true });
+  assert.ok(fs.existsSync(FIXTURE_SQLITE), `missing ${FIXTURE_SQLITE} — run scripts/create-cbdb-fixture.mjs`);
+  const db = openDb(FIXTURE_SQLITE);
   try {
     const dynastyMap = loadCbdbDynastyMap(db);
     const persons = compileCbdbPersons(db, dynastyMap);
@@ -28,10 +46,11 @@ test('CBDB compile — 王安石 (person 1762)', () => {
 });
 
 test('CBDB compile — drops single-character search strings', () => {
-  const db = new Database(sqlitePath, { readonly: true });
+  const db = openDb(FIXTURE_SQLITE);
   try {
     const dynastyMap = loadCbdbDynastyMap(db);
     const persons = compileCbdbPersons(db, dynastyMap);
+    assert.ok(persons.length > 0);
     for (const p of persons) {
       for (const s of p.searchStrings) {
         assert.ok([...s].length >= 2, `single-char string "${s}" on ${p.authorityId}`);
@@ -42,13 +61,28 @@ test('CBDB compile — drops single-character search strings', () => {
   }
 });
 
-test('CBDB compile — person count in expected range', () => {
-  const db = new Database(sqlitePath, { readonly: true });
+test('CBDB compile — fixture person count', () => {
+  const db = openDb(FIXTURE_SQLITE);
   try {
     const dynastyMap = loadCbdbDynastyMap(db);
     const persons = compileCbdbPersons(db, dynastyMap);
-    assert.ok(persons.length > 595_000 && persons.length < 615_000);
+    assert.ok(persons.length >= 5 && persons.length < 20, `unexpected fixture size: ${persons.length}`);
   } finally {
     db.close();
   }
 });
+
+test(
+  'CBDB compile — full dump person count (integration)',
+  { skip: !FULL_SQLITE_CANDIDATES },
+  () => {
+    const db = openDb(FULL_SQLITE_CANDIDATES);
+    try {
+      const dynastyMap = loadCbdbDynastyMap(db);
+      const persons = compileCbdbPersons(db, dynastyMap);
+      assert.ok(persons.length > 595_000 && persons.length < 615_000);
+    } finally {
+      db.close();
+    }
+  },
+);
