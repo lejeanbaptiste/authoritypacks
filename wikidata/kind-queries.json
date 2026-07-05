@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "description": "Wikidata P31 (instance of) roots for each LJB entity kind. Extractor matches item or any P279* subclass unless excluded.",
+  "kinds": {
+    "person": {
+      "ljbKind": "person",
+      "teiTags": ["persName"],
+      "instanceOf": ["Q5"],
+      "excludeInstanceOf": ["Q15632617", "Q28037560", "Q3658341"],
+      "excludeComments": {
+        "Q15632617": "fictional human character",
+        "Q28037560": "fictional human",
+        "Q3658341": "legendary figure"
+      },
+      "membershipNotes": "Require label in pack language. Period: P27 dynasty qid from dynasties.json or year overlap."
+    },
+    "place": {
+      "ljbKind": "place",
+      "teiTags": ["placeName", "geogName"],
+      "instanceOf": [
+        "Q618123",
+        "Q2221906",
+        "Q515",
+        "Q532",
+        "Q56061",
+        "Q82794",
+        "Q8502",
+        "Q4022",
+        "Q23442",
+        "Q1248784",
+        "Q28739697",
+        "Q30234100",
+        "Q486972",
+        "Q7930989"
+      ],
+      "excludeInstanceOf": ["Q4167410", "Q13442814"],
+      "excludeComments": {
+        "Q4167410": "Wikimedia disambiguation page",
+        "Q13442814": "Wikimedia category"
+      },
+      "instanceComments": {
+        "Q618123": "geographic object",
+        "Q515": "city",
+        "Q532": "village",
+        "Q56061": "administrative territorial entity",
+        "Q82794": "geographic region",
+        "Q8502": "mountain",
+        "Q4022": "river",
+        "Q28739697": "ancient county of China",
+        "Q7930989": "human settlement"
+      },
+      "membershipNotes": "Historical places: prefer P1480 valid in period or CHGIS P4711. Noisier than CBDB/CHGIS — use as supplement."
+    },
+    "org": {
+      "ljbKind": "org",
+      "teiTags": ["orgName"],
+      "instanceOf": [
+        "Q43229",
+        "Q4830453",
+        "Q2385804",
+        "Q3918",
+        "Q5341295",
+        "Q2659904",
+        "Q177634",
+        "Q7315155",
+        "Q15911314",
+        "Q11016"
+      ],
+      "excludeInstanceOf": ["Q4167410", "Q13442814"],
+      "instanceComments": {
+        "Q43229": "organization",
+        "Q4830453": "business enterprise",
+        "Q2385804": "educational institution",
+        "Q3918": "university",
+        "Q5341295": "government organization",
+        "Q2659904": "religious organization",
+        "Q177634": "community",
+        "Q15911314": "cultural institution"
+      },
+      "membershipNotes": "Dynasty-as-state (Q7270) is under person P27, not org packs, unless explicitly included later."
+    },
+    "work": {
+      "ljbKind": "work",
+      "teiTags": ["title"],
+      "instanceOf": [
+        "Q386724",
+        "Q7725634",
+        "Q571",
+        "Q47461344",
+        "Q178385",
+        "Q17537576",
+        "Q87167",
+        "Q5185279",
+        "Q1261499",
+        "Q3331189"
+      ],
+      "excludeInstanceOf": ["Q4167410", "Q13442814", "Q17329259"],
+      "excludeComments": {
+        "Q17329259": "addendum (meta)"
+      },
+      "instanceComments": {
+        "Q386724": "creative work",
+        "Q7725634": "literary work",
+        "Q571": "book",
+        "Q47461344": "written work",
+        "Q178385": "text",
+        "Q87167": "novel",
+        "Q5185279": "poem",
+        "Q1261499": "historical text"
+      },
+      "membershipNotes": "Titles in classical corpora; optional filter by author P50 in same period."
+    }
+  },
+  "properties": {
+    "instanceOf": "P31",
+    "subclassOf": "P279",
+    "countryOfCitizenship": "P27",
+    "birth": "P569",
+    "death": "P570",
+    "validInPeriod": "P1480",
+    "inception": "P571",
+    "dissolved": "P576",
+    "nativeLabel": "P1705",
+    "ethnicGroup": "P172",
+    "chgisId": "P4711"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "description": "Maps LJB project language codes to Wikidata label/alias language tags for pack builds.",
+  "packLanguages": [
+    {
+      "id": "zh-hant",
+      "label": "Chinese (Traditional)",
+      "ljbProjectCodes": ["zh-Hant"],
+      "wikidataLabelLanguages": ["zh-hant", "zh-tw"],
+      "script": "hant",
+      "defaultForChineseProject": true
+    },
+    {
+      "id": "zh-hans",
+      "label": "Chinese (Simplified)",
+      "ljbProjectCodes": ["zh-Hans"],
+      "wikidataLabelLanguages": ["zh-hans", "zh-cn"],
+      "script": "hans"
+    },
+    {
+      "id": "lzh",
+      "label": "Literary Chinese",
+      "ljbProjectCodes": ["lzh"],
+      "wikidataLabelLanguages": ["lzh", "zh-hant"],
+      "script": "hant",
+      "note": "Few dedicated lzh labels; fall back to zh-hant when building."
+    },
+    {
+      "id": "ja",
+      "label": "Japanese",
+      "ljbProjectCodes": ["ja"],
+      "wikidataLabelLanguages": ["ja"],
+      "script": "ja"
+    },
+    {
+      "id": "ko",
+      "label": "Korean",
+      "ljbProjectCodes": ["ko"],
+      "wikidataLabelLanguages": ["ko"],
+      "script": "ko"
+    },
+    {
+      "id": "en",
+      "label": "English",
+      "ljbProjectCodes": ["en"],
+      "wikidataLabelLanguages": ["en"],
+      "script": "latn"
+    },
+    {
+      "id": "bo",
+      "label": "Tibetan",
+      "ljbProjectCodes": ["bo"],
+      "wikidataLabelLanguages": ["bo"],
+      "script": "tibt"
+    },
+    {
+      "id": "vi",
+      "label": "Vietnamese",
+      "ljbProjectCodes": ["vi"],
+      "wikidataLabelLanguages": ["vi"],
+      "script": "latn"
+    }
+  ],
+  "wikidataGenericZh": {
+    "id": "zh",
+    "wikidataLabelLanguages": ["zh"],
+    "note": "Ambiguous script — use only in experimental packs; prefer zh-hant or zh-hans."
+  },
+  "minSurfaceLength": {
+    "default": 2,
+    "latn": 3,
+    "note": "Strings shorter than this are dropped from tag packs (matches LJB DEFAULT_MIN_MATCH_LENGTH for CJK)."
+  }
+}

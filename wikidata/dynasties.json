@@ -1,0 +1,267 @@
+{
+  "version": 1,
+  "description": "Period presets for Wikidata person/org packs. P27 targets are sovereign states and dynasties — not China (Q29520) the region.",
+  "chinaRegionQid": "Q29520",
+  "dynasties": [
+    {
+      "id": "qin",
+      "packSlug": "qin",
+      "qid": "Q7183",
+      "labelZh": "秦",
+      "labelEn": "Qin dynasty",
+      "startYear": -221,
+      "endYear": -206,
+      "aliases": ["秦朝", "秦代"],
+      "cbdbEnglishLabel": "Ying Qin"
+    },
+    {
+      "id": "western-han",
+      "packSlug": "western-han",
+      "qid": "Q1072949",
+      "labelZh": "西漢",
+      "labelEn": "Western Han",
+      "startYear": -206,
+      "endYear": 9,
+      "aliases": ["西汉", "前漢", "前汉"],
+      "cbdbEnglishLabel": "Western Han"
+    },
+    {
+      "id": "xin",
+      "packSlug": "xin",
+      "qid": "Q504769",
+      "labelZh": "新",
+      "labelEn": "Xin dynasty",
+      "startYear": 9,
+      "endYear": 23,
+      "aliases": ["新朝", "新莽", "王莽"],
+      "note": "Wang Mang interregnum between Western and Eastern Han."
+    },
+    {
+      "id": "eastern-han",
+      "packSlug": "eastern-han",
+      "qid": "Q1043",
+      "labelZh": "東漢",
+      "labelEn": "Eastern Han",
+      "startYear": 25,
+      "endYear": 220,
+      "aliases": ["东汉", "後漢", "后汉"],
+      "cbdbEnglishLabel": "Eastern Han"
+    },
+    {
+      "id": "han",
+      "packSlug": "han",
+      "qid": "Q7209",
+      "labelZh": "漢",
+      "labelEn": "Han dynasty",
+      "startYear": -206,
+      "endYear": 220,
+      "aliases": ["汉朝", "漢朝", "漢代", "汉代"],
+      "note": "Umbrella Han when Western/Eastern not distinguished on Wikidata."
+    },
+    {
+      "id": "three-kingdoms",
+      "packSlug": "three-kingdoms",
+      "qid": "Q1143535",
+      "labelZh": "三國",
+      "labelEn": "Three Kingdoms",
+      "startYear": 220,
+      "endYear": 280,
+      "aliases": ["三国", "三國時代"],
+      "note": "Period label; individual states use wei/shu/wu entries."
+    },
+    {
+      "id": "cao-wei",
+      "packSlug": "wei",
+      "qid": "Q1150555",
+      "labelZh": "曹魏",
+      "labelEn": "Cao Wei",
+      "startYear": 220,
+      "endYear": 266,
+      "aliases": ["魏", "曹魏"]
+    },
+    {
+      "id": "shu-han",
+      "packSlug": "shu",
+      "qid": "Q742440",
+      "labelZh": "蜀漢",
+      "labelEn": "Shu Han",
+      "startYear": 221,
+      "endYear": 263,
+      "aliases": ["蜀汉", "蜀"]
+    },
+    {
+      "id": "eastern-wu",
+      "packSlug": "wu",
+      "qid": "Q742462",
+      "labelZh": "東吳",
+      "labelEn": "Eastern Wu",
+      "startYear": 222,
+      "endYear": 280,
+      "aliases": ["东吴", "吳", "吴"]
+    },
+    {
+      "id": "jin-western",
+      "packSlug": "jin-western",
+      "qid": "Q83788",
+      "labelZh": "西晉",
+      "labelEn": "Western Jin",
+      "startYear": 266,
+      "endYear": 316,
+      "aliases": ["西晋"]
+    },
+    {
+      "id": "jin-eastern",
+      "packSlug": "jin-eastern",
+      "qid": "Q83602",
+      "labelZh": "東晉",
+      "labelEn": "Eastern Jin",
+      "startYear": 317,
+      "endYear": 420,
+      "aliases": ["东晋"]
+    },
+    {
+      "id": "northern-wei",
+      "packSlug": "northern-wei",
+      "qid": "Q83806",
+      "labelZh": "北魏",
+      "labelEn": "Northern Wei",
+      "startYear": 386,
+      "endYear": 534,
+      "aliases": ["魏"]
+    },
+    {
+      "id": "sui",
+      "packSlug": "sui",
+      "qid": "Q9685",
+      "labelZh": "隋",
+      "labelEn": "Sui dynasty",
+      "startYear": 581,
+      "endYear": 618,
+      "aliases": ["隋朝", "隋代"]
+    },
+    {
+      "id": "tang",
+      "packSlug": "tang",
+      "qid": "Q9683",
+      "labelZh": "唐",
+      "labelEn": "Tang dynasty",
+      "startYear": 618,
+      "endYear": 907,
+      "aliases": ["唐朝", "唐代", "唐"],
+      "cbdbEnglishLabel": "Tang",
+      "priority": 1
+    },
+    {
+      "id": "five-dynasties",
+      "packSlug": "five-dynasties",
+      "qid": "Q242115",
+      "labelZh": "五代",
+      "labelEn": "Five Dynasties and Ten Kingdoms period",
+      "startYear": 907,
+      "endYear": 960,
+      "aliases": ["五代十國", "五代十国"]
+    },
+    {
+      "id": "northern-song",
+      "packSlug": "northern-song",
+      "qid": "Q8903",
+      "labelZh": "北宋",
+      "labelEn": "Northern Song dynasty",
+      "startYear": 960,
+      "endYear": 1127,
+      "aliases": ["北宋"],
+      "dilaLabels": ["北宋"]
+    },
+    {
+      "id": "southern-song",
+      "packSlug": "southern-song",
+      "qid": "Q8908",
+      "labelZh": "南宋",
+      "labelEn": "Southern Song dynasty",
+      "startYear": 1127,
+      "endYear": 1279,
+      "aliases": ["南宋"],
+      "dilaLabels": ["南宋"]
+    },
+    {
+      "id": "song",
+      "packSlug": "song",
+      "qid": "Q1107",
+      "labelZh": "宋",
+      "labelEn": "Song dynasty",
+      "startYear": 960,
+      "endYear": 1279,
+      "aliases": ["宋朝", "宋代", "宋"],
+      "cbdbEnglishLabel": "Song",
+      "note": "Umbrella Song; prefer northern-song / southern-song when P27 is specific.",
+      "priority": 1
+    },
+    {
+      "id": "yuan",
+      "packSlug": "yuan",
+      "qid": "Q42497",
+      "labelZh": "元",
+      "labelEn": "Yuan dynasty",
+      "startYear": 1271,
+      "endYear": 1368,
+      "aliases": ["元朝", "元代", "元"],
+      "cbdbEnglishLabel": "Yuan",
+      "priority": 1
+    },
+    {
+      "id": "ming",
+      "packSlug": "ming",
+      "qid": "Q9903",
+      "labelZh": "明",
+      "labelEn": "Ming dynasty",
+      "startYear": 1368,
+      "endYear": 1644,
+      "aliases": ["明朝", "明代", "明"],
+      "cbdbEnglishLabel": "Ming",
+      "priority": 1
+    },
+    {
+      "id": "qing",
+      "packSlug": "qing",
+      "qid": "Q8733",
+      "labelZh": "清",
+      "labelEn": "Qing dynasty",
+      "startYear": 1636,
+      "endYear": 1912,
+      "aliases": ["清朝", "清代", "清"],
+      "cbdbEnglishLabel": "Qing",
+      "priority": 1,
+      "note": "Start 1636 (Later Jin→Qing) or 1644 (Beijing); using 1636 for Manchu state."
+    },
+    {
+      "id": "republic-of-china",
+      "packSlug": "roc",
+      "qid": "Q134261",
+      "labelZh": "民國",
+      "labelEn": "Republic of China",
+      "startYear": 1912,
+      "endYear": 1949,
+      "aliases": ["中华民国", "中華民國", "民国"]
+    },
+    {
+      "id": "prc",
+      "packSlug": "prc",
+      "qid": "Q148",
+      "labelZh": "中华人民共和国",
+      "labelEn": "People's Republic of China",
+      "startYear": 1949,
+      "endYear": 2100,
+      "aliases": ["中国", "中國", "PRC"],
+      "note": "Modern persons; use zh-hans packs primarily."
+    }
+  ],
+  "ethnicGroupFilters": [
+    {
+      "id": "han-chinese",
+      "qid": "Q712008",
+      "labelEn": "Han Chinese people",
+      "optional": true,
+      "note": "Optional tighten for person packs — not required for W1."
+    }
+  ]
+}

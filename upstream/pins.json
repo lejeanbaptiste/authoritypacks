@@ -1,0 +1,30 @@
+{
+  "compilePolicyVersion": "2026-07-05",
+  "cbdb": {
+    "version": "20260627",
+    "zipUrl": "https://huggingface.co/datasets/cbdb/cbdb-sqlite/resolve/main/history/cbdb_202606/cbdb_20260627.zip",
+    "sqliteSha256": "193d6fc3f979524abb678728ad1139472638b17aedaa695fa2f331b0a3086496",
+    "license": "CC-BY-NC-SA-4.0",
+    "attribution": "China Biographical Database (CBDB), Harvard FAS, Academia Sinica, Peking University."
+  },
+  "dila": {
+    "commit": "385e3f557285d7a60346f85d698193e19b6cea2f",
+    "versionLabel": "385e3f557285 (2026-06-30)",
+    "license": "CC-BY-SA-3.0",
+    "attribution": "Dharma Drum Institute of Liberal Arts (DILA) Authority Databases.",
+    "files": [
+      {
+        "repoPath": "authority_person/Buddhist_Studies_Person_Authority.xml",
+        "localName": "dila-person.xml"
+      },
+      {
+        "repoPath": "authority_place/Buddhist_Studies_Place_Authority.xml",
+        "localName": "dila-place.xml"
+      },
+      {
+        "repoPath": "authority_place/districts.xml",
+        "localName": "dila-districts.xml"
+      }
+    ]
+  }
+}

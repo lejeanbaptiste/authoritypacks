@@ -1,0 +1,13 @@
+node_modules/
+.upstream/
+dist/
+reports/*.ndjson
+reports/*.csv
+packs/
+!packs/test-dila/
+!packs/test-dila/**
+*.bz2
+*.json.gz
+dist/
+packs/
+.DS_Store

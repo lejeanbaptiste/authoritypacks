@@ -1,0 +1,21 @@
+<?xml version="1.0"?><TEI xmlns="http://www.tei-c.org/ns/1.0"><text><body><listPlace><place xml:id="PL000000000001">
+ <placeName xml:lang="zho-Hant">闊悉多國</placeName>
+ <placeName xml:lang="eng-Latn">Khost</placeName>
+ <placeName xml:lang="jpn">カスタ</placeName>
+ <location><place key="PLA000002">阿富汗</place>
+<place xml:id="PL000000000002">
+ <placeName xml:lang="zho-Hant">興都庫什山</placeName>
+ <placeName xml:lang="eng-Latn">Hindu Kush</placeName>
+ <placeName xml:lang="jpn">ヒンドゥークシュ山脈</placeName>
+ <placeName xml:lang="peo-Latn">Siyah Kōh</placeName>
+ <placeName type="alternative" xml:lang="zho-Hant">大雪山</placeName>
+ <placeName type="alternative" xml:lang="zho-Hant">黑嶺</placeName>
+ <placeName type="alternative" xml:lang="zho-Hant">黑山</placeName>
+ <placeName type="alternative" xml:lang="zho-Hant">錫雅柯山</placeName>
+ <placeName type="alternative" xml:lang="eng-Latn">Paropamisoa</placeName>
+ <placeName type="alternative" xml:lang="eng-Latn">Paropamisus</placeName>
+ <location><place key="PLA000002">阿富汗</place>
+<place xml:id="PL000000000003">
+ <placeName xml:lang="zho-Hant">勝境關</placeName>
+ <placeName type="alternative" xml:lang="zho-Hant">界關</placeName>
+ <location><place key="PLD002572">富源縣</place></listPlace></body></text></TEI>

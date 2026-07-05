@@ -1,0 +1,51 @@
+# Authority pack build pipeline (CBDB + DILA).
+#
+# Produces job artifacts (packs-index.json + tarball). GitLab Releases can attach
+# the same files later — no release required for the pipeline to run.
+#
+# Manual run: CI/CD → Pipelines → Run pipeline (branch: main).
+# Artifacts expire after 30 days until a Release is published.
+
+stages:
+  - test
+  - build
+
+variables:
+  npm_config_cache: '$CI_PROJECT_DIR/.npm'
+
+.default-node:
+  image: node:22-bookworm
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq python3 make g++ unzip curl > /dev/null
+    - npm ci
+
+test:
+  extends: .default-node
+  stage: test
+  script:
+    - npm test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_COMMIT_TAG
+
+build-packs:
+  extends: .default-node
+  stage: build
+  script:
+    - node scripts/fetch-upstream.mjs
+    - node scripts/build-pack-bundle.mjs
+  artifacts:
+    name: 'authority-packs-$CI_COMMIT_SHORT_SHA'
+    paths:
+      - dist/packs-index.json
+      - dist/authority-packs-*.tar.gz
+    expire_in: 30 days
+  rules:
+    # Default branch + manual runs; tags when you start cutting releases.
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_COMMIT_TAG
+  # Uncomment to require a manual click on main until the first release:
+  # when: manual

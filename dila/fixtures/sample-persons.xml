@@ -1,0 +1,191 @@
+<?xml version="1.0"?><TEI xmlns="http://www.tei-c.org/ns/1.0"><text><body><listPerson><person xml:id="A000001" ana="historical">
+  <persName xml:lang="zho-Hant">金總持</persName>
+  <persName type="alternative" xml:lang="zho-Hant">金揔持</persName>
+  <persName type="alternative" xml:lang="zho-Hant">寶輪大師</persName>
+  <persName type="alternative" xml:lang="zho-Hant">明因妙善普濟法師</persName>
+  <sex value="1"/>
+  <note type="dynasty">
+    北宋
+  </note>
+  <note type="placeOfOrigin">
+    <placeName>西天竺
+      <ref target="http://authority.dila.edu.tw/place/">PL000000055425</ref>
+    </placeName>
+  </note>
+  <note type="monk">是</note>
+  <note type="concise">北宋譯經僧。西天竺人。皇祐五年（1053）與智吉祥同行達於汴京，共事翻譯。賜號「寶輪大師」，後加號「明因妙善普濟法師」。政和二年，嘉州奏風雷折古樹，中有定僧，爪髮被體，詔輿至禁中。金總持令擊金磬以覺之。三年同譯語仁義，筆受宗正，南遊江浙。（《佛祖統紀》卷46；《新續高僧傳四集》卷1）</note>
+  <listBibl>
+    <bibl>( CBETA T15n0634_p0485c11 ) 佛說大乘智印經卷第五</bibl>
+    <bibl>( CBETA T17n0763_p0654a03 ) 佛說法乘義決定經</bibl>
+    <bibl>( CBETA X77n1524_p0369c18 ) 補續高僧傳: 法護傳 {金總持}</bibl>
+  </listBibl>
+  <note type="worksInTripitaka">
+    佛說法乘義決定經(T0763)
+    文殊所說最勝名義經(T1188)
+    佛說大乘僧伽吒法義經(A1504)
+  </note>
+  <note type="worksBy">
+    譯《佛說大乘僧伽吒法義經》（《中華藏》冊76）
+    譯《佛說法乘義決定經》三卷（《大正藏》T17）
+    譯《文殊所說最勝名義經》二卷（《大正藏》T17）
+  </note>
+  <note type="mentionedIn">
+    《佛祖統紀》卷46
+    《新續高僧傳四集》卷1
+  </note>
+</person>
+<person xml:id="A000002" ana="historical">
+  <persName xml:lang="zho-Hant">𧧌震</persName>
+  <persName type="alternative" xml:lang="zho-Hant">仁山𧧌震</persName>
+  <persName type="alternative" xml:lang="zho-Hant">仁山大師</persName>
+  <persName type="alternative" xml:lang="zho-Hant">寂震</persName>
+  <persName type="alternative" xml:lang="zho-Hant">華頂震</persName>
+  <persName type="alternative" xml:lang="zho-Hant">仁叟</persName>
+  <sex value="1"/>
+  <note type="dynasty">
+    清
+  </note>
+  <note type="monk">是</note>
+  <note type="concise">生卒年不詳。於康熙三十年始為鄧尉山聖恩寺上堂。著有《金剛三昧經通宗記》十二卷，堪忍學人魏學渠為其作序。（《鄧尉山聖恩寺志》卷9；〈金剛三昧經通宗記序〉）</note>
+
+  <listRelation>
+    <relation type="teacher" active="A000242" n="弘璧">
+      <desc>
+        <bibl>《五燈全書(第34卷-第120卷)》卷83：「天台華頂仁叟震禪師……(剖石璧嗣)。」</bibl>
+        <ref type="url">http://cbetaonline.dila.edu.tw/X82n1571_p0455b03</ref>
+      </desc>
+    </relation>
+  </listRelation>
+  <listBibl>
+    <bibl>( CBETA X35n0652_p0254a05 ) 金剛三昧經通宗記</bibl>
+    <bibl>( CBETA X82n1571_p0455b03 ) 五燈全書</bibl>
+    <bibl><ref target="http://buddhistinformatics.dila.edu.tw/fosizhi/ui.html?book=g042%26cpage=0365%26target=A000002">g042p0365(鄧尉山聖恩寺志)</ref></bibl>
+  </listBibl>
+  <note type="worksInTripitaka">
+    金剛三昧經通宗記(X0652)
+  </note>
+  <note type="worksBy">
+    《金剛三昧經通宗記》十二卷（《卍續藏》X35）
+  </note>
+  <note type="mentionedIn">
+    《鄧尉山聖恩寺志》卷 9
+  </note>
+  <note type="activeAt">鄧尉山聖恩寺；天台山華頂；天平白雲古寺</note>
+</person>
+<person xml:id="A000003" ana="historical">
+  <persName xml:lang="zho-Hant">鬱楞迦</persName>
+  <sex value="1"/>
+  <note type="monk">是</note>
+  <note type="concise">著有《緣生論》與《大乘緣生論》。（<ref target="http://jinglu.cbeta.org/cgi-bin/jinglu2.pl?sutra_byline=B0003">http://jinglu.cbeta.org/cgi-bin/jinglu2.pl?sutra_byline=B0003</ref>，2010.10.11）</note>
+  <listBibl>
+    <bibl>( CBETA T32n1652_p0482b03 ) 緣生論</bibl>
+    <bibl>( CBETA T32n1653_p0486b03 ) 大乘緣生論</bibl>
+  </listBibl>
+  <note type="worksInTripitaka">
+    大乘緣生論(T1653)
+    緣生論(T1652)
+  </note>
+</person>
+<person xml:id="A000004" ana="historical">
+  <persName xml:lang="zho-Hant">畺良耶舍</persName>
+  <persName xml:lang="san-Latn">Kālayaśas</persName>
+  <persName type="alternative" xml:lang="zho-Hant">時稱</persName>
+  <sex value="1"/>
+  <birth>
+    +0383-01-01 ~ +0383-12-31
+    <note>依記錄推算。</note>
+  </birth>
+  <death>
+    +0442-01-28 ~ +0443-02-15
+    <note>元嘉十九年西遊岷蜀。處處弘道禪學成群。後還卒於江陵。春秋六十矣。（T50n2059_p0343c21）</note>
+  </death>
+  <note type="birthDeathDateQuote">卒於：劉宋, 文帝, 元嘉, 十九年，60歲</note>
+  <note type="dynasty">
+    劉宋
+  </note>
+  <occupation>譯經</occupation>
+  <note type="placeOfOrigin">
+    <placeName>西域
+      <ref target="http://authority.dila.edu.tw/place/">PL000000055436</ref>
+    </placeName>
+  </note>
+  <note type="monk">是</note>
+  <note type="concise">劉宋西域僧。三藏兼明，禪為專業。元嘉元年（424）赴建業，文帝讚賞，使居鍾山道林精舍。譯有《觀無量壽經》一卷、《觀藥王藥上二菩薩經》一卷，其中《觀無量壽經》對後世淨土宗具有深遠的影響。（T50n2059_p0343c22；佛光：5537；佛百：4773.2；佛名：859；インド仏教：069；疑年錄：14）</note>
+  <listBibl>
+    <bibl>( CBETA T50n2059_p0343c11 ) 梁高僧傳: 畺良耶舍傳 {畺良耶舍}</bibl>
+    <bibl>( CBETA T50n2059_p0419c06 ) 梁高僧傳: 法濟傳 {畺良耶舍}</bibl>
+    <bibl>( CBETA T50n2063_p0940b26 ) 比丘尼傳: 法辯傳 {畺良耶舍}</bibl>
+    <bibl>( CBETA T50n2063_p0945c21 ) 比丘尼傳: 曇暉傳 {畺良耶舍}</bibl>
+  </listBibl>
+  <note type="worksInTripitaka">
+    佛說觀無量壽佛經(T0365)
+    佛說觀藥王藥上二菩薩經(T1161)
+  </note>
+  <idno type="Wikidata">Q16906306</idno>
+</person>
+<person xml:id="A000005" ana="historical">
+  <persName xml:lang="zho-Hant">鑑堂</persName>
+  <persName type="alternative" xml:lang="zho-Hant">鑑堂一</persName>
+  <sex value="1"/>
+  <note type="dynasty">
+    清
+  </note>
+  <note type="monk">是</note>
+  <note type="concise">《鑑堂一禪師語錄》為鑑堂一禪師說，明滿等錄。（<ref target="http://jinglu.cbeta.org/cgi-bin/jinglu2.pl?sutra_byline=B0005">http://jinglu.cbeta.org/cgi-bin/jinglu2.pl?sutra_byline=B0005</ref>，2010.10.11）</note>
+  <note type="extensive">生卒年不詳。為竺峰幻敏禪師（1638-1707）法嗣。住常樂禪寺。有《鑑堂一禪師語錄》一卷。（《鑑堂一禪師語錄》卷 1）</note>
+
+  <listRelation>
+    <relation type="teacher" active="A000153" n="幻敏">
+      <desc>
+        <bibl>《中華大藏經總目錄》卷3：「南嶽下第三十一世，嗣竺峯敏」</bibl>
+        <ref type="url">http://cbetaonline.dila.edu.tw/B35n0194_p0349a09</ref>
+      </desc>
+    </relation>
+    <relation type="student" active="A000668" n="明滿">
+      <desc>
+        <bibl>《中華大藏經總目錄》卷3：「鑑堂一禪師語錄一卷　(清　一說，明滿、明慧等錄」</bibl>
+        <ref type="url">http://cbetaonline.dila.edu.tw/B35n0194_p0349a09</ref>
+      </desc>
+    </relation>
+    <relation type="student" active="A037639" n="明慧">
+      <desc>
+        <bibl>《鑑堂一禪師語錄》卷1：「鑑堂一禪師語錄 嗣法參學門人明(滿慧)等錄」</bibl>
+        <ref type="url">http://cbetaonline.dila.edu.tw/J40nB486_p0287b01</ref>
+      </desc>
+    </relation>
+    <relation type="student" active="A003958" n="明福">
+      <desc>
+        <bibl>捐貲門人明福</bibl>
+        <ref type="url">http://cbetaonline.dila.edu.tw/J40nB486_p0290c27</ref>
+      </desc>
+    </relation>
+    <relation type="student" active="A003960" n="明訓">
+      <desc>
+        <bibl>捐貲門人明訓</bibl>
+        <ref type="url">http://cbetaonline.dila.edu.tw/J40nB486_p0290c26</ref>
+      </desc>
+    </relation>
+    <relation type="student" active="A004000" n="明微">
+      <desc>
+        <bibl>捐貲門人明微</bibl>
+        <ref type="url">http://cbetaonline.dila.edu.tw/J40nB486_p0290c31</ref>
+      </desc>
+    </relation>
+    <relation type="student" active="A004014" n="明燦">
+      <desc>
+        <bibl>捐貲門人明燦</bibl>
+        <ref type="url">http://cbetaonline.dila.edu.tw/J40nB486_p0290c32</ref>
+      </desc>
+    </relation>
+  </listRelation>
+  <listBibl>
+    <bibl>( CBETA J40nB486_p0287a21 ) 鑑堂一禪師語錄</bibl>
+  </listBibl>
+  <note type="worksInTripitaka">
+    鑑堂一禪師語錄(JB486)
+  </note>
+  <note type="worksBy">
+    《鑑堂一禪師語錄》一卷（《嘉興藏》J40）
+  </note>
+  <note type="activeAt">常樂禪寺</note>
+</person></listPerson></body></text></TEI>

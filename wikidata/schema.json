@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Wikidata pack build — W0 tables",
+  "description": "Documentation schema for dynasties.json, kind-queries.json, languages.json",
+  "definitions": {
+    "dynastyEntry": {
+      "type": "object",
+      "required": ["id", "packSlug", "qid", "labelZh", "labelEn", "startYear", "endYear"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "packSlug": { "type": "string" },
+        "qid": { "type": "string", "pattern": "^Q[0-9]+$" },
+        "labelZh": { "type": "string" },
+        "labelEn": { "type": "string" },
+        "startYear": { "type": "integer" },
+        "endYear": { "type": "integer" },
+        "aliases": { "type": "array", "items": { "type": "string" } },
+        "priority": { "type": "integer" },
+        "cbdbEnglishLabel": { "type": "string" },
+        "dilaLabels": { "type": "array", "items": { "type": "string" } },
+        "note": { "type": "string" }
+      }
+    },
+    "packLanguage": {
+      "type": "object",
+      "required": ["id", "label", "ljbProjectCodes", "wikidataLabelLanguages"],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "ljbProjectCodes": { "type": "array", "items": { "type": "string" } },
+        "wikidataLabelLanguages": { "type": "array", "items": { "type": "string" } },
+        "script": { "type": "string" },
+        "defaultForChineseProject": { "type": "boolean" },
+        "note": { "type": "string" }
+      }
+    }
+  }
+}
