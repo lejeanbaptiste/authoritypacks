@@ -1,6 +1,6 @@
 # Authority pack build pipeline (CBDB + DILA, plus staged NDL when available).
 #
-# Default-branch builds stay flexible; tag builds enforce `--require-ndl` for release-ready Japanese assets.
+# Tag builds enforce `--require-ndl` for release-ready Japanese assets.
 # Produces job artifacts (packs-index.json + tarball). GitLab Releases can attach
 # the same files later — no release required for the pipeline to run.
 #
