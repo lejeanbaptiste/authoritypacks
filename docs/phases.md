@@ -16,11 +16,11 @@ This document is the **master roadmap for building packs offline**. It is organi
 | **C** CBDB     | C0 policy  | **built** — defaults in `[cbdb/README.md](../cbdb/README.md)` | 👤 confirm or override                                         |
 | **C**          | C1 compile | **done**                                                      | `packs/cbdb/` — 659,053 persons, 29,717 places, 33,767 offices |
 | **C**          | C2 report  | **built**                                                     | `reports/cbdb-ambiguous-top100.csv` — 👤 review                |
-| **C**          | C3 publish | **CI pipeline ready** — artifacts on main; Release when ready | [docs/ci-packs.md](../docs/ci-packs.md) |
+| **C**          | C3 publish | **CI pipeline ready** — artifacts on main; Release when ready | [docs/ci-packs.md](../docs/ci-packs.md)                        |
 | **D** DILA     | D0 rules   | **built** — `[dila/README.md](../dila/README.md)`             | 👤 mythical names?                                             |
 | **D**          | D1 compile | **done**                                                      | `packs/dila/` — 49,060 persons, 59,277 places                  |
-| **D**          | D2 overlap | not started                                                   | —                                                              |
-| **D**          | D3 publish | **CI pipeline ready** — bundled with C3                             | same as C3              |
+| **D**          | D2 overlap | **policy locked** — crosswalk-only auto-merge                 | LJB `authorityOverlap.ts`                                      |
+| **D**          | D3 publish | **CI pipeline ready** — bundled with C3                       | same as C3                                                     |
 | **W** Wikidata | W0 tables  | **done**                                                      | `wikidata/*.json`                                              |
 | **W**          | W1+        | not started                                                   | —                                                              |
 | **L** LJB      | A2 loader  | **built**                                                     | wire + dialog; sync packs to entity DB                         |
@@ -45,8 +45,6 @@ node cbdb/report.mjs      # ambiguity CSV
 
 ---
 
-
-
 ## How to read this doc
 
 Each **track** is one authority source (or family). Phases are numbered within the track.
@@ -63,8 +61,6 @@ Each **track** is one authority source (or family). Phases are numbered within t
 **Priority order:** Chinese biographical corpora first (CBDB + DILA), then one Wikidata slice to prove generalization, then Japanese (NDL), then global/Tibetan supplements.
 
 ---
-
-
 
 ## Cross-track overview
 
@@ -106,8 +102,6 @@ flowchart LR
 
 ---
 
-
-
 ## Track C — CBDB (Chinese Biographical Database)
 
 **Raw input:** HuggingFace CBDB sqlite (~550 MB).  
@@ -135,8 +129,6 @@ flowchart LR
 **Exit:** Recompile packs after policy change; spot-check golden names.
 
 ---
-
-
 
 ### C1 — Compile script — **done (2026-07-05)**
 
@@ -167,8 +159,6 @@ flowchart LR
 
 ---
 
-
-
 ### C2 — Quality & ambiguity report — **built (pending 👤 review)**
 
 **Build:** `[cbdb/report.mjs](../cbdb/report.mjs)` → `reports/cbdb-ambiguous-top100.csv`.
@@ -185,8 +175,6 @@ flowchart LR
 **Exit:** Report reviewed; compile rules frozen for v1.
 
 ---
-
-
 
 ### C3 — Publish manifest — **next (decision signed 2026-07-05)**
 
@@ -206,8 +194,6 @@ flowchart LR
 **✓ Validate:** LJB installs bundle beside test entity DB; tag bomb + manifest version check pass.
 
 ---
-
-
 
 ## Track D — DILA authority XML
 
@@ -234,8 +220,6 @@ flowchart LR
 
 ---
 
-
-
 ### D1 — Compile script — **done (2026-07-05)**
 
 **Build:** `[dila/compile.mjs](../dila/compile.mjs)`.
@@ -254,29 +238,27 @@ flowchart LR
 
 ---
 
+### D2 — Overlap with CBDB — **policy locked (2026-07-05)**
 
+**Policy (LJB load-time merge):** Auto-merge **only** when DILA exposes an explicit CBDB crosswalk (`idno type="CBDB"` → `metadata.crosswalk.cbdb`). Same string, no crosswalk → separate suggestions. Implemented in LJB `authorityOverlap.ts`.
 
-### D2 — Overlap with CBDB — **not started**
+**Disambiguation (Phase 4b):** User may manually link proposals from different authorities — no auto-merge beyond crosswalk at tag time.
 
-**Build:** `dila/report-overlap.mjs` — strings in both sources, conflicting metadata.
+**Build (optional):** `dila/report-overlap.mjs` — strings in both sources, conflicting metadata (for human audit, not blocking).
 
 **👤 Decide:**
 
-- [ ] Merge strategy at load time (LJB A3): one suggestion with both ids vs prefer DILA for persons → [ ]
+- [x] Merge strategy at load time: crosswalk-linked CBDB↔DILA only → **locked**
 
-**✓ Validate:** Run overlap report; review 20 conflicting rows.
+**✓ Validate:** Run overlap report when built; spot-check 20 conflicting rows.
 
 ---
-
-
 
 ### D3 — Publish — **next (bundled with C3)**
 
 Same pipeline as C3: DILA NDJSON included in GitLab pack bundle. License: CC-BY-SA 3.0. **→ LJB** A5 (pack fetch) + A6 (reference lookup from raw XML).
 
 ---
-
-
 
 ## Track W — Wikidata
 
@@ -291,43 +273,67 @@ Same pipeline as C3: DILA NDJSON included in GitLab pack bundle. License: CC-BY-
 
 ---
 
+### W1 — SPARQL prototypes — **in progress**
 
+**Build:** `wikidata/queries.mjs`, `wikidata/run-sparql.mjs` → `reports/w1-*.csv` (counts, sample, ambiguity).
 
-### W1 — SPARQL prototypes
-
-**Build:** `wikidata/sparql/` queries + `wikidata/run-sparql.mjs` → `reports/w1-*.csv` (counts, top ambiguous labels).
+```bash
+npm run wikidata:sparql -- count --dynasty tang --language zh-hant
+npm run wikidata:sparql -- sample --dynasty tang --language zh-hant
+npm run wikidata:sparql -- ambiguous --dynasty tang --language zh-hant
+npm run wikidata:sparql -- filtered-stats --dynasty tang --language zh-hant
+npm run wikidata:sparql -- matrix --language zh-hant
+```
 
 **👤 Decide:**
 
-- [ ] First slice: e.g. `wikidata-person-zh-hant-tang` vs monolithic `wikidata-person-zh-hant`
-- [ ] Exclude fictional humans (already in `kind-queries.json`) — enough?
-- [ ] Include `P1705` native labels?
+- [x] First slice: **`wikidata-person-zh-hant-tang`** (period-partitioned, not monolithic zh-hant)
+- [x] Person string policy: **CBDB-aligned heuristics** in [`personSearchStrings.mjs`](personSearchStrings.mjs)
+- [x] **Include fictional humans** — no P31 exclusion for Q15632617 / legendary; tag `metadata.ana: fictional` at compile
+- [ ] Include `P1705` native labels? (included in extract when present — review in W3)
 
 **✓ Validate:** You review:
 
-- [ ] Row counts (expect ~10k–50k for Tang persons, not millions)
-- [ ] 30 random `zh-hant` labels — sensible for classical Chinese text?
-- [ ] Top 20 ambiguous strings (e.g. 長安, 王) — acceptable noise?
+- [x] Row counts — Tang zh-hant ≈ **37k** persons (in band)
+- [ ] 30 random labels after **filtered-stats** — sensible mention forms?
+- [ ] Ambiguity after filter — still noisy? tune before W2
 
 **Exit:** Chosen slice + filters locked for W2.
 
 ---
 
+### W2 — Dump extractor — **extract running (2026-07-05)**
 
+**Status:** Full extract started on `~/Downloads/latest-all.json.bz2` (95 GB). Monitor: `tail -f packs/wikidata/raw-tang/extract.log`. Compile when extract finishes.
 
-### W2 — Dump extractor
+**Build:** [`entityParse.mjs`](../wikidata/entityParse.mjs), [`extract.mjs`](../wikidata/extract.mjs) → `persons.raw.ndjson`; [`compile.mjs`](../wikidata/compile.mjs) → LJB `persons.ndjson` + manifest.
 
-**Build:** `wikidata/extract.mjs` — stream `latest-all.json.bz2` → `strings.ndjson` + `qindex.ndjson`.
+```bash
+# Running now — full dump (expect several hours)
+npm run wikidata:extract -- --dump ~/Downloads/latest-all.json.bz2 --dynasty tang --language zh-hant --out packs/wikidata/raw-tang --progress 500000
 
-**👤 Decide:**
+# After extract completes:
+npm run wikidata:compile -- --raw packs/wikidata/raw-tang/persons.raw.ndjson --dynasty tang --out packs/wikidata/person-zh-hant-tang
+
+# Smoke test anytime (no dump needed)
+npm run wikidata:extract -- --dump wikidata/fixtures/tang-persons.jsonl --dynasty tang --out packs/wikidata/raw-tang
+npm run wikidata:compile -- --raw packs/wikidata/raw-tang/persons.raw.ndjson --dynasty tang --out packs/wikidata/person-zh-hant-tang
+```
+
+**👤 When dump is on disk:**
+
+- [x] Dump at `~/Downloads/latest-all.json.bz2` (95 GB)
+- [ ] Run extract; confirm `extract-meta.json` → `personsMatched` ≈ **37k** (±10% vs W1) — **in progress**
+- [ ] Run compile; spot-check `persons.ndjson`
+- [ ] Note tuning issues for W3; **do not** expect LJB tag bomb to load this pack yet (track **L**)
+
+**👤 Decide (later):**
 
 - [ ] Full dump vs periodic SPARQL export for v1 (dump = complete, heavy; SPARQL = lighter prototype)
 
-**✓ Validate:** Extract one dynasty pack; compare count to W1 SPARQL within ~10%.
+**✓ Validate:** Extract one dynasty pack; compare entity count to W1 SPARQL within ~10%.
 
 ---
-
-
 
 ### W3 — Quality gates
 
@@ -337,17 +343,11 @@ Same pipeline as C3: DILA NDJSON included in GitLab pack bundle. License: CC-BY-
 
 ---
 
-
-
 ### W4 — Compile to AuthorityCandidate
 
-**Build:** `wikidata/compile.mjs` → LJB-shaped NDJSON.
-
-**→ LJB:** Pack install path (track **L1**).
+**Status:** merged into [`compile.mjs`](compile.mjs) for v1 Tang slice (extract → compile two-step).
 
 ---
-
-
 
 ### W5 — Publish
 
@@ -357,37 +357,40 @@ Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 
 ---
 
-
-
 ## Track N — NDL (Japanese)
 
-**Raw input:** [NDL authority batch files](https://id.ndl.go.jp/information/download_en/) or SPARQL.  
-**Target packs:** `ndl-persons-ja`, `ndl-places-ja`.
+**Raw input:** [NDL batch files](https://id.ndl.go.jp/information/download_en/) (works, NDLSH, GFT) + [SPARQL 1.1](https://id.ndl.go.jp/auth/ndla/sparql) (persons, places, corps).  
+**Target packs:** `ndl-works-ja` (batch first), `ndl-persons-ja`, `ndl-places-ja`.  
+**Operator guide:** [ndl/README.md](../ndl/README.md)
 
-### N0 — Scope & license
+**Status (2026-07-05):** N1 **done locally** — `ndl-persons-ja` (1,035,289 persons, 227 MB) + `ndl-works-ja` (914 works). GitLab publish (N4) and LJB load (L3) not started.
 
-**Build:** `ndl/README.md` — record types, field mapping, attribution string.
+### N0 — Scope & license — **done (docs)**
+
+**Build:** [ndl/README.md](../ndl/README.md) — record types, batch vs SPARQL, attribution.
 
 **👤 Decide:**
 
-- [ ] Personal names only for v1, or include corporate/geographic?
-- [ ] Variant reading rules (ヨミ vs 表記)
+- [x] **License:** reuse OK (commercial + non-commercial) with attribution — confirmed
+- [x] v1 order: **works batch first**, then SPARQL persons (default when no preference)
+- [ ] Variant reading rules (ヨミ vs 表記) — tune at N2
 
-**✓ Validate:** You confirm NDL terms allow redistribution in compiled pack form.
-
----
-
-
-
-### N1 — Parse prototype
-
-**Build:** Parse 10k record sample → CSV.
-
-**✓ Validate:** 50 random names — would they match your Japanese corpus romanization / kanji usage?
+**Important:** Batch download does **not** include personal/corporate name authorities — only NDLSH topical, subdivisions, GFT, and **Works**. See README table.
 
 ---
 
+### N1 — Parse prototype — **done (code)**
 
+**Build:** `ndl/parseWorks.mjs`, `ndl/run-sparql.mjs`, `ndl/compileWorks.mjs`, `ndl/compilePersons.mjs`
+
+**Prepare:**
+
+1. [x] Works pipeline — 914 records in `packs/ndl/works-ja/`
+2. [x] Full person harvest — 1,035,289 in `packs/ndl/persons-ja/` (SPARQL count was ~1,048,223; gap = records without harvestable `foaf:name`)
+
+**✓ Validate:** 50 random work titles + 50 random person headings look like real mention forms in your Japanese corpus.
+
+---
 
 ### N2 — Full compile
 
@@ -397,23 +400,17 @@ Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 
 ---
 
-
-
 ### N3 — Wikidata crosswalk (optional)
 
 **Build:** Map NDL id ↔ Wikidata where `P349` present — for disambiguation only.
 
 ---
 
-
-
 ### N4 — Publish → **→ LJB** track **L3**
 
 **👤 Decide:** Gate pack when `project source language = ja` only?
 
 ---
-
-
 
 ## Track G — GeoNames
 
@@ -431,21 +428,15 @@ Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 
 ---
 
-
-
 ### G1 — Extract + compile
 
 **Build:** `geonames/compile.mjs` from `allCountries.zip` or filtered extract.
 
 ---
 
-
-
 ### G2 — Publish → **→ LJB** L4
 
 ---
-
-
 
 ## Track T — Tibetan / THL (deferred)
 
@@ -467,30 +458,26 @@ Document format for user-maintained gazetteers → same NDJSON compile path.
 
 ---
 
-
-
 ## Track L — LJB integration (leaf-writer)
 
 Not implemented in this repo. Phases live in [authority-databases-phases.md](../leaf-writer/docs/authority-databases-phases.md). **Offline enable/update/delete:** [authority-data-lifecycle.md](../leaf-writer/docs/authority-data-lifecycle.md).
 
 
-| Phase                              | Status        | Your validation                               |
-| ---------------------------------- | ------------- | --------------------------------------------- |
-| **A0** Language gating             | Done          | —                                             |
-| **A1** Download manager            | Done          | Full CBDB download once on your machine       |
-| **A2** Compile → tag bomb          | Mostly done   | Dev sync + dialog; in-app compile → A5 spec   |
-| **A3** Matcher at scale            | Done (v1)     | Harness + overlap merge                       |
-| **A4** Authority panel UI          | Mostly done   | Dialog + review clues; lifecycle UI pending   |
-| **A5** Lifecycle + updates         | Spec ready    | [authority-data-lifecycle.md](../leaf-writer/docs/authority-data-lifecycle.md) |
-| **L1** Install Wikidata packs      | Not started | Download manifest, sha256 verify              |
-| **L2** Wikidata in authority panel | Not started | Checkbox beside CBDB/DILA                     |
-| **L3** Japanese / NDL gating       | Not started | ja project sees NDL only                      |
-| **L4** GeoNames gating             | Not started | —                                             |
+| Phase                              | Status      | Your validation                                                                |
+| ---------------------------------- | ----------- | ------------------------------------------------------------------------------ |
+| **A0** Language gating             | Done        | —                                                                              |
+| **A1** Download manager            | Done        | Full CBDB download once on your machine                                        |
+| **A2** Compile → tag bomb          | Mostly done | Dev sync + dialog; in-app compile → A5 spec                                    |
+| **A3** Matcher at scale            | Done (v1)   | Harness + overlap merge                                                        |
+| **A4** Authority panel UI          | Mostly done | Dialog + review clues; lifecycle UI pending                                    |
+| **A5** Lifecycle + updates         | Spec ready  | [authority-data-lifecycle.md](../leaf-writer/docs/authority-data-lifecycle.md) |
+| **L1** Install Wikidata packs      | Not started | Download manifest, sha256 verify                                               |
+| **L2** Wikidata in authority panel | Not started | Checkbox beside CBDB/DILA                                                      |
+| **L3** Japanese / NDL gating       | Not started | ja project sees NDL only                                                       |
+| **L4** GeoNames gating             | Not started | —                                                                              |
 
 
 ---
-
-
 
 ## Validation queue
 
@@ -509,26 +496,22 @@ Not implemented in this repo. Phases live in [authority-databases-phases.md](../
 
 ---
 
-
-
 ## Recommended sequence (updated)
 
 
-| Step | Track      | Status    | 👤 / ✓                          |
-| ---- | ---------- | --------- | ------------------------------- |
-| 1    | W0         | **done**  | ✓                               |
-| 2    | C0–C1      | **done**  | 👤 sign off policy              |
-| 3    | D0–D1      | **done**  | 👤 mythical names?              |
-| 4    | C2 report  | **built** | ✓ review CSV                    |
-| 5    | **LJB A2** | **built** | sync packs + tag bomb in dialog |
-| 6    | D2 overlap | pending   | 👤 merge strategy               |
-| 7    | A4 panel   | pending   | ✓ Tang workflow                 |
-| 8    | W1         | pending   | 👤 slice choice                 |
+| Step | Track      | Status     | 👤 / ✓                                       |
+| ---- | ---------- | ---------- | -------------------------------------------- |
+| 1    | W0         | **done**   | ✓                                            |
+| 2    | C0–C1      | **done**   | 👤 sign off policy                           |
+| 3    | D0–D1      | **done**   | 👤 mythical names?                           |
+| 4    | C2 report  | **built**  | ✓ review CSV                                 |
+| 5    | **LJB A2** | **built**  | sync packs + tag bomb in dialog              |
+| 6    | D2 overlap | **locked** | crosswalk-only auto-merge; manual link at 4b |
+| 7    | A4 panel   | pending    | ✓ Tang workflow                              |
+| 8    | W1         | pending    | 👤 slice choice                              |
 
 
 ---
-
-
 
 ## Validation assets (shared)
 
@@ -551,11 +534,7 @@ Use the same corpus checks across tracks:
 
 ---
 
-
-
 ## Design notes (Norbert alignment)
-
-
 
 ### Name expansion — **deferred**
 
@@ -572,8 +551,6 @@ Norbert’s name-code logic (standalone 法號/號 vs 字 merged with surname; f
 **Recommendation:** do not block A2/A4 on this. Track as **C4 / matcher** when CBDB+DILA tag bomb is end-to-end. Your `all_together.csv` `follows_`* gates are the other half of the same problem — also later.
 
 ---
-
-
 
 ### Office vs org — **recommended model**
 
@@ -632,8 +609,6 @@ flowchart TB
 
 ---
 
-
-
 ## What we are not doing in this repo
 
 - AI suggest / audit prompts (leaf-writer Phase 5)
@@ -642,8 +617,6 @@ flowchart TB
 - THL scraping without permission
 
 ---
-
-
 
 ## Changelog
 

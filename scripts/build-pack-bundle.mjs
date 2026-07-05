@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
- * Compile CBDB + DILA packs and produce dist/authority-packs-{version}.tar.gz + packs-index.json.
+ * Compile authority packs and produce dist/authority-packs-{version}.tar.gz + packs-index.json.
  *
  * Usage:
- *   node scripts/build-pack-bundle.mjs [--upstream DIR] [--out DIR]
+ *   node scripts/build-pack-bundle.mjs [--upstream DIR] [--out DIR] [--require-ndl]
  *
- * Expects upstream files from fetch-upstream.mjs (or local leaf-writer databases/).
+ * Expects CBDB/DILA upstream files from fetch-upstream.mjs (or local leaf-writer databases/).
+ * NDL is included when raw exports already exist locally under .upstream/ndl/raw/ or packs/ndl/raw/.
  */
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -16,6 +17,9 @@ import { fileURLToPath } from 'node:url';
 
 import { compileCbdbPack } from '../cbdb/compile.mjs';
 import { compileDila } from '../dila/compile.mjs';
+import { compileNdlPersonsPack } from '../ndl/compilePersons.mjs';
+import { compileNdlWorksPack } from '../ndl/compileWorks.mjs';
+import { NDL_ATTRIBUTION, NDL_WORKS_ZIP_URL } from '../ndl/constants.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
@@ -26,10 +30,12 @@ function arg(name, fallback) {
   return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
 }
 
+const hasFlag = (name) => process.argv.includes(name);
+
 const upstreamDir = path.resolve(arg('--upstream', path.join(repoRoot, '.upstream')));
 const distRoot = path.resolve(arg('--out', path.join(repoRoot, 'dist')));
+const requireNdl = hasFlag('--require-ndl');
 const packsDir = path.join(distRoot, 'authority-packs');
-const bundleVersion = `${pins.compilePolicyVersion}+cbdb${pins.cbdb.version}`;
 
 const sha256File = async (filePath) => {
   const hash = createHash('sha256');
@@ -45,7 +51,21 @@ const resolveUpstream = (fileName, fallbacks) => {
   throw new Error(`Missing ${fileName}. Run: node scripts/fetch-upstream.mjs`);
 };
 
+const resolveOptional = (...candidates) => candidates.find((candidate) => fs.existsSync(candidate)) ?? null;
+
+const readJsonIfExists = async (filePath) => {
+  if (!filePath || !fs.existsSync(filePath)) return null;
+  return JSON.parse(await fsp.readFile(filePath, 'utf8'));
+};
+
+const compactDate = (value) => {
+  const parsed = Date.parse(value ?? '');
+  if (!Number.isFinite(parsed)) return null;
+  return new Date(parsed).toISOString().slice(0, 10).replace(/-/g, '');
+};
+
 const leafWriterDb = path.resolve(repoRoot, '../leaf-writer/databases');
+const localPacksRoot = path.join(repoRoot, 'packs');
 
 const sqlitePath = resolveUpstream('cbdb.sqlite3', [
   path.join(leafWriterDb, 'cbdb_20260627.sqlite3'),
@@ -57,6 +77,35 @@ const placesPath = resolveUpstream('dila-place.xml', [
   path.join(leafWriterDb, 'Buddhist_Studies_Place_Authority.xml'),
 ]);
 const districtsPath = resolveUpstream('dila-districts.xml', [path.join(leafWriterDb, 'districts.xml')]);
+
+const ndlPersonsRaw = resolveOptional(
+  path.join(upstreamDir, 'ndl/raw/persons.raw.ndjson'),
+  path.join(localPacksRoot, 'ndl/raw/persons.raw.ndjson'),
+);
+const ndlWorksRaw = resolveOptional(
+  path.join(upstreamDir, 'ndl/raw/works.raw.ndjson'),
+  path.join(localPacksRoot, 'ndl/raw/works.raw.ndjson'),
+);
+const ndlPersonsMetaPath = resolveOptional(
+  path.join(upstreamDir, 'ndl/raw/persons.raw-meta.json'),
+  path.join(localPacksRoot, 'ndl/raw/persons.raw-meta.json'),
+);
+const ndlPersonsMeta = await readJsonIfExists(ndlPersonsMetaPath);
+const includeNdl = !!(ndlPersonsRaw && ndlWorksRaw);
+
+if (requireNdl && !includeNdl) {
+  throw new Error(
+    'NDL bundle requested (`--require-ndl`) but staged raw files were not found. ' +
+      'Expected `.upstream/ndl/raw/persons.raw.ndjson` and `.upstream/ndl/raw/works.raw.ndjson` ' +
+      '(or `packs/ndl/raw/` fallbacks).',
+  );
+}
+
+const bundleParts = [`cbdb${pins.cbdb.version}`];
+if (includeNdl) {
+  bundleParts.push(`ndl${compactDate(ndlPersonsMeta?.harvestedAt) ?? 'local'}`);
+}
+const bundleVersion = `${pins.compilePolicyVersion}+${bundleParts.join('+')}`;
 
 await fsp.rm(packsDir, { recursive: true, force: true });
 await fsp.mkdir(packsDir, { recursive: true });
@@ -75,11 +124,28 @@ await compileDila({
   outDir: path.join(packsDir, 'dila'),
 });
 
+if (includeNdl) {
+  console.log('Compiling NDL persons…');
+  compileNdlPersonsPack({
+    rawPath: ndlPersonsRaw,
+    outDir: path.join(packsDir, 'ndl'),
+    packId: 'ndl-persons-ja',
+  });
+
+  console.log('Compiling NDL works…');
+  compileNdlWorksPack({
+    rawPath: ndlWorksRaw,
+    outDir: path.join(packsDir, 'ndl'),
+    packId: 'ndl-works-ja',
+  });
+}
+
 const patchManifest = async (sourceId, extras) => {
   const manifestPath = path.join(packsDir, sourceId, 'manifest.json');
   const manifest = JSON.parse(await fsp.readFile(manifestPath, 'utf8'));
   Object.assign(manifest, extras);
-  await fsp.writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  await fsp.writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}
+`);
 };
 
 await patchManifest('cbdb', {
@@ -101,8 +167,26 @@ await patchManifest('dila', {
   },
 });
 
+if (includeNdl) {
+  await patchManifest('ndl', {
+    id: 'ndl-bundle-ja',
+    source: 'NDL',
+    license: pins.ndl.license,
+    attribution: pins.ndl.attribution,
+    upstream: {
+      personsRaw: ndlPersonsRaw,
+      worksRaw: ndlWorksRaw,
+      worksZipUrl: pins.ndl.worksZipUrl,
+      personsHarvestedAt: ndlPersonsMeta?.harvestedAt,
+      personsMatched: ndlPersonsMeta?.personsMatched,
+      pages: ndlPersonsMeta?.pages,
+      pageSize: ndlPersonsMeta?.pageSize,
+    },
+  });
+}
+
 const packFiles = [];
-for (const sourceId of ['cbdb', 'dila']) {
+for (const sourceId of includeNdl ? ['cbdb', 'dila', 'ndl'] : ['cbdb', 'dila']) {
   const sourceDir = path.join(packsDir, sourceId);
   for (const entry of await fsp.readdir(sourceDir)) {
     const filePath = path.join(sourceDir, entry);
@@ -140,6 +224,15 @@ const packsIndex = {
   upstream: {
     cbdb: { version: pins.cbdb.version, sqliteSha256: pins.cbdb.sqliteSha256 },
     dila: { commit: pins.dila.commit, versionLabel: pins.dila.versionLabel },
+    ...(includeNdl
+      ? {
+          ndl: {
+            worksZipUrl: pins.ndl.worksZipUrl,
+            personsHarvestedAt: ndlPersonsMeta?.harvestedAt,
+            personsMatched: ndlPersonsMeta?.personsMatched,
+          },
+        }
+      : {}),
   },
   tarball: {
     fileName: tarballName,
@@ -150,17 +243,24 @@ const packsIndex = {
   licenses: {
     cbdb: pins.cbdb.license,
     dila: pins.dila.license,
+    ...(includeNdl ? { ndl: pins.ndl.license } : {}),
   },
   attribution: {
     cbdb: pins.cbdb.attribution,
     dila: pins.dila.attribution,
+    ...(includeNdl ? { ndl: pins.ndl.attribution } : {}),
   },
 };
 
 const indexPath = path.join(distRoot, 'packs-index.json');
-await fsp.writeFile(indexPath, `${JSON.stringify(packsIndex, null, 2)}\n`);
+await fsp.writeFile(indexPath, `${JSON.stringify(packsIndex, null, 2)}
+`);
 
-console.log(`\nBundle: ${tarballPath}`);
+console.log(`
+Bundle: ${tarballPath}`);
 console.log(`Index:  ${indexPath}`);
 console.log(`Version: ${bundleVersion}`);
 console.log(`Tarball sha256: ${tarballSha256}`);
+if (!includeNdl) {
+  console.log('NDL not included: add packs/ndl/raw/persons.raw.ndjson and packs/ndl/raw/works.raw.ndjson (or .upstream/ndl/raw/ equivalents).');
+}

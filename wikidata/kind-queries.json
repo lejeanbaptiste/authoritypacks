@@ -6,13 +6,9 @@
       "ljbKind": "person",
       "teiTags": ["persName"],
       "instanceOf": ["Q5"],
-      "excludeInstanceOf": ["Q15632617", "Q28037560", "Q3658341"],
-      "excludeComments": {
-        "Q15632617": "fictional human character",
-        "Q28037560": "fictional human",
-        "Q3658341": "legendary figure"
-      },
-      "membershipNotes": "Require label in pack language. Period: P27 dynasty qid from dynasties.json or year overlap."
+      "excludeInstanceOf": [],
+      "excludeComments": {},
+      "membershipNotes": "Include historical and fictional humans (Q5). Fictional items often also carry P31=Q15632617 — retained. Period: P27 dynasty qid from dynasties.json."
     },
     "place": {
       "ljbKind": "place",

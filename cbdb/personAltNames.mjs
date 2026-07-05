@@ -1,24 +1,15 @@
 import { addSearchString, normalizeSurface } from '../shared/normalize.mjs';
+import {
+  addPersonSearchString,
+  codePointLength,
+  isBlockedPersonString,
+} from '../shared/personStringPolicy.mjs';
 import { ALTNAME_EXCLUDE } from './constants.mjs';
 
-/** Symbols and Latin letters — excluded from person match strings (👤 v1 policy). */
-const BLOCKED_CHAR_RE = /[\*(\[\-]|[A-Za-z]/;
-
-/**
- * @param {string} surface
- * @param {string | null | undefined} surnameChn
- */
+/** @deprecated Use isBlockedPersonString from shared/personStringPolicy.mjs */
 export function isBlockedCbdbPersonString(surface, surnameChn) {
-  const s = normalizeSurface(surface);
-  if (!s) return true;
-  if (BLOCKED_CHAR_RE.test(s)) return true;
-  const sur = normalizeSurface(surnameChn ?? '');
-  if (sur && (s === `${sur}氏` || s === `${sur}某`)) return true;
-  return false;
+  return isBlockedPersonString(surface, surnameChn);
 }
-
-/** @param {string} s */
-const codePointLength = (s) => [...normalizeSurface(s)].length;
 
 /**
  * @param {Set<string>} set
@@ -26,8 +17,7 @@ const codePointLength = (s) => [...normalizeSurface(s)].length;
  * @param {string | null | undefined} surnameChn
  */
 export function addCbdbPersonSearchString(set, surface, surnameChn) {
-  if (isBlockedCbdbPersonString(surface, surnameChn)) return;
-  addSearchString(set, surface);
+  addPersonSearchString(set, surface, surnameChn);
 }
 
 /**
@@ -107,3 +97,6 @@ export function personSearchStringsFromAlts(person) {
 
   return [...out];
 }
+
+// Re-export for tests that import codePointLength via this module
+export { codePointLength } from '../shared/personStringPolicy.mjs';

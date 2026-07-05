@@ -1,0 +1,33 @@
+dynasty: tang (Q9683)
+language: zh-hant
+entities: 178
+raw_strings: 489
+filtered_strings: 405
+dropped_pct: 17.2
+
+sample_dropped:
+- 景武
+- 劉賓客
+- 劉二八
+- 夢得
+- 馮力士
+- 馮元一
+- 季淩
+- 季凌
+- 元德
+- 襄公
+- 巡
+- 杜十五
+- 彥之
+- 明允
+- 李德
+- 仁
+- 悼
+- 靈祐
+- 潙山和尚
+- 大圓禪師
+- 韋氏
+- 淨師子
+- 仲文
+- 長孫無垢
+- 長孫後(太宗後)

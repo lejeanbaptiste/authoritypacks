@@ -6,6 +6,8 @@ reports/*.csv
 packs/
 !packs/test-dila/
 !packs/test-dila/**
+!packs/test-ndl/
+!packs/test-ndl/**
 *.bz2
 *.json.gz
 dist/

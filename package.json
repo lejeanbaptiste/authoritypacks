@@ -7,6 +7,13 @@
   "scripts": {
     "validate": "node wikidata/validate.mjs",
     "wikidata:validate": "node wikidata/validate.mjs",
+    "wikidata:sparql": "node wikidata/run-sparql.mjs",
+    "wikidata:extract": "node wikidata/extract.mjs",
+    "wikidata:compile": "node wikidata/compile.mjs",
+    "ndl:parse-works": "node ndl/parseWorks.mjs",
+    "ndl:compile-works": "node ndl/compileWorks.mjs",
+    "ndl:sparql": "node ndl/run-sparql.mjs",
+    "ndl:compile-persons": "node ndl/compilePersons.mjs",
     "compile:dila": "node dila/compile.mjs",
     "compile:cbdb": "node cbdb/compile.mjs",
     "report:cbdb": "node cbdb/report.mjs",

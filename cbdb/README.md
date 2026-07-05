@@ -39,6 +39,7 @@ Type **0** stays **out** (~45k strings). Mythical persons are **in** (no special
 - Drop anything with symbols `* ( [ -` or **Latin letters**.
 - Drop **single characters** after concatenation (min **2** code points).
 - Block **`c_surname_chn` + 氏** and **`c_surname_chn` + 某** (ambiguous placeholder names).
+- Block any **two-character `X某` placeholder** (e.g. 李某) — shared with Wikidata in [`shared/personStringPolicy.mjs`](../shared/personStringPolicy.mjs).
 
 ### Offices
 

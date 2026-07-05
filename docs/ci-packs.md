@@ -7,15 +7,38 @@ Pipeline stages: **test** → **build-packs**.
 | Artifact | Description |
 |----------|-------------|
 | `dist/packs-index.json` | Bundle version, policy, upstream pins, per-file sha256, tarball hash |
-| `dist/authority-packs-{version}.tar.gz` | `authority-packs/cbdb/` + `authority-packs/dila/` ready for LJB |
+| `dist/authority-packs-{version}.tar.gz` | `authority-packs/cbdb/` + `authority-packs/dila/` and, when staged, `authority-packs/ndl/` ready for LJB |
 
 Artifacts expire in **30 days** until you attach them to a GitLab **Release** (when ready).
 
 ## Pinned upstream
 
-Single source of truth: [`upstream/pins.json`](../upstream/pins.json) (mirrors leaf-writer `authorityDatabases.ts` pins).
+Single source of truth: [`upstream/pins.json`](../upstream/pins.json) (mirrors leaf-writer `authorityDatabases.ts` pins for CBDB/DILA, plus NDL bundle metadata).
 
 Bump pins when CBDB or DILA releases a new dump, then re-run the pipeline.
+
+## NDL staging
+
+CBDB and DILA are fetched automatically. NDL is different: the person harvest is generated locally from SPARQL and the works file is compiled from the NDL batch TSV.
+
+`build-pack-bundle.mjs` now includes NDL when these raw files already exist:
+
+- `.upstream/ndl/raw/persons.raw.ndjson`
+- `.upstream/ndl/raw/works.raw.ndjson`
+
+Fallbacks for local dev:
+
+- `packs/ndl/raw/persons.raw.ndjson`
+- `packs/ndl/raw/works.raw.ndjson`
+
+Optional metadata file:
+
+- `.upstream/ndl/raw/persons.raw-meta.json`
+- or `packs/ndl/raw/persons.raw-meta.json`
+
+If those files are absent, the bundle still builds, but it will contain only CBDB + DILA.
+
+For release-time enforcement, run the bundle with `--require-ndl`. That makes the build fail fast if the NDL raws are missing.
 
 ## Tests in CI
 
@@ -34,6 +57,15 @@ npm ci
 npm run build:packs:full    # fetch upstream + compile + tarball
 # or, if you already have leaf-writer/databases/ or .upstream/:
 npm run build:packs
+```
+
+To include NDL locally, make sure the NDL raw exports exist first:
+
+```bash
+npm run ndl:compile-works -- --raw packs/ndl/raw/works.raw.ndjson --out packs/ndl/works-ja
+npm run ndl:compile-persons -- --raw packs/ndl/raw/persons.raw.ndjson --out packs/ndl/persons-ja
+npm run build:packs
+node scripts/build-pack-bundle.mjs --require-ndl
 ```
 
 Output lands in `dist/`.
