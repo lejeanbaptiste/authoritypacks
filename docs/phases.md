@@ -23,6 +23,8 @@ This document is the **master roadmap for building packs offline**. It is organi
 | **D**          | D3 publish | **CI pipeline ready** — bundled with C3                       | same as C3                                                     |
 | **W** Wikidata | W0 tables  | **done**                                                      | `wikidata/*.json`                                              |
 | **W**          | W1+        | not started                                                   | —                                                              |
+| **H** CHGIS    | H1 compile | **built**                                                     | `chgis/compile.mjs` — local install only                       |
+| **H**          | H2 LJB UI  | **built**                                                     | Settings → Install from download                               |
 | **L** LJB      | A2 loader  | **built**                                                     | wire + dialog; sync packs to entity DB                         |
 
 
@@ -32,7 +34,7 @@ This document is the **master roadmap for building packs offline**. It is organi
 npm test                  # unit tests (CBDB + DILA fixtures)
 npm run compile:cbdb      # ~7s → packs/cbdb/
 npm run compile:dila      # ~3s → packs/dila/
-node cbdb/report.mjs      # ambiguity CSV
+npm run compile:chgis     # --input SHAPEFILE_OR_DIR → packs/chgis/
 ```
 
 **Your next validation (~30 min):** see [✓ Validation queue](#validation-queue) below.
@@ -44,6 +46,8 @@ node cbdb/report.mjs      # ambiguity CSV
 - [wikidata-tag-packs-planning.md](../leaf-writer/docs/wikidata-tag-packs-planning.md) — Wikidata design detail
 
 ---
+
+
 
 ## How to read this doc
 
@@ -61,6 +65,8 @@ Each **track** is one authority source (or family). Phases are numbered within t
 **Priority order:** Chinese biographical corpora first (CBDB + DILA), then one Wikidata slice to prove generalization, then Japanese (NDL), then global/Tibetan supplements.
 
 ---
+
+
 
 ## Cross-track overview
 
@@ -96,11 +102,14 @@ flowchart LR
 | **W** | Wikidata      | Long tail, ja/bo/en, works         | W0–W5           | L1–L2                  |
 | **N** | NDL           | Japanese persons/places            | N0–N4           | L3                     |
 | **G** | GeoNames      | Global modern places               | G0–G3           | L4                     |
+| **H** | CHGIS         | Historical China places            | H0–H3           | Settings install UI    |
 | **T** | THL / Tibetan | Himalayan places                   | T0–T2           | deferred               |
 | **L** | —             | Install packs, panel UI, tag bomb  | —               | A2–A5, L1–L4           |
 
 
 ---
+
+
 
 ## Track C — CBDB (Chinese Biographical Database)
 
@@ -129,6 +138,8 @@ flowchart LR
 **Exit:** Recompile packs after policy change; spot-check golden names.
 
 ---
+
+
 
 ### C1 — Compile script — **done (2026-07-05)**
 
@@ -159,6 +170,8 @@ flowchart LR
 
 ---
 
+
+
 ### C2 — Quality & ambiguity report — **built (pending 👤 review)**
 
 **Build:** `[cbdb/report.mjs](../cbdb/report.mjs)` → `reports/cbdb-ambiguous-top100.csv`.
@@ -175,6 +188,8 @@ flowchart LR
 **Exit:** Report reviewed; compile rules frozen for v1.
 
 ---
+
+
 
 ### C3 — Publish manifest — **next (decision signed 2026-07-05)**
 
@@ -194,6 +209,8 @@ flowchart LR
 **✓ Validate:** LJB installs bundle beside test entity DB; tag bomb + manifest version check pass.
 
 ---
+
+
 
 ## Track D — DILA authority XML
 
@@ -220,6 +237,8 @@ flowchart LR
 
 ---
 
+
+
 ### D1 — Compile script — **done (2026-07-05)**
 
 **Build:** `[dila/compile.mjs](../dila/compile.mjs)`.
@@ -238,6 +257,8 @@ flowchart LR
 
 ---
 
+
+
 ### D2 — Overlap with CBDB — **policy locked (2026-07-05)**
 
 **Policy (LJB load-time merge):** Auto-merge **only** when DILA exposes an explicit CBDB crosswalk (`idno type="CBDB"` → `metadata.crosswalk.cbdb`). Same string, no crosswalk → separate suggestions. Implemented in LJB `authorityOverlap.ts`.
@@ -254,11 +275,15 @@ flowchart LR
 
 ---
 
+
+
 ### D3 — Publish — **next (bundled with C3)**
 
 Same pipeline as C3: DILA NDJSON included in GitLab pack bundle. License: CC-BY-SA 3.0. **→ LJB** A5 (pack fetch) + A6 (reference lookup from raw XML).
 
 ---
+
+
 
 ## Track W — Wikidata
 
@@ -272,6 +297,8 @@ Same pipeline as C3: DILA NDJSON included in GitLab pack bundle. License: CC-BY-
 **✓ Validate:** `npm run validate` passes.
 
 ---
+
+
 
 ### W1 — SPARQL prototypes — **in progress**
 
@@ -287,8 +314,8 @@ npm run wikidata:sparql -- matrix --language zh-hant
 
 **👤 Decide:**
 
-- [x] First slice: **`wikidata-person-zh-hant-tang`** (period-partitioned, not monolithic zh-hant)
-- [x] Person string policy: **CBDB-aligned heuristics** in [`personSearchStrings.mjs`](personSearchStrings.mjs)
+- [x] First slice: `wikidata-person-zh-hant-tang` (period-partitioned, not monolithic zh-hant)
+- [x] Person string policy: **CBDB-aligned heuristics** in `[personSearchStrings.mjs](personSearchStrings.mjs)`
 - [x] **Include fictional humans** — no P31 exclusion for Q15632617 / legendary; tag `metadata.ana: fictional` at compile
 - [ ] Include `P1705` native labels? (included in extract when present — review in W3)
 
@@ -302,11 +329,13 @@ npm run wikidata:sparql -- matrix --language zh-hant
 
 ---
 
-### W2 — Dump extractor — **extract running (2026-07-05)**
 
-**Status:** Full extract started on `~/Downloads/latest-all.json.bz2` (95 GB). Monitor: `tail -f packs/wikidata/raw-tang/extract.log`. Compile when extract finishes.
 
-**Build:** [`entityParse.mjs`](../wikidata/entityParse.mjs), [`extract.mjs`](../wikidata/extract.mjs) → `persons.raw.ndjson`; [`compile.mjs`](../wikidata/compile.mjs) → LJB `persons.ndjson` + manifest.
+### W2 — Dump extractor — **done (Tang slice, 2026-07-06)**
+
+**Status:** Full extract complete — 120.8M entities scanned, **37,038** raw Tang persons; compiled **34,923** (`wikidata-person-zh-hant-tang`). Gap = name-filter drops (李某-style placeholders, bare 字, etc.).
+
+**Build:** `[entityParse.mjs](../wikidata/entityParse.mjs)`, `[extract.mjs](../wikidata/extract.mjs)` → `persons.raw.ndjson`; `[compile.mjs](../wikidata/compile.mjs)` → LJB `persons.ndjson` + manifest.
 
 ```bash
 # Running now — full dump (expect several hours)
@@ -322,9 +351,8 @@ npm run wikidata:compile -- --raw packs/wikidata/raw-tang/persons.raw.ndjson --d
 
 **👤 When dump is on disk:**
 
-- [x] Dump at `~/Downloads/latest-all.json.bz2` (95 GB)
-- [ ] Run extract; confirm `extract-meta.json` → `personsMatched` ≈ **37k** (±10% vs W1) — **in progress**
-- [ ] Run compile; spot-check `persons.ndjson`
+- [x] Run extract; confirm `extract-meta.json` → `personsMatched` ≈ **37k** — **37,038**
+- [x] Run compile; spot-check `persons.ndjson` — **34,923** compiled
 - [ ] Note tuning issues for W3; **do not** expect LJB tag bomb to load this pack yet (track **L**)
 
 **👤 Decide (later):**
@@ -335,6 +363,8 @@ npm run wikidata:compile -- --raw packs/wikidata/raw-tang/persons.raw.ndjson --d
 
 ---
 
+
+
 ### W3 — Quality gates
 
 **Build:** Drop disambiguation pages, labels wrong script, strings below min length; `reports/w3-ambiguity.csv`.
@@ -343,11 +373,15 @@ npm run wikidata:compile -- --raw packs/wikidata/raw-tang/persons.raw.ndjson --d
 
 ---
 
+
+
 ### W4 — Compile to AuthorityCandidate
 
-**Status:** merged into [`compile.mjs`](compile.mjs) for v1 Tang slice (extract → compile two-step).
+**Status:** merged into `[compile.mjs](compile.mjs)` for v1 Tang slice (extract → compile two-step).
 
 ---
+
+
 
 ### W5 — Publish
 
@@ -356,6 +390,8 @@ Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 **👤 Decide:** Which packs ship in LJB v1 download list (recommend: `wikidata-person-zh-hant-tang` only).
 
 ---
+
+
 
 ## Track N — NDL (Japanese)
 
@@ -379,6 +415,8 @@ Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 
 ---
 
+
+
 ### N1 — Parse prototype — **done (code)**
 
 **Build:** `ndl/parseWorks.mjs`, `ndl/run-sparql.mjs`, `ndl/compileWorks.mjs`, `ndl/compilePersons.mjs`
@@ -392,6 +430,8 @@ Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 
 ---
 
+
+
 ### N2 — Full compile
 
 **Build:** `ndl/compile.mjs` → NDJSON.
@@ -400,11 +440,15 @@ Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 
 ---
 
+
+
 ### N3 — Wikidata crosswalk (optional)
 
 **Build:** Map NDL id ↔ Wikidata where `P349` present — for disambiguation only.
 
 ---
+
+
 
 ### N4 — Publish → **→ LJB** track **L3**
 
@@ -412,31 +456,93 @@ Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 
 ---
 
+
+
 ## Track G — GeoNames
 
-**Target:** `geonames-places-{region}` — modern geographic names, Latin + local script.
+Only includes CJKT names as alternates, coverage uneven.
 
-### G0 — Subset policy
 
-**👤 Decide:**
-
-- [ ] Which feature classes (PPL, ADM, …)?
-- [ ] Min population threshold?
-- [ ] China historical places: **skip** (use CBDB/DILA/Wikidata) — confirm
-
-**✓ Validate:** Sample 100 place names against a non-Chinese test doc if available.
 
 ---
 
-### G1 — Extract + compile
+## Track H — CHGIS (historical China places)
 
-**Build:** `geonames/compile.mjs` from `allCountries.zip` or filtered extract.
+**Raw input:** [CHGIS v6](https://dataverse.harvard.edu/dataverse/chgis_v6) shapefiles (user download).  
+**Target pack:** `chgis-places` → `authority-packs/chgis/places.ndjson`.  
+**License:** academic only — **no GitLab redistribution**; compile on user machine.
+
+### H0 — Policy — **signed (2026-07-06)**
+
+**Build:** `[chgis/README.md](../chgis/README.md)`.
+
+**Locked for v1:**
+
+- [x] Point layers only (`OBJ_TYPE = POINT`); polygon rows skipped
+- [x] **Tag name:** `NAME_FT` (traditional); `NAME_CH` metadata only
+- [x] **Layers:** county + prefecture WGS84 (`v6_time_cnty_pts_utf_wgs84` + `v6_time_pref_pts_utf_wgs84`)
+- [x] Search strings: full `NAME_FT` + stem without `TYPE_CH` when name length > 2 (新興郡 → 新興郡 + 新興)
+- [x] IDs: `SYS_ID` (matches CBDB `CHGIS_PT_ID`)
+- [x] Dates: `BEG_YR` / `END_YR` per historical instance row
+- [x] Geo: WGS84 lat/lon from point geometry (crosswalk input)
+- [x] Optional CBDB crosswalk when `cbdb.sqlite3` is installed beside entity DB
+
+**👤 Validate:**
+
+- [ ] Recompile with both layers; confirm 襄陽 matches traditional TEI
+- [ ] Confirm 新興郡 yields stem 新興
+- [ ] Confirm date slider filters CHGIS rows as expected
+
+
+
+### H1 — Compile script — **built (2026-07-06)**
+
+**Build:** `[chgis/compile.mjs](../chgis/compile.mjs)`, `[chgis/compileRecords.mjs](../chgis/compileRecords.mjs)`.
+
+```bash
+npm run compile:chgis -- --input ~/Downloads/chgis_layers/ --out packs/chgis
+```
+
+**Results:** county + prefecture layers combined; CBDB/DILA crosswalk counts depend on reference inputs.
+
+**→ LJB:** `authorityChgis.ts` — extract zip → compile → `authority-packs/chgis/`.
+
+### H2 — LJB install UI — **built (2026-07-06)**
+
+**Settings → Authorities → CHGIS:** license acknowledgment, **Install from download…**, progress bar, Remove.
+
+**Not in scope (v1):** one-click Dataverse API download (user fetches in browser first).
+
+### H3 — Overlap merge — **built**
+
+**Policy:** Crosswalk-only auto-merge at tag time (`authorityOverlap.ts`):
+
+- CHGIS ↔ CBDB via `metadata.crosswalk.cbdb`
+- CHGIS ↔ DILA via `metadata.crosswalk.chgis` / `metadata.crosswalk.dila`
+
+### H4 — CHGIS↔DILA crosswalk — **built (2026-07-06)**
+
+**Build:** `[chgis/extractPlacesTsv.mjs](../chgis/extractPlacesTsv.mjs)`, `[dila/extractPlacesTsv.mjs](../dila/extractPlacesTsv.mjs)`, `[crosswalks/buildChgisDila.mjs](../crosswalks/buildChgisDila.mjs)`.
+
+```bash
+npm run extract:chgis-places -- --input ~/Downloads/chgis_layers/
+npm run extract:dila-places
+npm run crosswalk:chgis-dila
+npm run compile:chgis -- --input ~/Downloads/chgis_layers/ --crosswalk reports/chgis-dila-crosswalk.tsv
+npm run compile:dila -- --crosswalk reports/chgis-dila-crosswalk.tsv
+```
+
+**Matching:** exact traditional name (+ stems) gate; geo confirmation within **0.5°** when both sides have coordinates; ambiguous pairs → `reports/chgis-dila-ambiguous.tsv`.
+
+**👤 Validate:**
+
+- [ ] Review crosswalk stats (matched / ambiguous / no-match)
+- [ ] Spot-check 襄陽, 新興郡 in crosswalk output
+- [ ] LJB auto-tag: CHGIS + DILA merge to one suggestion where crosswalk exists
 
 ---
 
-### G2 — Publish → **→ LJB** L4
 
----
 
 ## Track T — Tibetan / THL (deferred)
 
@@ -457,6 +563,8 @@ Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 Document format for user-maintained gazetteers → same NDJSON compile path.
 
 ---
+
+
 
 ## Track L — LJB integration (leaf-writer)
 
@@ -479,6 +587,8 @@ Not implemented in this repo. Phases live in [authority-databases-phases.md](../
 
 ---
 
+
+
 ## Validation queue
 
 **Do these before we wire leaf-writer A2:**
@@ -496,6 +606,8 @@ Not implemented in this repo. Phases live in [authority-databases-phases.md](../
 
 ---
 
+
+
 ## Recommended sequence (updated)
 
 
@@ -512,6 +624,8 @@ Not implemented in this repo. Phases live in [authority-databases-phases.md](../
 
 
 ---
+
+
 
 ## Validation assets (shared)
 
@@ -534,7 +648,11 @@ Use the same corpus checks across tracks:
 
 ---
 
+
+
 ## Design notes (Norbert alignment)
+
+
 
 ### Name expansion — **deferred**
 
@@ -551,6 +669,8 @@ Norbert’s name-code logic (standalone 法號/號 vs 字 merged with surname; f
 **Recommendation:** do not block A2/A4 on this. Track as **C4 / matcher** when CBDB+DILA tag bomb is end-to-end. Your `all_together.csv` `follows_`* gates are the other half of the same problem — also later.
 
 ---
+
+
 
 ### Office vs org — **recommended model**
 
@@ -609,6 +729,8 @@ flowchart TB
 
 ---
 
+
+
 ## What we are not doing in this repo
 
 - AI suggest / audit prompts (leaf-writer Phase 5)
@@ -618,11 +740,14 @@ flowchart TB
 
 ---
 
+
+
 ## Changelog
 
 
 | Date       | Change                                                                                    |
 | ---------- | ----------------------------------------------------------------------------------------- |
+| 2026-07-06 | **Track H CHGIS** — `chgis/compile.mjs`, LJB Settings install-from-download UI            |
 | 2026-07-05 | **C1, D1 compile done** — CBDB + DILA NDJSON in `packs/`; tests pass; C2 ambiguity report |
 | 2026-07-05 | Initial phases doc; W0 moved from leaf-writer                                             |
 

@@ -7,7 +7,7 @@ Pipeline stages: **test** → **build-packs**.
 | Artifact | Description |
 |----------|-------------|
 | `dist/packs-index.json` | Bundle version, policy, upstream pins, per-file sha256, tarball hash |
-| `dist/authority-packs-{version}.tar.gz` | `authority-packs/cbdb/` + `authority-packs/dila/` and, when staged, `authority-packs/ndl/` ready for LJB |
+| `dist/authority-packs-{version}.tar.gz` | `authority-packs/cbdb/` + `authority-packs/dila/` and, when staged, `authority-packs/wikidata/` + `authority-packs/ndl/` ready for LJB |
 
 Artifacts expire in **30 days** until you attach them to a GitLab **Release** (when ready).
 
@@ -39,6 +39,40 @@ Optional metadata file:
 If those files are absent, the bundle still builds, but it will contain only CBDB + DILA.
 
 For release-time enforcement, run the bundle with `--require-ndl`. That makes the build fail fast if the NDL raws are missing.
+
+## Wikidata staging
+
+Wikidata person packs are **compiled locally** from the Wikidata JSON dump (see [`wikidata/README.md`](../wikidata/README.md)). They are not fetched by `fetch-upstream.mjs`.
+
+`build-pack-bundle.mjs` includes Wikidata when these compiled directories already exist (Tang, Ming, Qing — the packs wired into LJB’s Chinese profile):
+
+- `.upstream/wikidata/person-zh-hant-tang/persons.ndjson`
+- `.upstream/wikidata/person-zh-hant-ming/persons.ndjson`
+- `.upstream/wikidata/person-zh-hant-qing/persons.ndjson`
+
+Fallbacks for local dev:
+
+- `packs/wikidata/person-zh-hant-tang/persons.ndjson`
+- `packs/wikidata/person-zh-hant-ming/persons.ndjson`
+- `packs/wikidata/person-zh-hant-qing/persons.ndjson`
+
+Optional extract metadata (bundle version suffix):
+
+- `.upstream/wikidata/extract-meta.json`
+- or `packs/wikidata/raw-zh-hant-priority1/extract-meta.json`
+
+If those directories are absent, the bundle still builds with CBDB + DILA only.
+
+**GitLab CI:** both `packs/` and `.upstream/` are gitignored, so the runner does not have your compiled Wikidata unless you stage copies under `.upstream/wikidata/` on the machine that triggers the pipeline, or you build locally and attach `dist/` to a **Release** (recommended for the first publish with Wikidata). Same pattern as NDL.
+
+Local compile + bundle:
+
+```bash
+npm run wikidata:compile-all -- --raw packs/wikidata/raw-zh-hant-priority1/persons.raw.ndjson
+npm run build:packs
+```
+
+Tarball layout: `authority-packs/wikidata/person-zh-hant-{tang,ming,qing}/persons.ndjson` plus per-pack and bundle `manifest.json` files. LJB maps these to pack IDs `wikidata-persons-tang`, `wikidata-persons-ming`, `wikidata-persons-qing` (Chinese lifecycle profile only).
 
 ## Tests in CI
 

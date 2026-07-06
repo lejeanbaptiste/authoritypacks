@@ -4,6 +4,12 @@
  */
 
 /**
+ * @typedef {Object} GeoPoint
+ * @property {number} lat
+ * @property {number} lon
+ */
+
+/**
  * @typedef {Object} CandidateMetadata
  * @property {string} [dynasty]
  * @property {number} [startYear]
@@ -12,9 +18,13 @@
  * @property {string} [description]
  * @property {string} [teiTag]
  * @property {string} [ana]
- * @property {{ cbdb?: string, wikidata?: string[] }} [crosswalk]
+ * @property {{ cbdb?: string, chgis?: string, dila?: string, wikidata?: string[] }} [crosswalk]
  * @property {string} [pinyin]
  * @property {string} [translation]
+ * @property {string} [nameFt]
+ * @property {string} [nameCh]
+ * @property {GeoPoint} [geo]
+ * @property {string} [layer]
  */
 
 /**

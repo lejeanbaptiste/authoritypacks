@@ -102,6 +102,27 @@ export function dilaPlaceClue(p) {
 /**
  * @param {Object} p
  * @param {string} p.name
+ * @param {string} [p.subtype]
+ * @param {number} [p.startYear]
+ * @param {number} [p.endYear]
+ * @param {string} [p.presentLoc]
+ * @param {string} [p.pinyin]
+ */
+export function chgisPlaceClue(p) {
+  const meta = [];
+  if (p.subtype) meta.push(p.subtype);
+  if (p.startYear != null && p.endYear != null) meta.push(`${p.startYear}–${p.endYear}`);
+  else if (p.startYear != null) meta.push(`from ${p.startYear}`);
+  else if (p.endYear != null) meta.push(`to ${p.endYear}`);
+  if (p.presentLoc) meta.push(p.presentLoc);
+  if (p.pinyin && !meta.length) meta.push(p.pinyin);
+  if (!meta.length) return p.name;
+  return `${p.name} (${meta.join(', ')})`;
+}
+
+/**
+ * @param {Object} p
+ * @param {string} p.name
  * @param {string} [p.translation]
  * @param {string} [p.dynastyChn]
  */

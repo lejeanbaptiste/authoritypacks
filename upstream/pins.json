@@ -31,5 +31,9 @@
     "worksZipUrl": "https://id.ndl.go.jp/information/wp-content/uploads/2026/04/work-tsv.zip",
     "license": "NDL Terms of Use (attribution required)",
     "attribution": "Data from Web NDL Authorities (National Diet Library). 国立国会図書館の「Web NDL Authorities」から取得した典拠データです。"
+  },
+  "wikidata": {
+    "license": "CC0",
+    "attribution": "Data from Wikidata (CC0)."
   }
 }

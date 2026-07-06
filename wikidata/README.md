@@ -5,7 +5,7 @@ Offline pipeline to turn [Wikidata](https://www.wikidata.org/) dumps into **tag 
 **Roadmap:** [docs/phases.md](../docs/phases.md) (track **W**).  
 **Design detail:** [leaf-writer `docs/wikidata-tag-packs-planning.md`](../../leaf-writer/docs/wikidata-tag-packs-planning.md).
 
-**Status (2026-07-05):** W2 full dump extract **running** on `~/Downloads/latest-all.json.bz2` (95 GB). Compile when extract finishes; LJB load (track **L**) not started.
+**Status (2026-07-06):** W2 **done** — Tang pack compiled (34,923 persons). LJB load (track **L**) not started.
 
 ---
 
@@ -41,13 +41,40 @@ npm run wikidata:compile -- \
 
 Expect **3** persons in `packs/wikidata/person-zh-hant-tang/persons.ndjson` (李白, 李益, fictional 虬髯客; 李某 is dropped as a placeholder).
 
-### 3. Extract Tang persons from the full dump
+### 3. Extract from the full dump (one scan, many dynasties)
 
-This scans the entire dump once. **Expect several hours** and high CPU; RAM stays modest (streaming).
+**Recommended:** extract all **priority-1** Chinese dynasties in **one pass** (唐/宋/元/明/清), then compile each pack separately.
+
+This scans the entire dump once. **Expect several hours** and high CPU; RAM stays modest (streaming writes + checkpoints).
 
 ```bash
 cd "/Users/daniel/Code/authority extraction"
 
+npm run wikidata:extract -- \
+  --dump "/path/to/latest-all.json.bz2" \
+  --priority 1 \
+  --language zh-hant \
+  --out packs/wikidata/raw-zh-hant-priority1 \
+  --progress 500000
+```
+
+**Stop and resume:** press Ctrl+C (or close terminal — prefer `tmux`). Progress is saved to `extract.checkpoint.json`. Re-run the **same command** with `--resume`:
+
+```bash
+npm run wikidata:extract -- \
+  --dump "/path/to/latest-all.json.bz2" \
+  --priority 1 \
+  --language zh-hant \
+  --out packs/wikidata/raw-zh-hant-priority1 \
+  --progress 500000 \
+  --resume
+```
+
+Resume re-reads the dump from the start but **skips** entities already scanned (decompression time only — matched rows are kept). Checkpoints write every 500k entities by default (`--checkpoint-every N` to change).
+
+**Single dynasty** (legacy / smoke on full dump):
+
+```bash
 npm run wikidata:extract -- \
   --dump "/path/to/latest-all.json.bz2" \
   --dynasty tang \
@@ -56,40 +83,53 @@ npm run wikidata:extract -- \
   --progress 500000
 ```
 
+**Custom list:** `--dynasties tang,song,ming,yuan,qing`
+
 **Outputs:**
 
 | File | Purpose |
 |------|---------|
-| `packs/wikidata/raw-tang/persons.raw.ndjson` | One JSON line per Tang person (labels, aliases, dates) |
-| `packs/wikidata/raw-tang/extract-meta.json` | Scan stats (`entitiesScanned`, `personsMatched`) |
+| `…/persons.raw.ndjson` | Master raw — one line per person (any selected dynasty); includes full `p27[]` |
+| `…/extract-meta.json` | Final stats when complete (`entitiesScanned`, `personsMatched`, `dynastyIds`) |
+| `…/extract.checkpoint.json` | Milepost while running or after interrupt (removed when complete) |
 
-**Sanity check:** `personsMatched` should be **roughly ~37k** (W1 SPARQL count was 37,033). Within ~10% is fine; a huge mismatch means wrong dump file or filter bug — stop and investigate.
+**Sanity check (Tang-only):** ~**37k** persons with `--dynasty tang`. Priority-1 master raw should be **much larger** (Song/Ming/Qing each add tens of thousands).
 
-### 4. Compile the tag pack
+### 4. Compile tag packs from master raw
 
-Applies CBDB-aligned name rules (字/某/行第) and writes LJB-shaped NDJSON:
+One dynasty:
 
 ```bash
 npm run wikidata:compile -- \
-  --raw packs/wikidata/raw-tang/persons.raw.ndjson \
+  --raw packs/wikidata/raw-zh-hant-priority1/persons.raw.ndjson \
   --dynasty tang \
   --language zh-hant \
   --out packs/wikidata/person-zh-hant-tang
 ```
 
-**Outputs:**
+All priority-1 dynasties at once:
 
-| File | Purpose |
-|------|---------|
-| `packs/wikidata/person-zh-hant-tang/persons.ndjson` | `AuthorityCandidate` rows for tag bomb |
-| `packs/wikidata/person-zh-hant-tang/manifest.json` | Pack metadata (CC0, dynasty, counts) |
+```bash
+npm run wikidata:compile-all -- \
+  --raw packs/wikidata/raw-zh-hant-priority1/persons.raw.ndjson \
+  --priority 1 \
+  --language zh-hant
+```
+
+Writes `packs/wikidata/person-zh-hant-{tang,song,yuan,ming,qing}/persons.ndjson` — compile filters by `p27` per dynasty.
+
+**Outputs per pack:**
 
 Entity count here may be **slightly lower** than raw (e.g. 李某-style placeholders compile to zero strings and are dropped).
 
 ### 5. Review (you, ~15 minutes)
 
 1. Open `persons.ndjson` — skim ~30 random lines; do names look like real mention forms?
-2. Re-run ambiguity on the **compiled** pack when W3 tooling exists, or spot-check known names in `gold_test.xml` manually.
+2. Re-run ambiguity on the **compiled** pack:
+   ```bash
+   npm run wikidata:report
+   ```
+   → `reports/w3-ambiguity.csv` (all ambiguous surfaces, with sample Q-ids and primary names)
 3. **Name-filter tuning is deferred** — note false positives/negatives for a later pass.
 
 ### 6. Not ready yet — do not expect these to work
@@ -181,7 +221,7 @@ On a 500-row Tang sample, this drops ~17% of raw strings (mostly bare 字 and �
 |-------|-------------|
 | W1 | **In progress** — `run-sparql.mjs` + reports |
 | W2 | **In progress** — `extract.mjs` + `compile.mjs` |
-| W3 | Quality gates, ambiguity CSV |
+| W3 | Quality gates, ambiguity CSV — **`wikidata/report.mjs`** |
 | W4 | `compile.mjs` → LJB `AuthorityCandidate` NDJSON |
 | W5 | Publish packs + manifest hosting |
 

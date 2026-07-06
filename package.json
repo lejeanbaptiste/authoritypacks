@@ -10,12 +10,18 @@
     "wikidata:sparql": "node wikidata/run-sparql.mjs",
     "wikidata:extract": "node wikidata/extract.mjs",
     "wikidata:compile": "node wikidata/compile.mjs",
+    "wikidata:compile-all": "node wikidata/compile-all.mjs",
+    "wikidata:report": "node wikidata/report.mjs",
     "ndl:parse-works": "node ndl/parseWorks.mjs",
     "ndl:compile-works": "node ndl/compileWorks.mjs",
     "ndl:sparql": "node ndl/run-sparql.mjs",
     "ndl:compile-persons": "node ndl/compilePersons.mjs",
     "compile:dila": "node dila/compile.mjs",
     "compile:cbdb": "node cbdb/compile.mjs",
+    "compile:chgis": "node chgis/compile.mjs",
+    "extract:chgis-places": "node chgis/extractPlacesTsv.mjs",
+    "extract:dila-places": "node dila/extractPlacesTsv.mjs",
+    "crosswalk:chgis-dila": "node crosswalks/buildChgisDila.cli.mjs",
     "report:cbdb": "node cbdb/report.mjs",
     "create:cbdb-fixture": "node scripts/create-cbdb-fixture.mjs",
     "fetch:upstream": "node scripts/fetch-upstream.mjs",
@@ -27,6 +33,7 @@
   "dependencies": {
     "better-sqlite3": "^12.11.1",
     "fast-xml-parser": "^5.9.3",
-    "sax": "^1.6.0"
+    "sax": "^1.6.0",
+    "shapefile": "^0.6.6"
   }
 }

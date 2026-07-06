@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { personSearchStringsFromWikidata } from './personSearchStrings.mjs';
+import { rawPersonMatchesDynasty } from './entityParse.mjs';
 import { readNdjson, writePackFile } from '../shared/ndjson.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -79,6 +80,7 @@ export function compileWikidataPersonPack(opts) {
   /** @type {import('../shared/types.mjs').AuthorityCandidate[]} */
   const candidates = [];
   for (const raw of rawRows) {
+    if (!rawPersonMatchesDynasty(raw, dynasty.qid)) continue;
     const c = personCandidateFromRaw(raw, { dynasty });
     if (c) candidates.push(c);
   }

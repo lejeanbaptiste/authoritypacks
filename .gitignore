@@ -3,6 +3,7 @@ node_modules/
 dist/
 reports/*.ndjson
 reports/*.csv
+reports/*.tsv
 packs/
 !packs/test-dila/
 !packs/test-dila/**

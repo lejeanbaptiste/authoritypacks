@@ -10,6 +10,7 @@ import {
 } from './entityParse.mjs';
 import { extractWikidataPersons } from './extract.mjs';
 import { compileWikidataPersonPack, personCandidateFromRaw } from './compile.mjs';
+import { rawPersonMatchesDynasty } from './entityParse.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixture = path.join(__dirname, 'fixtures/tang-persons.jsonl');
@@ -85,6 +86,74 @@ test('extract fixture → compile Tang pack', async () => {
   });
   assert.equal(ficCand?.metadata?.ana, 'fictional');
   assert.ok(ficCand?.searchStrings.includes('虬髯客'));
+
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('extract --resume skips scanned entities and appends', async () => {
+  const tmp = fs.mkdtempSync(path.join(path.dirname(fixture), 'tmp-wd-resume-'));
+  const outDir = path.join(tmp, 'raw');
+  fs.mkdirSync(outDir, { recursive: true });
+
+  const checkpointPath = path.join(outDir, 'extract.checkpoint.json');
+  fs.writeFileSync(
+    checkpointPath,
+    `${JSON.stringify({
+      dumpPath: fixture,
+      dynastyIds: ['tang'],
+      dynastyQids: ['Q9683'],
+      languageId: 'zh-hant',
+      labelLang: 'zh-hant',
+      entitiesScanned: 3,
+      personsMatched: 2,
+      skipUntil: 3,
+      outFile: path.join(outDir, 'persons.raw.ndjson'),
+    })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(outDir, 'persons.raw.ndjson'),
+    `${JSON.stringify({ qid: 'Q5581', primaryLabel: '李白', aliases: [], p27: ['Q9683'], p31: ['Q5'] })}\n${JSON.stringify({ qid: 'Q3237588', primaryLabel: '李益', aliases: [], p27: ['Q9683'], p31: ['Q5'] })}\n`,
+  );
+
+  const result = await extractWikidataPersons({
+    dumpPath: fixture,
+    dynastyId: 'tang',
+    languageId: 'zh-hant',
+    outDir,
+    resume: true,
+  });
+
+  assert.equal(result.count, 3, '2 existing + 1 new (虬髯客; 李某 has no compile strings but is in raw)');
+  assert.equal(result.entitiesScanned, 5);
+
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test('compile filters master raw by dynasty p27', async () => {
+  const tmp = fs.mkdtempSync(path.join(path.dirname(fixture), 'tmp-wd-filter-'));
+  const rawPath = path.join(tmp, 'persons.raw.ndjson');
+  fs.writeFileSync(
+    rawPath,
+    [
+      { qid: 'Q1', primaryLabel: '唐人', aliases: [], p27: ['Q9683'], p31: ['Q5'] },
+      { qid: 'Q2', primaryLabel: '宋人', aliases: [], p27: ['Q1107'], p31: ['Q5'] },
+    ]
+      .map((r) => JSON.stringify(r))
+      .join('\n')
+      .concat('\n'),
+  );
+
+  assert.equal(rawPersonMatchesDynasty({ p27: ['Q9683'] }, 'Q9683'), true);
+  assert.equal(rawPersonMatchesDynasty({ p27: ['Q1107'] }, 'Q9683'), false);
+
+  const tangDir = path.join(tmp, 'tang');
+  const tang = compileWikidataPersonPack({
+    rawPath,
+    dynastyId: 'tang',
+    languageId: 'zh-hant',
+    outDir: tangDir,
+  });
+  assert.equal(tang.count, 1);
 
   fs.rmSync(tmp, { recursive: true, force: true });
 });

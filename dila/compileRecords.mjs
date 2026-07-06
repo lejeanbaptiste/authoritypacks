@@ -79,8 +79,39 @@ function extractCrosswalk(person) {
 }
 
 /**
+ * Parse TEI <location><geo> into WGS84 lat/lon when present.
+ * @param {unknown} location
+ * @returns {{ lat: number, lon: number } | undefined}
+ */
+export function parseGeoFromLocation(location) {
+  const loc = asArray(location)[0];
+  if (!loc?.geo) return undefined;
+  const geo = loc.geo;
+  if (typeof geo !== 'object' || geo === null) return undefined;
+
+  const latText = textContent(geo.lat);
+  const lonText = textContent(geo.long ?? geo.lon);
+  if (latText && lonText) {
+    const lat = parseFloat(latText);
+    const lon = parseFloat(lonText);
+    if (Number.isFinite(lat) && Number.isFinite(lon)) return { lat, lon };
+  }
+
+  const coords = geo['@_coordinates'] || textContent(geo);
+  if (coords) {
+    const parts = String(coords).trim().split(/\s+/);
+    if (parts.length >= 2) {
+      const lat = parseFloat(parts[0]);
+      const lon = parseFloat(parts[1]);
+      if (Number.isFinite(lat) && Number.isFinite(lon)) return { lat, lon };
+    }
+  }
+  return undefined;
+}
+
+/**
  * @param {Record<string, unknown>} place
- * @param {{ districtMap: Map<string, string> }} ctx
+ * @param {{ districtMap: Map<string, string>, chgisByDilaId?: Map<string, string> }} ctx
  * @returns {AuthorityCandidate | null}
  */
 export function placeFromRecord(place, ctx) {
@@ -103,6 +134,11 @@ export function placeFromRecord(place, ctx) {
     if (fromMap) district = fromMap;
   }
 
+  const geo = parseGeoFromLocation(place.location);
+  const chgisId = ctx.chgisByDilaId?.get(String(authorityId));
+  /** @type {AuthorityCandidate['metadata']['crosswalk']} */
+  const crosswalk = chgisId ? { chgis: chgisId } : undefined;
+
   return {
     source: 'DILA',
     authorityId: String(authorityId),
@@ -111,7 +147,9 @@ export function placeFromRecord(place, ctx) {
     searchStrings: [...searchStrings],
     metadata: {
       subtype: category,
+      geo,
       description: dilaPlaceClue({ name: names[0], category, district }),
+      crosswalk,
     },
   };
 }

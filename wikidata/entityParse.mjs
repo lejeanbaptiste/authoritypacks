@@ -63,7 +63,7 @@ export function labelsForLanguage(entity, labelLang) {
 
 /**
  * @param {unknown} entity
- * @param {{ dynastyQid?: string, labelLang: string, requireHuman?: boolean }} opts
+ * @param {{ dynastyQid?: string, dynastyQids?: string[], labelLang: string, requireHuman?: boolean }} opts
  */
 export function entityMatchesPersonSlice(entity, opts) {
   if (entity?.type !== 'item') return false;
@@ -72,12 +72,19 @@ export function entityMatchesPersonSlice(entity, opts) {
   if (opts.requireHuman !== false && !p31.includes('Q5')) return false;
   if (p31.includes('Q4167410')) return false;
 
-  if (opts.dynastyQid) {
-    const p27 = claimEntityIds(entity, 'P27');
+  const p27 = claimEntityIds(entity, 'P27');
+  if (opts.dynastyQids?.length) {
+    if (!opts.dynastyQids.some((qid) => p27.includes(qid))) return false;
+  } else if (opts.dynastyQid) {
     if (!p27.includes(opts.dynastyQid)) return false;
   }
 
   return !!entity?.labels?.[opts.labelLang]?.value;
+}
+
+/** @param {{ p27?: string[] }} raw @param {string} dynastyQid */
+export function rawPersonMatchesDynasty(raw, dynastyQid) {
+  return (raw.p27 ?? []).includes(dynastyQid);
 }
 
 /**

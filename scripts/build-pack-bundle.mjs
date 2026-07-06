@@ -21,6 +21,13 @@ import { compileNdlPersonsPack } from '../ndl/compilePersons.mjs';
 import { compileNdlWorksPack } from '../ndl/compileWorks.mjs';
 import { NDL_ATTRIBUTION, NDL_WORKS_ZIP_URL } from '../ndl/constants.mjs';
 
+/** Compiled Wikidata person packs (optional — staged locally like NDL). */
+const WIKIDATA_PACK_DIRS = [
+  { slug: 'person-zh-hant-tang', label: 'Tang' },
+  { slug: 'person-zh-hant-ming', label: 'Ming' },
+  { slug: 'person-zh-hant-qing', label: 'Qing' },
+];
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 const pins = JSON.parse(await fsp.readFile(path.join(repoRoot, 'upstream/pins.json'), 'utf8'));
@@ -93,6 +100,27 @@ const ndlPersonsMetaPath = resolveOptional(
 const ndlPersonsMeta = await readJsonIfExists(ndlPersonsMetaPath);
 const includeNdl = !!(ndlPersonsRaw && ndlWorksRaw);
 
+const wikidataMetaPath = resolveOptional(
+  path.join(upstreamDir, 'wikidata/extract-meta.json'),
+  path.join(localPacksRoot, 'wikidata/raw-zh-hant-priority1/extract-meta.json'),
+);
+const wikidataMeta = await readJsonIfExists(wikidataMetaPath);
+
+const resolveWikidataPackDir = (slug) =>
+  resolveOptional(
+    path.join(upstreamDir, 'wikidata', slug),
+    path.join(localPacksRoot, 'wikidata', slug),
+  );
+
+const stagedWikidataPacks = WIKIDATA_PACK_DIRS.map(({ slug, label }) => {
+  const srcDir = resolveWikidataPackDir(slug);
+  const personsPath = srcDir ? path.join(srcDir, 'persons.ndjson') : null;
+  if (!personsPath || !fs.existsSync(personsPath)) return null;
+  return { slug, label, srcDir, personsPath };
+}).filter(Boolean);
+
+const includeWikidata = stagedWikidataPacks.length > 0;
+
 if (requireNdl && !includeNdl) {
   throw new Error(
     'NDL bundle requested (`--require-ndl`) but staged raw files were not found. ' +
@@ -102,6 +130,9 @@ if (requireNdl && !includeNdl) {
 }
 
 const bundleParts = [`cbdb${pins.cbdb.version}`];
+if (includeWikidata) {
+  bundleParts.push(`wikidata${compactDate(wikidataMeta?.extractedAt) ?? 'local'}`);
+}
 if (includeNdl) {
   bundleParts.push(`ndl${compactDate(ndlPersonsMeta?.harvestedAt) ?? 'local'}`);
 }
@@ -138,6 +169,41 @@ if (includeNdl) {
     outDir: path.join(packsDir, 'ndl'),
     packId: 'ndl-works-ja',
   });
+}
+
+if (includeWikidata) {
+  console.log('Staging Wikidata person packs…');
+  const wikidataFiles = {};
+  for (const pack of stagedWikidataPacks) {
+    const destDir = path.join(packsDir, 'wikidata', pack.slug);
+    await fsp.mkdir(destDir, { recursive: true });
+    await fsp.copyFile(pack.personsPath, path.join(destDir, 'persons.ndjson'));
+    const srcManifest = path.join(pack.srcDir, 'manifest.json');
+    if (fs.existsSync(srcManifest)) {
+      await fsp.copyFile(srcManifest, path.join(destDir, 'manifest.json'));
+      const sub = JSON.parse(await fsp.readFile(srcManifest, 'utf8'));
+      const count = sub.files?.['persons.ndjson']?.entityCount;
+      if (typeof count === 'number') {
+        wikidataFiles[`${pack.slug}/persons.ndjson`] = { entityCount: count };
+      }
+    }
+    console.log(`  ${pack.slug}`);
+  }
+  await fsp.writeFile(
+    path.join(packsDir, 'wikidata/manifest.json'),
+    `${JSON.stringify(
+      {
+        id: 'wikidata-person-zh-hant-priority1',
+        source: 'Wikidata',
+        buildToolVersion: '0.1.0',
+        compiledAt: new Date().toISOString(),
+        language: 'zh-hant',
+        files: wikidataFiles,
+      },
+      null,
+      2,
+    )}\n`,
+  );
 }
 
 const patchManifest = async (sourceId, extras) => {
@@ -185,19 +251,46 @@ if (includeNdl) {
   });
 }
 
+if (includeWikidata) {
+  await patchManifest('wikidata', {
+    id: 'wikidata-person-zh-hant-priority1',
+    source: 'Wikidata',
+    license: pins.wikidata.license,
+    attribution: pins.wikidata.attribution,
+    upstream: {
+      extractMeta: wikidataMetaPath,
+      extractedAt: wikidataMeta?.extractedAt,
+      personsMatched: wikidataMeta?.personsMatched,
+      dynastyIds: wikidataMeta?.dynastyIds,
+      packs: stagedWikidataPacks.map((p) => p.slug),
+    },
+  });
+}
+
 const packFiles = [];
-for (const sourceId of includeNdl ? ['cbdb', 'dila', 'ndl'] : ['cbdb', 'dila']) {
-  const sourceDir = path.join(packsDir, sourceId);
-  for (const entry of await fsp.readdir(sourceDir)) {
-    const filePath = path.join(sourceDir, entry);
-    const stat = await fsp.stat(filePath);
-    if (!stat.isFile()) continue;
+const bundleSourceIds = ['cbdb', 'dila'];
+if (includeWikidata) bundleSourceIds.push('wikidata');
+if (includeNdl) bundleSourceIds.push('ndl');
+
+const collectPackFiles = async (sourceId, dir, prefix = '') => {
+  for (const entry of await fsp.readdir(dir, { withFileTypes: true })) {
+    const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+    const filePath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      await collectPackFiles(sourceId, filePath, rel);
+      continue;
+    }
+    if (!entry.isFile()) continue;
     packFiles.push({
-      path: `${sourceId}/${entry}`,
-      bytes: stat.size,
+      path: `${sourceId}/${rel}`,
+      bytes: (await fsp.stat(filePath)).size,
       sha256: await sha256File(filePath),
     });
   }
+};
+
+for (const sourceId of bundleSourceIds) {
+  await collectPackFiles(sourceId, path.join(packsDir, sourceId));
 }
 
 const tarballName = `authority-packs-${bundleVersion}.tar.gz`;
@@ -233,6 +326,15 @@ const packsIndex = {
           },
         }
       : {}),
+    ...(includeWikidata
+      ? {
+          wikidata: {
+            extractedAt: wikidataMeta?.extractedAt,
+            personsMatched: wikidataMeta?.personsMatched,
+            packs: stagedWikidataPacks.map((p) => p.slug),
+          },
+        }
+      : {}),
   },
   tarball: {
     fileName: tarballName,
@@ -243,11 +345,13 @@ const packsIndex = {
   licenses: {
     cbdb: pins.cbdb.license,
     dila: pins.dila.license,
+    ...(includeWikidata ? { wikidata: pins.wikidata.license } : {}),
     ...(includeNdl ? { ndl: pins.ndl.license } : {}),
   },
   attribution: {
     cbdb: pins.cbdb.attribution,
     dila: pins.dila.attribution,
+    ...(includeWikidata ? { wikidata: pins.wikidata.attribution } : {}),
     ...(includeNdl ? { ndl: pins.ndl.attribution } : {}),
   },
 };
@@ -263,4 +367,9 @@ console.log(`Version: ${bundleVersion}`);
 console.log(`Tarball sha256: ${tarballSha256}`);
 if (!includeNdl) {
   console.log('NDL not included: add packs/ndl/raw/persons.raw.ndjson and packs/ndl/raw/works.raw.ndjson (or .upstream/ndl/raw/ equivalents).');
+}
+if (!includeWikidata) {
+  console.log(
+    'Wikidata not included: compile Tang/Ming/Qing packs under packs/wikidata/person-zh-hant-{tang,ming,qing}/ (or copy to .upstream/wikidata/).',
+  );
 }
