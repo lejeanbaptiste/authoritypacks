@@ -1,0 +1,5 @@
+{"type":"item","id":"Q200001","labels":{"zh-hant":{"language":"zh-hant","value":"北京大學"}},"claims":{"P31":[{"mainsnak":{"snaktype":"value","datavalue":{"type":"wikibase-entityid","value":{"entity-type":"item","id":"Q3918"}}}}]}}
+{"type":"item","id":"Q200002","labels":{"zh-hant":{"language":"zh-hant","value":"紅樓夢"}},"claims":{"P31":[{"mainsnak":{"snaktype":"value","datavalue":{"type":"wikibase-entityid","value":{"entity-type":"item","id":"Q7725634"}}}}]}}
+{"type":"item","id":"Q200003","labels":{"ja":{"language":"ja","value":"東京大学"}},"claims":{"P31":[{"mainsnak":{"snaktype":"value","datavalue":{"type":"wikibase-entityid","value":{"entity-type":"item","id":"Q3918"}}}}]}}
+{"type":"item","id":"Q200004","labels":{"ja":{"language":"ja","value":"源氏物語"}},"claims":{"P31":[{"mainsnak":{"snaktype":"value","datavalue":{"type":"wikibase-entityid","value":{"entity-type":"item","id":"Q7725634"}}}}]}}
+{"type":"item","id":"Q200005","labels":{"zh-hant":{"language":"zh-hant","value":"東京大学"}},"aliases":{"ja":[{"language":"ja","value":"東京大学"}]},"claims":{"P31":[{"mainsnak":{"snaktype":"value","datavalue":{"type":"wikibase-entityid","value":{"entity-type":"item","id":"Q3918"}}}}]}}

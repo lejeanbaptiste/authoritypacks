@@ -118,6 +118,95 @@ npm run wikidata:compile-all -- \
 
 Writes `packs/wikidata/person-zh-hant-{tang,song,yuan,ming,qing}/persons.ndjson` — compile filters by `p27` per dynasty.
 
+### Pre-Ming pack (Song, Yuan, and earlier)
+
+Wikidata often omits `P27` for Song/Yuan persons. Use **`--membership pre-ming`** to extract a broader raw file, then compile the pre-Ming slice:
+
+```bash
+# Full dump — one pass (several hours); resume with --resume
+npm run wikidata:extract-pre-ming -- \
+  --dump "/path/to/latest-all.json.bz2" \
+  --language zh-hant \
+  --out packs/wikidata/raw-zh-hant-pre-ming \
+  --progress 500000
+
+# Compile pre-Ming pack (death/birth ≤ 1367, or pre-Ming P27 / P2348)
+npm run wikidata:compile-pre-ming -- \
+  --raw packs/wikidata/raw-zh-hant-pre-ming/persons.raw.ndjson \
+  --language zh-hant \
+  --out packs/wikidata/person-zh-hant-pre-ming
+```
+
+**Membership rules:** include `zh-hant` humans when any of: pre-Ming dynasty on `P27` or `P2348`; or death year ≤ **1367**; or birth year ≤ 1367 when death is missing. At compile time, undated Ming/Qing-only rows are dropped.
+
+You can also compile pre-Ming from an existing priority-1 raw (mostly Tang overlap) while waiting for a pre-Ming extract:
+
+```bash
+npm run wikidata:compile-pre-ming -- \
+  --raw packs/wikidata/raw-zh-hant-priority1/persons.raw.ndjson \
+  --out packs/wikidata/person-zh-hant-pre-ming
+```
+
+Or add `--pre-ming` to `wikidata:compile-all`.
+
+### Japanese persons (`ja`) — IME kana in raw
+
+**Do not use `--priority 1` with `--language ja`.** Priority 1 selects **Chinese dynasties** (唐/宋/元/明/清) on `P27`, so you only get ~5,600 historical Chinese figures that happen to have Japanese labels — not Japanese nationals.
+
+For Japanese people, filter **`P27 = Japan (Q17)`**:
+
+```bash
+npm run wikidata:extract -- \
+  --dump "/path/to/latest-all.json.bz2" \
+  --membership country \
+  --country japan \
+  --language ja \
+  --out packs/wikidata/raw-ja-japan \
+  --progress 500000
+```
+
+Wikidata Query Service count for this slice: **~252,000** humans with a `ja` label and `P27 = Q17` (2026-07). NDL persons (~1M) remain the primary Japanese pack; this is the long-tail supplement.
+
+When extracting with `--language ja`, each raw row can include hiragana readings for IME use (not added to tagger `searchStrings`):
+
+| Raw field | Source |
+|-----------|--------|
+| `yomiHiragana` | Primary reading (hiragana) |
+| `nameInKana` | All readings (hiragana), deduped |
+
+Sources: Wikidata **P1814** (name in kana), optional `ja-Hira` / `ja-Kana` labels, kana-only `ja` aliases, and kana-primary `ja` labels.
+
+```bash
+npm run wikidata:extract -- \
+  --dump "/path/to/latest-all.json.bz2" \
+  --membership country \
+  --country japan \
+  --language ja \
+  --out packs/wikidata/raw-ja-japan \
+  --progress 500000
+```
+
+Compile:
+
+```bash
+npm run wikidata:compile -- \
+  --raw packs/wikidata/raw-ja-japan/persons.raw.ndjson \
+  --country japan \
+  --language ja \
+  --out packs/wikidata/person-ja-japan
+```
+
+Example raw row:
+
+```json
+{
+  "qid": "Q180903",
+  "primaryLabel": "夏目漱石",
+  "yomiHiragana": "なつめ そうせき",
+  "nameInKana": ["なつめ そうせき"]
+}
+```
+
 **Outputs per pack:**
 
 Entity count here may be **slightly lower** than raw (e.g. 李某-style placeholders compile to zero strings and are dropped).
@@ -142,6 +231,21 @@ Entity count here may be **slightly lower** than raw (e.g. 李某-style placehol
 
 When you resume Wikidata work, next engineering steps are **W3** (quality/ambiguity report) and **L1** (LJB pack install path).
 
+### Authority concordance (external ids)
+
+Every Wikidata extract copies listed **external-id properties** from the dump into `crosswalk` on each raw row, then into compiled `metadata.crosswalk` (alongside `wikidata: [qid]`). Configure properties in [`identifierProperties.json`](identifierProperties.json):
+
+| Crosswalk key | Wikidata property | Use |
+|---------------|-------------------|-----|
+| `cbdb` | P497 | CBDB person id |
+| `dila` | P1187 / P1188 | DILA person / place id |
+| `viaf` | P214 | VIAF cluster id |
+| `ndl` | P349 | NDL authority id |
+| `chgis` | P4711 | CHGIS place id |
+| `bdrc` | P2477 | BDRC resource id |
+
+Re-extract + recompile packs to populate concordance fields on existing slices.
+
 ---
 
 ## Phase W0 (reference tables) — done
@@ -156,7 +260,9 @@ Configuration tables every later phase reads. No dump processing yet.
 | [`schema.json`](schema.json) | JSON Schema (documentation) |
 | [`validate.mjs`](validate.mjs) | Sanity-check after editing tables |
 | [`queries.mjs`](queries.mjs) | SPARQL builders for W1 prototypes |
-| [`entityParse.mjs`](entityParse.mjs) | Parse dump entity claims and labels |
+| [`identifierProperties.json`](identifierProperties.json) | External-id P-properties → crosswalk keys (CBDB, DILA, VIAF, NDL, CHGIS, BDRC) |
+| [`identifierClaims.mjs`](identifierClaims.mjs) | Read identifier claims from dump entities |
+| [`entityParse.mjs`](entityParse.mjs) | Parse dump entity claims, labels, crosswalk ids |
 | [`personSearchStrings.mjs`](personSearchStrings.mjs) | CBDB-aligned person string rules |
 | [`extract.mjs`](extract.mjs) | Stream Wikidata dump → raw person NDJSON (W2) |
 | [`compile.mjs`](compile.mjs) | Raw → LJB `AuthorityCandidate` pack (W4) |

@@ -1,0 +1,55 @@
+{
+  "extractedAt": "2026-07-08T05:33:23.331Z",
+  "dumpPath": "/Users/daniel/Code/authority extraction/wikidata/fixtures/zh-ja-orgs-works.jsonl",
+  "kinds": [
+    "org",
+    "work"
+  ],
+  "membership": "label-only",
+  "dynastyQids": [],
+  "dynastySlug": "label-only",
+  "languageIds": [
+    "zh-hant",
+    "ja"
+  ],
+  "languageSlices": [
+    {
+      "languageId": "zh-hant",
+      "labelLangs": [
+        "zh-hant",
+        "zh-tw"
+      ]
+    },
+    {
+      "languageId": "ja",
+      "labelLangs": [
+        "ja"
+      ]
+    }
+  ],
+  "entitiesScanned": 5,
+  "matched": {
+    "zh-hant": {
+      "org": 2,
+      "work": 1
+    },
+    "ja": {
+      "org": 1,
+      "work": 1
+    }
+  },
+  "includeFictional": false,
+  "resumed": false,
+  "complete": true,
+  "interrupted": false,
+  "outFiles": {
+    "zh-hant": {
+      "org": "/Users/daniel/Code/authority extraction/wikidata/fixtures/tmp-zh-ja-Xemdth/raw/zh-hant/orgs.raw.ndjson",
+      "work": "/Users/daniel/Code/authority extraction/wikidata/fixtures/tmp-zh-ja-Xemdth/raw/zh-hant/works.raw.ndjson"
+    },
+    "ja": {
+      "org": "/Users/daniel/Code/authority extraction/wikidata/fixtures/tmp-zh-ja-Xemdth/raw/ja/orgs.raw.ndjson",
+      "work": "/Users/daniel/Code/authority extraction/wikidata/fixtures/tmp-zh-ja-Xemdth/raw/ja/works.raw.ndjson"
+    }
+  }
+}

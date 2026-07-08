@@ -18,12 +18,15 @@ import { fileURLToPath } from 'node:url';
 import { compileCbdbPack } from '../cbdb/compile.mjs';
 import { compileDila } from '../dila/compile.mjs';
 import { compileNdlPersonsPack } from '../ndl/compilePersons.mjs';
+import { compileNdlPlacesPack } from '../ndl/compilePlaces.mjs';
+import { compileNdlOrgsPack } from '../ndl/compileOrgs.mjs';
 import { compileNdlWorksPack } from '../ndl/compileWorks.mjs';
 import { NDL_ATTRIBUTION, NDL_WORKS_ZIP_URL } from '../ndl/constants.mjs';
 
 /** Compiled Wikidata person packs (optional — staged locally like NDL). */
 const WIKIDATA_PACK_DIRS = [
   { slug: 'person-zh-hant-tang', label: 'Tang' },
+  { slug: 'person-zh-hant-pre-ming', label: 'pre-Ming' },
   { slug: 'person-zh-hant-ming', label: 'Ming' },
   { slug: 'person-zh-hant-qing', label: 'Qing' },
 ];
@@ -93,12 +96,32 @@ const ndlWorksRaw = resolveOptional(
   path.join(upstreamDir, 'ndl/raw/works.raw.ndjson'),
   path.join(localPacksRoot, 'ndl/raw/works.raw.ndjson'),
 );
+const ndlPlacesRaw = resolveOptional(
+  path.join(upstreamDir, 'ndl/raw/places.raw.ndjson'),
+  path.join(localPacksRoot, 'ndl/raw/places.raw.ndjson'),
+);
+const ndlOrgsRaw = resolveOptional(
+  path.join(upstreamDir, 'ndl/raw/orgs.raw.ndjson'),
+  path.join(localPacksRoot, 'ndl/raw/orgs.raw.ndjson'),
+);
 const ndlPersonsMetaPath = resolveOptional(
   path.join(upstreamDir, 'ndl/raw/persons.raw-meta.json'),
   path.join(localPacksRoot, 'ndl/raw/persons.raw-meta.json'),
 );
 const ndlPersonsMeta = await readJsonIfExists(ndlPersonsMetaPath);
+const ndlPlacesMetaPath = resolveOptional(
+  path.join(upstreamDir, 'ndl/raw/places.raw-meta.json'),
+  path.join(localPacksRoot, 'ndl/raw/places.raw-meta.json'),
+);
+const ndlPlacesMeta = await readJsonIfExists(ndlPlacesMetaPath);
+const ndlOrgsMetaPath = resolveOptional(
+  path.join(upstreamDir, 'ndl/raw/orgs.raw-meta.json'),
+  path.join(localPacksRoot, 'ndl/raw/orgs.raw-meta.json'),
+);
+const ndlOrgsMeta = await readJsonIfExists(ndlOrgsMetaPath);
 const includeNdl = !!(ndlPersonsRaw && ndlWorksRaw);
+const includeNdlPlaces = !!(includeNdl && ndlPlacesRaw);
+const includeNdlOrgs = !!(includeNdl && ndlOrgsRaw);
 
 const wikidataMetaPath = resolveOptional(
   path.join(upstreamDir, 'wikidata/extract-meta.json'),
@@ -169,6 +192,24 @@ if (includeNdl) {
     outDir: path.join(packsDir, 'ndl'),
     packId: 'ndl-works-ja',
   });
+
+  if (includeNdlPlaces) {
+    console.log('Compiling NDL places…');
+    compileNdlPlacesPack({
+      rawPath: ndlPlacesRaw,
+      outDir: path.join(packsDir, 'ndl'),
+      packId: 'ndl-places-ja',
+    });
+  }
+
+  if (includeNdlOrgs) {
+    console.log('Compiling NDL orgs…');
+    compileNdlOrgsPack({
+      rawPath: ndlOrgsRaw,
+      outDir: path.join(packsDir, 'ndl'),
+      packId: 'ndl-orgs-ja',
+    });
+  }
 }
 
 if (includeWikidata) {
@@ -242,9 +283,15 @@ if (includeNdl) {
     upstream: {
       personsRaw: ndlPersonsRaw,
       worksRaw: ndlWorksRaw,
+      placesRaw: ndlPlacesRaw ?? undefined,
+      orgsRaw: ndlOrgsRaw ?? undefined,
       worksZipUrl: pins.ndl.worksZipUrl,
       personsHarvestedAt: ndlPersonsMeta?.harvestedAt,
       personsMatched: ndlPersonsMeta?.personsMatched,
+      placesHarvestedAt: ndlPlacesMeta?.harvestedAt,
+      placesMatched: ndlPlacesMeta?.placesMatched,
+      orgsHarvestedAt: ndlOrgsMeta?.harvestedAt,
+      orgsMatched: ndlOrgsMeta?.orgsMatched,
       pages: ndlPersonsMeta?.pages,
       pageSize: ndlPersonsMeta?.pageSize,
     },

@@ -1,3 +1,5 @@
+import { addYomiSearchStrings } from './yomiReadings.mjs';
+
 /** @param {import('./types.mjs').NdlPersonRaw} raw */
 export function personSearchStringsFromRaw(raw) {
   const out = [];
@@ -11,6 +13,7 @@ export function personSearchStringsFromRaw(raw) {
 
   add(raw.name);
   if (raw.heading && raw.heading !== raw.name) add(raw.heading);
+  addYomiSearchStrings(raw, add);
   return out;
 }
 

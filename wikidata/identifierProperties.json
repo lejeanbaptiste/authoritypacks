@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "description": "Wikidata external-id properties copied into raw/compiled metadata.crosswalk for authority concordance.",
+  "properties": [
+    {
+      "property": "P214",
+      "key": "viaf",
+      "label": "VIAF cluster ID",
+      "cardinality": "one",
+      "normalize": "digits"
+    },
+    {
+      "property": "P497",
+      "key": "cbdb",
+      "label": "CBDB person ID",
+      "cardinality": "one",
+      "normalize": "cbdbId"
+    },
+    {
+      "property": "P1187",
+      "key": "dila",
+      "label": "DILA person ID",
+      "cardinality": "one",
+      "normalize": "trim"
+    },
+    {
+      "property": "P1188",
+      "key": "dila",
+      "label": "DILA place ID",
+      "cardinality": "one",
+      "normalize": "trim"
+    },
+    {
+      "property": "P349",
+      "key": "ndl",
+      "label": "NDL Authority ID",
+      "cardinality": "one",
+      "normalize": "trim"
+    },
+    {
+      "property": "P4711",
+      "key": "chgis",
+      "label": "CHGIS place ID",
+      "cardinality": "one",
+      "normalize": "trim"
+    },
+    {
+      "property": "P2477",
+      "key": "bdrc",
+      "label": "BDRC resource ID",
+      "cardinality": "one",
+      "normalize": "trim"
+    }
+  ]
+}

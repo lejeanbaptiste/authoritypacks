@@ -1,0 +1,19 @@
+{
+  "id": "wikidata-person-zh-hant-tang",
+  "source": "Wikidata",
+  "buildToolVersion": "0.1.0",
+  "compiledAt": "2026-07-07T14:08:16.649Z",
+  "upstream": {
+    "raw": "/Users/daniel/Code/authority extraction/wikidata/fixtures/tmp-wd-lV35nR/raw/persons.raw.ndjson"
+  },
+  "license": "CC0",
+  "attribution": "Data from Wikidata (CC0).",
+  "dynasty": "tang",
+  "language": "zh-hant",
+  "includeFictional": true,
+  "files": {
+    "persons.ndjson": {
+      "entityCount": 3
+    }
+  }
+}

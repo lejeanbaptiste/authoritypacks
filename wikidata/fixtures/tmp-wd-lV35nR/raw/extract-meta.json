@@ -1,0 +1,20 @@
+{
+  "extractedAt": "2026-07-07T14:08:16.647Z",
+  "dumpPath": "/Users/daniel/Code/authority extraction/wikidata/fixtures/tang-persons.jsonl",
+  "dynastyIds": [
+    "tang"
+  ],
+  "dynastyQids": [
+    "Q9683"
+  ],
+  "dynastySlug": "tang",
+  "membership": "dynasty-p27",
+  "language": "zh-hant",
+  "labelLang": "zh-hant",
+  "entitiesScanned": 5,
+  "personsMatched": 4,
+  "includeFictional": true,
+  "resumed": false,
+  "complete": true,
+  "interrupted": false
+}

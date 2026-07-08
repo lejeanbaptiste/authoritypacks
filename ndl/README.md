@@ -5,7 +5,7 @@ Offline pipeline to turn [Web NDL Authorities](https://id.ndl.go.jp/auth/ndla/) 
 **Roadmap:** [docs/phases.md](../docs/phases.md) (track **N**).  
 **LJB planning:** [leaf-writer `docs/authority-packs-planning.md`](../../leaf-writer/docs/authority-packs-planning.md) §4.6.
 
-**Status (2026-07-05):** N1 pipeline implemented — works batch parser + SPARQL person harvest scaffold. Run locally; LJB load not wired yet.
+**Status (2026-07-07):** N1 pipeline done — persons (~1M) + works (~900) + places harvester (~7.8k). Kana readings wired into compile. LJB wired (Japanese lifecycle).
 
 ---
 
@@ -43,9 +43,10 @@ So **`ndl-persons-ja` and `ndl-places-ja` cannot be built from the batch TSV alo
 
 | Pack id | Source | v1 priority |
 |---------|--------|-------------|
-| `ndl-works-ja` | Works batch TSV | **Start here** (N1) |
-| `ndl-persons-ja` | SPARQL 1.1 | Core value; needs harvest script (N1b) |
-| `ndl-places-ja` | SPARQL 1.1 | Later; geographic name authorities |
+| `ndl-persons-ja` | SPARQL 1.1 | Core value; **all** `foaf:Person` authorities (~1M), not authors-only |
+| `ndl-works-ja` | Works batch TSV | **title** tag — ~900 著作典拠 in current batch |
+| **`ndl-places-ja`** | SPARQL 1.1 | **Built** — geographic name authorities (~7.8k toponyms) |
+| **`ndl-orgs-ja`** | SPARQL 1.1 | **Built** — corporate bodies (団体名, ~242k) |
 
 No dynasty table (unlike Chinese packs). Date metadata comes from birth/death on person records when SPARQL provides it.
 
@@ -93,10 +94,44 @@ npm run ndl:compile-persons -- --raw packs/ndl/raw/persons.raw.ndjson --out pack
 
 **Namespace note:** NDL RDF uses `http://ndl.go.jp/dcndl/terms/` (trailing slash) and `http://RDVocab.info/ElementsGr2/` for birth/death — not the abbreviated URIs shown in some doc examples.
 
+### Phase N1c — Place names via SPARQL
+
+Geographic name authorities (`skos:inScheme ndla:geographicNames`). Subject subdivisions like `松山市--歴史` are **excluded** (`--` in label).
+
+```bash
+npm run ndl:sparql -- count-places
+npm run ndl:sparql -- sample-places --prefix 東京 --limit 10
+
+# Full harvest (~7.8k toponyms, ~8 pages at 1000/page — a few minutes):
+npm run ndl:sparql -- harvest-places --out packs/ndl/raw/places.raw.ndjson --delay-ms 300 --progress 500
+
+npm run ndl:compile-places -- --raw packs/ndl/raw/places.raw.ndjson --out packs/ndl/places-ja
+```
+
+Expect **~7,790** place authorities after filtering (37,709 in `geographicNames` scheme include subject headings).
+
+### Phase N1d — Corporate bodies via SPARQL
+
+Corporate name authorities (`skos:inScheme ndla:corporateNames`). Subject subdivisions like `東大寺--歴史` are **excluded** (`--` in label).
+
+```bash
+npm run ndl:sparql -- count-orgs
+npm run ndl:sparql -- sample-orgs --prefix 東大 --limit 10
+
+# Full harvest (~242k orgs, ~243 pages — allow ~1–2 hours with default delay):
+npm run ndl:sparql -- harvest-orgs --out packs/ndl/raw/orgs.raw.ndjson --delay-ms 300 --progress 10000
+
+npm run ndl:compile-orgs -- --raw packs/ndl/raw/orgs.raw.ndjson --out packs/ndl/orgs-ja
+```
+
+Expect **~242,384** corporate bodies after filtering.
+
 ### Phase N2 — Compile
 
-- `ndl/compile.mjs` → LJB `AuthorityCandidate` NDJSON + manifest (same shape as CBDB/DILA).
-- Search strings: primary heading + variant terms; include kana readings only if they appear as real mention forms in your corpora (decision deferred).
+- `ndl/compilePersons.mjs` / `ndl/compilePlaces.mjs` → LJB `AuthorityCandidate` NDJSON + manifest (same shape as CBDB/DILA).
+- Search strings: kanji heading + **katakana/hiragana readings** from NDL `ndl:transcription` (`lang=ja-kana` on prefLabel and altLabel).
+- Metadata: `yomi` (primary katakana) and `yomiHiragana` for IME/disambiguation UI.
+- Readings are split into segment, concatenated, and both-script forms (e.g. `トウキョウト タイトウク`, `トウキョウトタイトウク`, `とうきょうと たいとうく`).
 
 ### Not ready yet
 

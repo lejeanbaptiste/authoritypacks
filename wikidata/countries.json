@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "description": "Modern sovereign states for Wikidata person packs (P27 country of citizenship). Not used for pre-modern Chinese dynasty slices — see dynasties.json.",
+  "countries": [
+    {
+      "id": "japan",
+      "qid": "Q17",
+      "labelEn": "Japan",
+      "labelJa": "日本",
+      "packSlug": "ja-japan"
+    }
+  ]
+}

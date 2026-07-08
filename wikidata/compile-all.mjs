@@ -9,7 +9,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
-import { compileWikidataPersonPack } from './compile.mjs';
+import { compileWikidataPersonPack, compileWikidataPreMingPack } from './compile.mjs';
 import { resolveDynastySelection } from './dynastySelect.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -18,6 +18,10 @@ const ROOT = path.resolve(__dirname, '..');
 function arg(name, fallback) {
   const i = process.argv.indexOf(name);
   return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
+}
+
+function hasFlag(name) {
+  return process.argv.includes(name);
 }
 
 function loadJson(rel) {
@@ -32,6 +36,7 @@ function loadJson(rel) {
  *   dynastyId?: string;
  *   dynastyIds?: string[];
  *   priority?: number;
+ *   includePreMing?: boolean;
  * }} opts
  */
 export function compileAllWikidataPersonPacks(opts) {
@@ -54,6 +59,17 @@ export function compileAllWikidataPersonPacks(opts) {
     });
     results.push({ dynastyId: d.id, count: result.count, outDir: result.outDir });
   }
+
+  if (opts.includePreMing) {
+    const outDir = path.join(opts.outRoot, `person-${opts.languageId}-pre-ming`);
+    const result = compileWikidataPreMingPack({
+      rawPath: opts.rawPath,
+      languageId: opts.languageId,
+      outDir,
+    });
+    results.push({ dynastyId: 'pre-ming', count: result.count, outDir: result.outDir });
+  }
+
   return results;
 }
 
@@ -84,6 +100,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
           .filter(Boolean)
       : undefined,
     priority: priorityArg ? Number.parseInt(priorityArg, 10) : undefined,
+    includePreMing: hasFlag('--pre-ming'),
   });
 
   for (const r of results) {

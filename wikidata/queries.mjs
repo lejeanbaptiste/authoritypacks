@@ -91,6 +91,25 @@ LIMIT ${limit}
 }
 
 /**
+ * Work / title prototype — literary and written works with a label in the target language.
+ * Uses P31/P279* like WDQS; dump extract matches direct P31 only (expect lower counts).
+ * @param {{ labelLang: string, instanceOf: string[], excludeInstanceOf?: string[] }} opts
+ */
+export function workCountQuery(opts) {
+  const { labelLang, instanceOf, excludeInstanceOf = [] } = opts;
+  const typeValues = instanceOf.map((q) => `wd:${q}`).join(' ');
+  return `
+SELECT (COUNT(DISTINCT ?item) AS ?count) WHERE {
+  ?item wdt:P31/wdt:P279* ?workType .
+  VALUES ?workType { ${typeValues} }
+  ?item rdfs:label ?itemLabel .
+  FILTER(LANG(?itemLabel) = "${labelLang}")
+  ${minusExcludedTypes(excludeInstanceOf)}
+}
+`.trim();
+}
+
+/**
  * Place prototype — geographic instances with a label in the target language.
  * No dynasty filter (places use P1480 / CHGIS later in W2).
  * @param {{ labelLang: string, instanceOf: string[], excludeInstanceOf?: string[], limit?: number }} opts

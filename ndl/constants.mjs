@@ -18,6 +18,9 @@ export const NDL_WORKS_ZIP_URL =
 export const NDL_ATTRIBUTION =
   'Data from Web NDL Authorities (National Diet Library). 国立国会図書館の「Web NDL Authorities」から取得した典拠データです。';
 
+/** Use as `PREFIX ndla: <…>` — fragment id `geographicNames` (avoid raw `#` in SPARQL queries). */
+export const NDL_AUTH_SCHEME_URI = 'http://id.ndl.go.jp/auth#';
+
 /** @param {string} authUri e.g. http://id.ndl.go.jp/auth/ndlna/00054222 */
 export function authorityIdFromUri(authUri) {
   const m = /\/ndlna\/(\d+)$/.exec(authUri ?? '');

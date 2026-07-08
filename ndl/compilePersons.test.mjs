@@ -32,17 +32,34 @@ test('personSearchStringsFromRaw — name and distinct heading', () => {
   assert.deepEqual(strings, ['夏目漱石', '夏目, 漱石, 1867-1916']);
 });
 
+test('personSearchStringsFromRaw — kana readings for IME', () => {
+  const strings = personSearchStringsFromRaw({
+    authorityId: '00054222',
+    authUri: 'http://example',
+    name: '夏目漱石',
+    yomi: 'ナツメ, ソウセキ, 1867-1916',
+    yomiAlt: ['ナツメ, キンノスケ'],
+  });
+  assert.ok(strings.includes('ナツメ ソウセキ'));
+  assert.ok(strings.includes('キンノスケ'));
+  assert.ok(strings.includes('なつめ'));
+});
+
 test('personCandidateFromRaw — birth/death metadata', () => {
   const c = personCandidateFromRaw({
     authorityId: '00054222',
     authUri: 'http://id.ndl.go.jp/auth/ndlna/00054222',
     name: '夏目漱石',
+    yomi: 'ナツメ, ソウセキ, 1867-1916',
     birthYear: 1867,
     deathYear: 1916,
   });
   assert.ok(c);
   assert.equal(c.metadata?.startYear, 1867);
   assert.equal(c.metadata?.endYear, 1916);
+  assert.equal(c.metadata?.yomi, 'ナツメ ソウセキ');
+  assert.equal(c.metadata?.yomiHiragana, 'なつめ そうせき');
+  assert.ok(c.searchStrings.includes('なつめ'));
 });
 
 test('SPARQL query templates include correct namespaces', () => {

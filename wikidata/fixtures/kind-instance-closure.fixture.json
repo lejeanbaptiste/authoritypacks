@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "builtAt": "2026-01-01T00:00:00.000Z",
+  "source": "fixture",
+  "kinds": {
+    "work": {
+      "instanceOfRoots": ["Q7725634"],
+      "instanceOfClosure": ["Q7725634", "Q5185279"],
+      "excludeInstanceOfRoots": ["Q13442814"],
+      "excludeInstanceOfClosure": ["Q13442814", "Q17328189"]
+    }
+  }
+}

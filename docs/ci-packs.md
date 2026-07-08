@@ -53,6 +53,7 @@ Wikidata person packs are **compiled locally** from the Wikidata JSON dump (see 
 Fallbacks for local dev:
 
 - `packs/wikidata/person-zh-hant-tang/persons.ndjson`
+- `packs/wikidata/person-zh-hant-pre-ming/persons.ndjson`
 - `packs/wikidata/person-zh-hant-ming/persons.ndjson`
 - `packs/wikidata/person-zh-hant-qing/persons.ndjson`
 
@@ -72,7 +73,9 @@ npm run wikidata:compile-all -- --raw packs/wikidata/raw-zh-hant-priority1/perso
 npm run build:packs
 ```
 
-Tarball layout: `authority-packs/wikidata/person-zh-hant-{tang,ming,qing}/persons.ndjson` plus per-pack and bundle `manifest.json` files. LJB maps these to pack IDs `wikidata-persons-tang`, `wikidata-persons-ming`, `wikidata-persons-qing` (Chinese lifecycle profile only).
+Tarball layout: `authority-packs/wikidata/person-zh-hant-{tang,pre-ming,ming,qing}/persons.ndjson` plus per-pack and bundle `manifest.json` files. LJB maps these to pack IDs `wikidata-persons-tang`, `wikidata-persons-pre-ming`, `wikidata-persons-ming`, `wikidata-persons-qing` (Chinese lifecycle profile only).
+
+The **pre-Ming** pack uses date/P2348 membership (see [`wikidata/README.md`](../wikidata/README.md)); compile it from `raw-zh-hant-pre-ming` after a `--membership pre-ming` extract, or temporarily from priority-1 raw (Tang-heavy until the pre-Ming extract finishes).
 
 ## Tests in CI
 

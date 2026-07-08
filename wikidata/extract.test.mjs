@@ -79,6 +79,7 @@ test('extract fixture → compile Tang pack', async () => {
   );
   assert.ok(libai?.searchStrings.includes('李白'));
   assert.ok(libai?.searchStrings.includes('李太白'));
+  assert.deepEqual(libai?.metadata?.crosswalk?.wikidata, ['5581']);
 
   const fictional = JSON.parse(fs.readFileSync(fixture, 'utf8').split('\n')[3]);
   const ficCand = personCandidateFromRaw(rawPersonFromEntity(fictional, 'zh-hant'), {
@@ -86,6 +87,64 @@ test('extract fixture → compile Tang pack', async () => {
   });
   assert.equal(ficCand?.metadata?.ana, 'fictional');
   assert.ok(ficCand?.searchStrings.includes('虬髯客'));
+
+  const soseki = {
+    type: 'item',
+    id: 'Q180903',
+    labels: { ja: { value: '夏目漱石' } },
+    aliases: { ja: [{ value: '夏目金之助' }] },
+    claims: {
+      P31: [
+        {
+          mainsnak: {
+            snaktype: 'value',
+            datavalue: { type: 'wikibase-entityid', value: { id: 'Q5' } },
+          },
+        },
+      ],
+      P27: [
+        {
+          mainsnak: {
+            snaktype: 'value',
+            datavalue: { type: 'wikibase-entityid', value: { id: 'Q17' } },
+          },
+        },
+      ],
+      P1814: [{ mainsnak: { snaktype: 'value', datavalue: { value: 'なつめ そうせき' } } }],
+    },
+  };
+  const sosekiRaw = rawPersonFromEntity(soseki, 'ja');
+  assert.ok(sosekiRaw);
+  assert.equal(sosekiRaw.yomiHiragana, 'なつめ そうせき');
+  assert.deepEqual(sosekiRaw.nameInKana, ['なつめ そうせき']);
+  assert.equal(
+    entityMatchesPersonSlice(soseki, {
+      labelLang: 'ja',
+      membership: 'country-p27',
+      countryQids: ['Q17'],
+    }),
+    true,
+  );
+  assert.equal(
+    entityMatchesPersonSlice(soseki, {
+      labelLang: 'ja',
+      membership: 'dynasty-p27',
+      dynastyQids: ['Q9683'],
+    }),
+    false,
+  );
+
+  const withIds = {
+    ...JSON.parse(fs.readFileSync(fixture, 'utf8').split('\n')[0]),
+    claims: {
+      ...JSON.parse(fs.readFileSync(fixture, 'utf8').split('\n')[0]).claims,
+      P497: [{ mainsnak: { snaktype: 'value', datavalue: { type: 'string', value: '0005581' } } }],
+      P214: [{ mainsnak: { snaktype: 'value', datavalue: { type: 'string', value: '24645678' } } }],
+    },
+  };
+  const libaiRaw = rawPersonFromEntity(withIds, 'zh-hant');
+  assert.equal(libaiRaw?.crosswalk?.cbdb, '5581');
+  assert.equal(libaiRaw?.crosswalk?.viaf, '24645678');
 
   fs.rmSync(tmp, { recursive: true, force: true });
 });

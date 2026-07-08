@@ -1,14 +1,71 @@
 # Authority extraction — phases
 
-Status: **in progress** (2026-07-05).  
+Status: **in progress** (2026-07-07).  
 **Repo:** `authority extraction` (this folder).  
 **Consumer:** [LEAF/LJB](../leaf-writer) tag bomb + disambiguation.
 
 This document is the **master roadmap for building packs offline**. It is organized so work alternates between **automated build steps** and **points where your judgment matters** — policy choices, spot-checks on real corpus text, and go/no-go before the next segment.
 
+**How to use this doc:** start with [Pack coverage matrix](#pack-coverage-matrix-ljb-tag-bomb) and [Remaining packs](#remaining-packs-checklist) for what to build next; use [Progress dashboard](#progress-dashboard-by-source-track) and per-track sections for implementation detail.
+
 ---
 
-## Progress dashboard
+## Pack coverage matrix (LJB tag bomb)
+
+What each **TEI tag × language** needs, what exists today, and the primary source track.
+
+| Tag | Chinese (zh-Hant) | Japanese (ja) | Tibetan (bo) |
+|-----|-------------------|---------------|--------------|
+| **persName** | **Done** — CBDB + DILA + Wikidata (Tang, Ming, Qing, pre-Ming) | **Done** — NDL persons (~1M); 👤 validate mention forms | **Not started** — Wikidata `bo` (T0) or THL |
+| **placeName** | **Done** — CBDB + DILA + CHGIS (local install); Wikidata supplement optional | **Built** — `ndl-places-ja` SPARQL (~7.8k); 👤 harvest + validate | **Not started** — Wikidata `bo` (T0) or THL |
+| **roleName** (官名) | **Done** — CBDB offices | — | — |
+| **title** (book / work) | **Not built** — Wikidata `work` zh-hant slice | **Partial** — NDL works batch (~900 著作典拠); wired in LJB | **Not started** — Wikidata if count > 0 |
+| **orgName** | **Not built** — Wikidata `org` zh-hant (CBDB 官名 ≠ org) | **Built** — `ndl-orgs-ja` SPARQL (~242k); 👤 harvest + validate | **Not started** — Wikidata if count > 0 |
+
+**LJB wiring:** Chinese lifecycle downloads CBDB + DILA + Wikidata person packs. Japanese lifecycle downloads NDL persons + works. CHGIS is Settings → install locally (no GitLab bundle). See [leaf-writer `authorityLifecycle.ts`](../leaf-writer/apps/desktop/src/authorityLifecycle.ts).
+
+---
+
+## Remaining packs — checklist
+
+Ordered by value for “finish and plug in tagging packs” ([leaf-writer todo](../leaf-writer/docs/todo.md)):
+
+| Priority | Pack | Track | Notes |
+|----------|------|-------|-------|
+| 👤 | Validate + GitLab Release | C3, D3, N4, W5 | Bundle when ready — artifacts expire in 30 days |
+| 👤 | Pre-Ming full extract | W2 | `--membership pre-ming` on dump — Song/Yuan via dates (priority-1 raw is Tang-heavy) |
+| 1 | **`ndl-places-ja`** | N | **Built** — run harvest + validate on Japanese corpus |
+| 2 | **`ndl-orgs-ja`** | N | **Built** — run harvest (~242k) + validate on Japanese corpus |
+| 3 | **Wikidata works** | W | **`title`** — `zh-hant` classical titles first, then `ja`; see `kind-queries.json` work allowlist |
+| 4 | **Wikidata places** | W | **Chinese supplement** only (CBDB/DILA/CHGIS lead); expect noise |
+| 5 | **Wikidata orgs** | W | **`orgName`** — zh-hant (NDL ja orgs now built separately) |
+| 6 | **`wikidata-person-ja`** | W | **Supplement** to NDL persons — not a replacement (see [NDL vs Wikidata ja](#ndl-vs-wikidata-ja-persons)) |
+| 7 | **Tibetan persName / placeName** | T | SPARQL count first (`language=bo`); THL outreach if Wikidata too sparse |
+| — | Disambiguation 4b + entity DB | L | Parallel — not pack builds |
+
+---
+
+## NDL vs Wikidata ja (persons)
+
+**NDL is not authors-only.** The person harvest queries **all** `foaf:Person` authorities in [Web NDL Authorities](https://id.ndl.go.jp/auth/ndla/) (~1.05M records) — writers, historical figures, politicians, artists, religious figures, anyone NDL catalogers created a **name authority** for. See [`ndl/queries.mjs`](../ndl/queries.mjs) (`?entity a foaf:Person`).
+
+What NDL *is* bounded by:
+
+- **Catalog universe** — skew toward people who appear in Japanese national bibliography / authority control (strong on modern Japan and published scholarship; thinner on some pre-modern or non-Japanese figures your corpus may mention).
+- **Japanese naming conventions** — headings, variant labels, kana (`ndl:transcription`); not the same shape as Wikidata Q-items with `ja` labels.
+- **Separate from works** — book **titles** come from the **著作典拠** batch (`ndl-works-ja`, ~900 records today), not from the person SPARQL harvest.
+
+**Why add Wikidata `ja` persons anyway (P5 in checklist, not P1):**
+
+- Long tail: pre-modern East Asian, Buddhist, regional history — people with `ja` labels but **no NDLNA** record.
+- Crosswalk: Q-id ↔ NDL via Wikidata `P349` helps disambiguation (N3).
+- Overlap is OK — LJB dedupes at disambiguation via Q-id / authority id; NDL stays **primary** for Japanese projects.
+
+**Recommendation:** ship **NDL persons** as the Japanese `persName` pack; add **`wikidata-person-ja`** later as an optional checkbox, same pattern as Wikidata beside CBDB for Chinese.
+
+---
+
+## Progress dashboard (by source track)
 
 
 | Track          | Phase      | Status                                                        | Output                                                         |
@@ -21,11 +78,14 @@ This document is the **master roadmap for building packs offline**. It is organi
 | **D**          | D1 compile | **done**                                                      | `packs/dila/` — 49,060 persons, 59,277 places                  |
 | **D**          | D2 overlap | **policy locked** — crosswalk-only auto-merge                 | LJB `authorityOverlap.ts`                                      |
 | **D**          | D3 publish | **CI pipeline ready** — bundled with C3                       | same as C3                                                     |
-| **W** Wikidata | W0 tables  | **done**                                                      | `wikidata/*.json`                                              |
-| **W**          | W1+        | not started                                                   | —                                                              |
-| **H** CHGIS    | H1 compile | **built**                                                     | `chgis/compile.mjs` — local install only                       |
-| **H**          | H2 LJB UI  | **built**                                                     | Settings → Install from download                               |
-| **L** LJB      | A2 loader  | **built**                                                     | wire + dialog; sync packs to entity DB                         |
+| **W** Wikidata | W0–W2      | **done** (persons zh-hant)                                    | Tang/Ming/Qing/pre-Ming packs; places/orgs/works/**ja** not built |
+| **W**          | W3 report  | **built** (Tang)                                              | `reports/w3-ambiguity.csv` — 👤 review                         |
+| **W**          | W5 publish | **wired in bundle script** — Release when ready               | staged under `packs/wikidata/` or `.upstream/wikidata/`        |
+| **N** NDL      | N1         | **done** (persons + works)                                    | ~1M persons, ~900 works — 👤 validate; **places not built**    |
+| **N**          | N4 publish | **in GitLab bundle** when raw staged                          | same as C3                                                     |
+| **H** CHGIS    | H1–H3      | **built**                                                     | local install only — Settings UI in LJB                        |
+| **T** Tibetan  | T0–T2      | **deferred**                                                  | Wikidata `bo` prototype or THL                                 |
+| **L** LJB      | A2, L1–L2  | **wired** (Chinese + Japanese packs, tag bomb)                | Wikidata + NDL checkboxes; lifecycle download                  |
 
 
 **Commands:**
@@ -387,7 +447,11 @@ npm run wikidata:compile -- --raw packs/wikidata/raw-tang/persons.raw.ndjson --d
 
 Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 
-**👤 Decide:** Which packs ship in LJB v1 download list (recommend: `wikidata-person-zh-hant-tang` only).
+**Status:** `build-pack-bundle.mjs` stages Wikidata Tang/Ming/Qing/pre-Ming when compiled packs exist locally. LJB pack IDs wired. GitLab **Release** still pending (same as C3).
+
+**👤 Decide:** Which Wikidata packs ship in v1 download bundle (current: Tang + Ming + Qing + pre-Ming persons).
+
+**Not built (see [Remaining packs](#remaining-packs-checklist)):** `place`, `org`, `work` kinds; `ja` / `bo` language slices.
 
 ---
 
@@ -396,10 +460,11 @@ Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 ## Track N — NDL (Japanese)
 
 **Raw input:** [NDL batch files](https://id.ndl.go.jp/information/download_en/) (works, NDLSH, GFT) + [SPARQL 1.1](https://id.ndl.go.jp/auth/ndla/sparql) (persons, places, corps).  
-**Target packs:** `ndl-works-ja` (batch first), `ndl-persons-ja`, `ndl-places-ja`.  
-**Operator guide:** [ndl/README.md](../ndl/README.md)
+**Target packs:** `ndl-works-ja` (batch), `ndl-persons-ja` (SPARQL), `ndl-places-ja` (SPARQL), `ndl-orgs-ja` (SPARQL, **built** — harvest pending).
 
-**Status (2026-07-05):** N1 **done locally** — `ndl-persons-ja` (1,035,289 persons, 227 MB) + `ndl-works-ja` (914 works). GitLab publish (N4) and LJB load (L3) not started.
+**Status (2026-07-07):** N1 **done locally** — `ndl-persons-ja` (~1M persons) + `ndl-works-ja` (~900 著作典拠). LJB wired (L3). GitLab Release (N4) when you bundle. **Places + org SPARQL harvests not started.**
+
+**Scope note:** Person harvest is **all** NDL name authorities (`foaf:Person`), not authors-only — see [NDL vs Wikidata ja](#ndl-vs-wikidata-ja-persons). Works batch is separate from persons.
 
 ### N0 — Scope & license — **done (docs)**
 
@@ -579,9 +644,9 @@ Not implemented in this repo. Phases live in [authority-databases-phases.md](../
 | **A3** Matcher at scale            | Done (v1)   | Harness + overlap merge                                                        |
 | **A4** Authority panel UI          | Mostly done | Dialog + review clues; lifecycle UI pending                                    |
 | **A5** Lifecycle + updates         | Spec ready  | [authority-data-lifecycle.md](../leaf-writer/docs/authority-data-lifecycle.md) |
-| **L1** Install Wikidata packs      | Not started | Download manifest, sha256 verify                                               |
-| **L2** Wikidata in authority panel | Not started | Checkbox beside CBDB/DILA                                                      |
-| **L3** Japanese / NDL gating       | Not started | ja project sees NDL only                                                       |
+| **L1** Install Wikidata packs      | **wired**   | Chinese lifecycle + auto-tagging checkboxes                                    |
+| **L2** Wikidata in authority panel | **wired**   | Tang / pre-Ming / Ming / Qing off by default                                   |
+| **L3** Japanese / NDL gating       | **wired**   | ja project → NDL persons + works only                                          |
 | **L4** GeoNames gating             | Not started | —                                                                              |
 
 

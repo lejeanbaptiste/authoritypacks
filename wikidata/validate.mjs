@@ -24,6 +24,7 @@ const qidRe = /^Q\d+$/;
 const { data: dynastiesDoc } = readJson('dynasties.json');
 const { data: kindsDoc } = readJson('kind-queries.json');
 const { data: languagesDoc } = readJson('languages.json');
+const { data: identifiersDoc } = readJson('identifierProperties.json');
 
 // --- dynasties ---
 const dynastyIds = new Set();
@@ -74,6 +75,39 @@ if (!packLangIds.has('zh-hant') || !packLangIds.has('zh-hans')) {
   fail('languages.json: must include zh-hant and zh-hans pack languages');
 }
 
+const identifierKeys = new Set();
+for (const prop of identifiersDoc.properties ?? []) {
+  for (const field of ['property', 'key', 'label', 'cardinality']) {
+    if (!prop[field]) fail(`identifierProperties.json: missing ${field} on ${prop.property ?? '?'}`);
+  }
+  if (!/^P\d+$/.test(prop.property)) {
+    fail(`identifierProperties.json: invalid property ${prop.property}`);
+  }
+  identifierKeys.add(prop.key);
+}
+if (!identifierKeys.has('cbdb') || !identifierKeys.has('viaf')) {
+  fail('identifierProperties.json: must include cbdb and viaf crosswalk keys');
+}
+
+const closureFile = path.join(__dirname, 'kind-instance-closure.json');
+if (fs.existsSync(closureFile)) {
+  const closureDoc = JSON.parse(fs.readFileSync(closureFile, 'utf8'));
+  for (const kind of requiredKinds) {
+    const entry = closureDoc.kinds?.[kind];
+    if (!entry?.instanceOfClosure?.length) {
+      warn(`kind-instance-closure.json: missing closure for ${kind}`);
+      continue;
+    }
+    for (const root of kindsDoc.kinds[kind].instanceOf) {
+      if (!entry.instanceOfClosure.includes(root)) {
+        fail(`kind-instance-closure.json: ${kind} closure missing root ${root}`);
+      }
+    }
+  }
+} else {
+  warn('kind-instance-closure.json: not found — dump extract uses direct P31 only until npm run wikidata:build-closure');
+}
+
 const fails = errors.filter((e) => e.startsWith('FAIL:'));
 const warns = errors.filter((e) => e.startsWith('WARN:'));
 
@@ -81,6 +115,7 @@ console.log(`Wikidata pack build — W0 validation`);
 console.log(`  dynasties: ${dynastiesDoc.dynasties.length} entries`);
 console.log(`  kinds: ${requiredKinds.join(', ')}`);
 console.log(`  pack languages: ${languagesDoc.packLanguages.length}`);
+console.log(`  identifier properties: ${identifiersDoc.properties.length}`);
 
 if (warns.length) {
   console.log('\nWarnings:');

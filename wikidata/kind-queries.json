@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "Wikidata P31 (instance of) roots for each LJB entity kind. Extractor matches item or any P279* subclass unless excluded.",
+  "description": "Wikidata P31 (instance of) roots for each LJB entity kind. Dump extract uses kind-instance-closure.json (P279* expansion) when present; rebuild with npm run wikidata:build-closure.",
   "kinds": {
     "person": {
       "ljbKind": "person",
@@ -79,32 +79,64 @@
       "ljbKind": "work",
       "teiTags": ["title"],
       "instanceOf": [
-        "Q386724",
         "Q7725634",
         "Q571",
         "Q47461344",
         "Q178385",
-        "Q17537576",
         "Q87167",
         "Q5185279",
         "Q1261499",
         "Q3331189"
       ],
-      "excludeInstanceOf": ["Q4167410", "Q13442814", "Q17329259"],
+      "excludeInstanceOf": [
+        "Q4167410",
+        "Q13442814",
+        "Q17329259",
+        "Q11424",
+        "Q24869",
+        "Q7889",
+        "Q482994",
+        "Q15416",
+        "Q5398426",
+        "Q21191270",
+        "Q53933099",
+        "Q134556",
+        "Q639661",
+        "Q873933",
+        "Q1004",
+        "Q7397",
+        "Q185598"
+      ],
       "excludeComments": {
-        "Q17329259": "addendum (meta)"
+        "Q17329259": "addendum (meta)",
+        "Q4167410": "Wikimedia disambiguation page",
+        "Q13442814": "Wikimedia category",
+        "Q11424": "film (excludes feature film and subclasses via P279*)",
+        "Q24869": "feature film",
+        "Q7889": "video game",
+        "Q482994": "album (music)",
+        "Q15416": "television program",
+        "Q5398426": "television series",
+        "Q21191270": "television season",
+        "Q53933099": "television episode",
+        "Q134556": "single (music recording)",
+        "Q639661": "anime",
+        "Q873933": "manga",
+        "Q1004": "comic book",
+        "Q7397": "software",
+        "Q185598": "animated film"
       },
       "instanceComments": {
-        "Q386724": "creative work",
         "Q7725634": "literary work",
         "Q571": "book",
         "Q47461344": "written work",
         "Q178385": "text",
         "Q87167": "novel",
         "Q5185279": "poem",
-        "Q1261499": "historical text"
+        "Q1261499": "historical text",
+        "Q3331189": "version/edition"
       },
-      "membershipNotes": "Titles in classical corpora; optional filter by author P50 in same period."
+      "membershipNotes": "Titles in classical corpora. Omit Q386724/Q17537576 (creative work) — too broad; use excludeInstanceOf for audiovisual/digital media. Extract with --language zh-hant (label-only) for Chinese. Rebuild closure after edits: npm run wikidata:build-closure -- --kind work."
     }
   },
   "properties": {

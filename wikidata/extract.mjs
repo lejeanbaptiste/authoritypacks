@@ -20,7 +20,8 @@ import { spawn } from 'node:child_process';
 import { createReadStream } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { entityMatchesPersonSlice, rawPersonFromEntity } from './entityParse.mjs';
-import { countNdjsonLines, resolveDynastySelection } from './dynastySelect.mjs';
+import { countNdjsonLines, resolveExtractSelection } from './dynastySelect.mjs';
+import { extractWikidataKinds, parseKindList } from './extractKinds.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -42,6 +43,21 @@ function packLanguage(languages, id) {
   const lang = languages.packLanguages.find((x) => x.id === id);
   if (!lang) throw new Error(`Unknown pack language "${id}"`);
   return lang;
+}
+
+/** @param {ReturnType<typeof loadJson>} languages @param {string} languagesArg @param {string} fallbackLanguageId */
+function resolveLanguageSlices(languages, languagesArg, fallbackLanguageId) {
+  const ids = languagesArg
+    ? languagesArg
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [fallbackLanguageId];
+  if (!ids.length) throw new Error('At least one language is required');
+  return ids.map((languageId) => {
+    const packLang = packLanguage(languages, languageId);
+    return { languageId, labelLangs: packLang.wikidataLabelLanguages };
+  });
 }
 
 /** @param {string} dumpPath */
@@ -99,6 +115,8 @@ function sameStringArray(a, b) {
  *   dynastyId?: string;
  *   dynastyIds?: string[];
  *   priority?: number;
+ *   membership?: 'dynasty-p27' | 'pre-ming' | 'country-p27';
+ *   countryId?: string;
  *   languageId: string;
  *   outDir: string;
  *   maxMatches?: number;
@@ -110,10 +128,15 @@ function sameStringArray(a, b) {
 export async function extractWikidataPersons(opts) {
   const dynastiesDoc = loadJson('wikidata/dynasties.json');
   const languages = loadJson('wikidata/languages.json');
-  const selection = resolveDynastySelection(dynastiesDoc.dynasties, {
+  const countriesDoc =
+    opts.membership === 'country-p27' ? loadJson('wikidata/countries.json') : null;
+  const selection = resolveExtractSelection(dynastiesDoc.dynasties, {
     dynastyId: opts.dynastyId,
     dynastyIds: opts.dynastyIds,
     priority: opts.priority,
+    membership: opts.membership ?? 'dynasty-p27',
+    countryId: opts.countryId,
+    countries: countriesDoc?.countries,
   });
   const packLang = packLanguage(languages, opts.languageId);
   const labelLang = packLang.wikidataLabelLanguages[0];
@@ -133,8 +156,16 @@ export async function extractWikidataPersons(opts) {
     if (existingCheckpoint.languageId !== opts.languageId) {
       throw new Error('Checkpoint languageId does not match --language');
     }
-    if (!sameStringArray(existingCheckpoint.dynastyIds ?? [], selection.ids)) {
+    const checkpointMembership = existingCheckpoint.membership ?? 'dynasty-p27';
+    const currentMembership = selection.membership;
+    if (checkpointMembership !== currentMembership) {
+      throw new Error('Checkpoint membership does not match current --membership');
+    }
+    if (currentMembership === 'dynasty-p27' && !sameStringArray(existingCheckpoint.dynastyIds ?? [], selection.ids)) {
       throw new Error('Checkpoint dynastyIds do not match current dynasty selection');
+    }
+    if (currentMembership === 'country-p27' && existingCheckpoint.countryId !== opts.countryId) {
+      throw new Error('Checkpoint countryId does not match current --country');
     }
   }
 
@@ -158,7 +189,9 @@ export async function extractWikidataPersons(opts) {
   const checkpointData = () => ({
     updatedAt: new Date().toISOString(),
     dumpPath: opts.dumpPath,
-    dynastyIds: selection.ids,
+    membership: selection.membership,
+    dynastyIds: selection.membership === 'dynasty-p27' ? selection.ids : undefined,
+    countryId: selection.membership === 'country-p27' ? opts.countryId : undefined,
     dynastyQids: selection.qids,
     languageId: opts.languageId,
     labelLang,
@@ -200,8 +233,11 @@ export async function extractWikidataPersons(opts) {
 
       if (
         !entityMatchesPersonSlice(entity, {
-          dynastyQids: selection.qids,
+          dynastyQids: selection.membership === 'dynasty-p27' ? selection.qids : undefined,
+          countryQids: selection.membership === 'country-p27' ? selection.qids : undefined,
           labelLang,
+          membership: selection.membership,
+          preMingSpec: selection.preMingSpec ?? undefined,
         })
       ) {
         if (checkpointEvery && entitiesScanned % checkpointEvery === 0) {
@@ -232,9 +268,11 @@ export async function extractWikidataPersons(opts) {
   const meta = {
     extractedAt: new Date().toISOString(),
     dumpPath: opts.dumpPath,
-    dynastyIds: selection.ids,
+    dynastyIds: selection.membership === 'dynasty-p27' ? selection.ids : undefined,
+    countryId: selection.membership === 'country-p27' ? opts.countryId : undefined,
     dynastyQids: selection.qids,
     dynastySlug: selection.slug,
+    membership: selection.membership,
     language: opts.languageId,
     labelLang,
     entitiesScanned,
@@ -267,6 +305,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const dynastyId = arg('--dynasty', '');
   const dynastiesArg = arg('--dynasties', '');
   const priorityArg = arg('--priority', '');
+  const membershipArg = arg('--membership', 'dynasty-p27');
+  const countryId = arg('--country', '');
+  const kindsArg = arg('--kinds', '');
+  const languagesArg = arg('--languages', '');
   const languageId = arg('--language', 'zh-hant');
   const outDirArg = arg('--out', '');
   const maxMatches = arg('--max', '') ? Number.parseInt(arg('--max', ''), 10) : undefined;
@@ -276,8 +318,47 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     : undefined;
 
   if (!dumpPath) {
-    console.error(`Usage: node wikidata/extract.mjs --dump PATH (--dynasty tang | --dynasties a,b | --priority 1) \\
-  [--language zh-hant] [--out DIR] [--resume] [--progress N] [--checkpoint-every N]`);
+    console.error(`Usage: node wikidata/extract.mjs --dump PATH \\
+  Person (legacy): (--dynasty tang | --priority 1 | --membership pre-ming | --membership country --country japan) \\
+  Multi-kind: --kinds org,work --membership label-only \\
+  [--language zh-hant|ja|bo] [--languages zh-hant,ja] [--out DIR] [--resume] [--progress N]`);
+    process.exit(1);
+  }
+
+  const membership =
+    membershipArg === 'pre-ming'
+      ? 'pre-ming'
+      : membershipArg === 'country'
+        ? 'country-p27'
+        : membershipArg === 'label-only'
+          ? 'label-only'
+          : 'dynasty-p27';
+
+  const kinds = kindsArg
+    ? parseKindList(kindsArg.split(','))
+    : /** @type {import('./extractKinds.mjs').WikidataKindId[]} */ (['person']);
+
+  const useKindExtractor =
+    kinds.length > 1 || kinds[0] !== 'person' || membership === 'label-only';
+
+  const hasDynastySelection = Boolean(dynastyId || dynastiesArg || priorityArg);
+  if (languageId === 'ja' && hasDynastySelection && membership !== 'pre-ming') {
+    console.error(
+      'For Japanese persons, do not use --priority/--dynasty (those filter Chinese dynasties on P27).',
+    );
+    console.error(
+      'Use: --membership country --country japan --language ja --out packs/wikidata/raw-ja-japan',
+    );
+    process.exit(1);
+  }
+
+  if (membership === 'country-p27' && !countryId) {
+    console.error('--membership country requires --country (e.g. japan)');
+    process.exit(1);
+  }
+
+  if (useKindExtractor && membership === 'dynasty-p27' && !hasDynastySelection && kinds.includes('person')) {
+    console.error('Person extract with dynasty filter requires --dynasty, --dynasties, or --priority');
     process.exit(1);
   }
 
@@ -288,10 +369,36 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
         .filter(Boolean)
     : undefined;
   const priority = priorityArg ? Number.parseInt(priorityArg, 10) : undefined;
+  const languagesDoc = loadJson('wikidata/languages.json');
+  const languageSlices = resolveLanguageSlices(languagesDoc, languagesArg, languageId);
+  const languageIds = languageSlices.map((slice) => slice.languageId);
+  const multiLang = languageSlices.length > 1;
 
   let outDir = outDirArg;
   if (!outDir) {
-    if (priority != null) {
+    if (membership === 'label-only') {
+      if (multiLang) {
+        outDir = path.join(
+          ROOT,
+          `packs/wikidata/raw-${languageIds.join('-')}-${kinds.join('-')}`,
+        );
+      } else {
+        outDir = path.join(
+          ROOT,
+          `packs/wikidata/raw-${languageId}-${kinds.length === 1 ? `${kinds[0]}s` : 'multi'}`,
+        );
+        if (kinds.length === 1 && kinds[0] === 'work') {
+          outDir = path.join(ROOT, `packs/wikidata/raw-${languageId}-works`);
+        }
+        if (languageId === 'bo' && kinds.length > 1) {
+          outDir = path.join(ROOT, 'packs/wikidata/raw-bo');
+        }
+      }
+    } else if (membership === 'pre-ming') {
+      outDir = path.join(ROOT, `packs/wikidata/raw-${languageId}-pre-ming`);
+    } else if (membership === 'country-p27') {
+      outDir = path.join(ROOT, `packs/wikidata/raw-${languageId}-${countryId}`);
+    } else if (priority != null) {
       outDir = path.join(ROOT, `packs/wikidata/raw-${languageId}-priority${priority}`);
     } else if (dynastyId) {
       outDir = path.join(ROOT, `packs/wikidata/raw-${dynastyId}`);
@@ -300,25 +407,77 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     }
   }
 
-  extractWikidataPersons({
+  const commonOpts = {
     dumpPath: path.resolve(dumpPath),
-    dynastyId: dynastyId || undefined,
-    dynastyIds,
-    priority,
     languageId,
     outDir: path.resolve(outDir),
     maxMatches,
     progressEvery,
     checkpointEvery,
     resume: hasFlag('--resume'),
-  })
-    .then((result) => {
-      console.log(`Extracted ${result.count} persons (${result.entitiesScanned} entities scanned)`);
-      console.log(`Wrote ${result.outFile}`);
-      if (!result.complete) process.exit(result.interrupted ? 130 : 0);
-    })
-    .catch((err) => {
-      console.error(err.message);
-      process.exit(1);
+  };
+
+  if (useKindExtractor) {
+    const dynastiesDoc = loadJson('wikidata/dynasties.json');
+    const kindQueries = loadJson('wikidata/kind-queries.json').kinds;
+    const countriesDoc =
+      membership === 'country-p27' ? loadJson('wikidata/countries.json') : null;
+    const selection = resolveExtractSelection(dynastiesDoc.dynasties, {
+      dynastyId: dynastyId || undefined,
+      dynastyIds,
+      priority,
+      membership,
+      countryId: countryId || undefined,
+      countries: countriesDoc?.countries,
     });
+
+    extractWikidataKinds({
+      ...commonOpts,
+      kinds,
+      languageSlices,
+      membership,
+      selection,
+      countryId: countryId || undefined,
+      kindQueries,
+    })
+      .then((result) => {
+        for (const slice of languageSlices) {
+          for (const kind of kinds) {
+            console.log(
+              `${slice.languageId}:${kind}: ${result.matched[slice.languageId][kind].toLocaleString()} → ${result.outFiles[slice.languageId][kind]}`,
+            );
+          }
+        }
+        console.log(`Scanned ${result.entitiesScanned.toLocaleString()} entities`);
+        if (!result.complete) process.exit(result.interrupted ? 130 : 0);
+      })
+      .catch((err) => {
+        console.error(err.message);
+        process.exit(1);
+      });
+  } else {
+    extractWikidataPersons({
+      dumpPath: commonOpts.dumpPath,
+      dynastyId: dynastyId || undefined,
+      dynastyIds,
+      priority,
+      membership,
+      countryId: countryId || undefined,
+      languageId: commonOpts.languageId,
+      outDir: commonOpts.outDir,
+      maxMatches: commonOpts.maxMatches,
+      progressEvery: commonOpts.progressEvery,
+      checkpointEvery: commonOpts.checkpointEvery,
+      resume: commonOpts.resume,
+    })
+      .then((result) => {
+        console.log(`Extracted ${result.count} persons (${result.entitiesScanned} entities scanned)`);
+        console.log(`Wrote ${result.outFile}`);
+        if (!result.complete) process.exit(result.interrupted ? 130 : 0);
+      })
+      .catch((err) => {
+        console.error(err.message);
+        process.exit(1);
+      });
+  }
 }
