@@ -23,12 +23,21 @@ import { compileNdlOrgsPack } from '../ndl/compileOrgs.mjs';
 import { compileNdlWorksPack } from '../ndl/compileWorks.mjs';
 import { NDL_ATTRIBUTION, NDL_WORKS_ZIP_URL } from '../ndl/constants.mjs';
 
-/** Compiled Wikidata person packs (optional — staged locally like NDL). */
+/** Compiled Wikidata packs (optional — staged locally like NDL). `file` is the
+ * NDJSON basename compile.mjs writes for that kind (persons/places/orgs/works). */
 const WIKIDATA_PACK_DIRS = [
-  { slug: 'person-zh-hant-tang', label: 'Tang' },
-  { slug: 'person-zh-hant-pre-ming', label: 'pre-Ming' },
-  { slug: 'person-zh-hant-ming', label: 'Ming' },
-  { slug: 'person-zh-hant-qing', label: 'Qing' },
+  { slug: 'person-zh-hant-tang', label: 'Tang', file: 'persons.ndjson' },
+  { slug: 'person-zh-hant-pre-ming', label: 'pre-Ming', file: 'persons.ndjson' },
+  { slug: 'person-zh-hant-ming', label: 'Ming', file: 'persons.ndjson' },
+  { slug: 'person-zh-hant-qing', label: 'Qing', file: 'persons.ndjson' },
+  { slug: 'person-ja-japan', label: 'Japan (ja)', file: 'persons.ndjson' },
+  { slug: 'person-bo', label: 'Tibetan (bo)', file: 'persons.ndjson' },
+  { slug: 'place-bo', label: 'Tibetan places (bo)', file: 'places.ndjson' },
+  { slug: 'org-zh-hant', label: 'Organizations (zh-hant)', file: 'orgs.ndjson' },
+  { slug: 'org-ja', label: 'Organizations (ja)', file: 'orgs.ndjson' },
+  { slug: 'org-bo', label: 'Organizations (bo)', file: 'orgs.ndjson' },
+  { slug: 'work-zh-hant', label: 'Works (zh-hant)', file: 'works.ndjson' },
+  { slug: 'work-ja', label: 'Works (ja)', file: 'works.ndjson' },
 ];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -135,11 +144,11 @@ const resolveWikidataPackDir = (slug) =>
     path.join(localPacksRoot, 'wikidata', slug),
   );
 
-const stagedWikidataPacks = WIKIDATA_PACK_DIRS.map(({ slug, label }) => {
+const stagedWikidataPacks = WIKIDATA_PACK_DIRS.map(({ slug, label, file }) => {
   const srcDir = resolveWikidataPackDir(slug);
-  const personsPath = srcDir ? path.join(srcDir, 'persons.ndjson') : null;
-  if (!personsPath || !fs.existsSync(personsPath)) return null;
-  return { slug, label, srcDir, personsPath };
+  const dataPath = srcDir ? path.join(srcDir, file) : null;
+  if (!dataPath || !fs.existsSync(dataPath)) return null;
+  return { slug, label, file, srcDir, dataPath };
 }).filter(Boolean);
 
 const includeWikidata = stagedWikidataPacks.length > 0;
@@ -213,19 +222,19 @@ if (includeNdl) {
 }
 
 if (includeWikidata) {
-  console.log('Staging Wikidata person packs…');
+  console.log('Staging Wikidata packs…');
   const wikidataFiles = {};
   for (const pack of stagedWikidataPacks) {
     const destDir = path.join(packsDir, 'wikidata', pack.slug);
     await fsp.mkdir(destDir, { recursive: true });
-    await fsp.copyFile(pack.personsPath, path.join(destDir, 'persons.ndjson'));
+    await fsp.copyFile(pack.dataPath, path.join(destDir, pack.file));
     const srcManifest = path.join(pack.srcDir, 'manifest.json');
     if (fs.existsSync(srcManifest)) {
       await fsp.copyFile(srcManifest, path.join(destDir, 'manifest.json'));
       const sub = JSON.parse(await fsp.readFile(srcManifest, 'utf8'));
-      const count = sub.files?.['persons.ndjson']?.entityCount;
+      const count = sub.files?.[pack.file]?.entityCount;
       if (typeof count === 'number') {
-        wikidataFiles[`${pack.slug}/persons.ndjson`] = { entityCount: count };
+        wikidataFiles[`${pack.slug}/${pack.file}`] = { entityCount: count };
       }
     }
     console.log(`  ${pack.slug}`);
@@ -417,6 +426,6 @@ if (!includeNdl) {
 }
 if (!includeWikidata) {
   console.log(
-    'Wikidata not included: compile Tang/Ming/Qing packs under packs/wikidata/person-zh-hant-{tang,ming,qing}/ (or copy to .upstream/wikidata/).',
+    'Wikidata not included: compile packs under packs/wikidata/<slug>/ (see WIKIDATA_PACK_DIRS in this script), or copy to .upstream/wikidata/.',
   );
 }
