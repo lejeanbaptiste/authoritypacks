@@ -1,0 +1,7 @@
+# Track large NDJSON files with Git LFS
+packs/ndl/raw/*.ndjson filter=lfs diff=lfs merge=lfs -text
+packs/ndl/raw/*.json filter=lfs diff=lfs merge=lfs -text
+
+# Track Wikidata pack files with Git LFS
+packs/wikidata/**/*.ndjson filter=lfs diff=lfs merge=lfs -text
+packs/wikidata/**/manifest.json filter=lfs diff=lfs merge=lfs -text

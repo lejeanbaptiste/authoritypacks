@@ -128,9 +128,11 @@ const ndlOrgsMetaPath = resolveOptional(
   path.join(localPacksRoot, 'ndl/raw/orgs.raw-meta.json'),
 );
 const ndlOrgsMeta = await readJsonIfExists(ndlOrgsMetaPath);
-const includeNdl = !!(ndlPersonsRaw && ndlWorksRaw);
-const includeNdlPlaces = !!(includeNdl && ndlPlacesRaw);
-const includeNdlOrgs = !!(includeNdl && ndlOrgsRaw);
+const includeNdlPersons = !!ndlPersonsRaw;
+const includeNdlWorks = !!ndlWorksRaw;
+const includeNdlPlaces = !!ndlPlacesRaw;
+const includeNdlOrgs = !!ndlOrgsRaw;
+const includeNdl = includeNdlPersons || includeNdlWorks || includeNdlPlaces || includeNdlOrgs;
 
 const wikidataMetaPath = resolveOptional(
   path.join(upstreamDir, 'wikidata/extract-meta.json'),
@@ -188,19 +190,23 @@ await compileDila({
 });
 
 if (includeNdl) {
-  console.log('Compiling NDL persons…');
-  compileNdlPersonsPack({
-    rawPath: ndlPersonsRaw,
-    outDir: path.join(packsDir, 'ndl'),
-    packId: 'ndl-persons-ja',
-  });
+  if (includeNdlPersons) {
+    console.log('Compiling NDL persons…');
+    compileNdlPersonsPack({
+      rawPath: ndlPersonsRaw,
+      outDir: path.join(packsDir, 'ndl'),
+      packId: 'ndl-persons-ja',
+    });
+  }
 
-  console.log('Compiling NDL works…');
-  compileNdlWorksPack({
-    rawPath: ndlWorksRaw,
-    outDir: path.join(packsDir, 'ndl'),
-    packId: 'ndl-works-ja',
-  });
+  if (includeNdlWorks) {
+    console.log('Compiling NDL works…');
+    compileNdlWorksPack({
+      rawPath: ndlWorksRaw,
+      outDir: path.join(packsDir, 'ndl'),
+      packId: 'ndl-works-ja',
+    });
+  }
 
   if (includeNdlPlaces) {
     console.log('Compiling NDL places…');

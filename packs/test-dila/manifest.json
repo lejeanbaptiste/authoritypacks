@@ -1,0 +1,22 @@
+{
+  "id": "dila",
+  "source": "DILA",
+  "buildToolVersion": "0.2.0",
+  "compiledAt": "2026-07-08T06:06:29.139Z",
+  "upstream": {
+    "persons": "/Users/daniel/Code/authority extraction/dila/fixtures/sample-persons.xml",
+    "places": "/Users/daniel/Code/authority extraction/dila/fixtures/sample-places.xml",
+    "districts": "/Users/daniel/Code/authority extraction/dila/fixtures/sample-places.xml"
+  },
+  "license": "CC-BY-SA-3.0",
+  "attribution": "Dharma Drum Institute of Liberal Arts (DILA) Authority Databases.",
+  "files": {
+    "persons.ndjson": {
+      "entityCount": 5
+    },
+    "places.ndjson": {
+      "entityCount": 3,
+      "crosswalkChgisCount": 0
+    }
+  }
+}

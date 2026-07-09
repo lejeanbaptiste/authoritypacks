@@ -15,25 +15,46 @@
     "files": [
       {
         "repoPath": "authority_person/Buddhist_Studies_Person_Authority.xml",
-        "localName": "dila-person.xml"
+        "localName": "dila-person.xml",
+        "sha256": "135e39e85ecb2956041ed29700e057598679125dc853d4ab80296b7ff13eb2d2"
       },
       {
         "repoPath": "authority_place/Buddhist_Studies_Place_Authority.xml",
-        "localName": "dila-place.xml"
+        "localName": "dila-place.xml",
+        "sha256": "6fcc9f650b0737f4379f58d605cb65de5ce08680de8ab5631dbc1427f3552efb"
       },
       {
         "repoPath": "authority_place/districts.xml",
-        "localName": "dila-districts.xml"
+        "localName": "dila-districts.xml",
+        "sha256": "8e8e7950d9260642a7c92e3df5e9368aea3b30b779b7c3f9c3f5a8c5909048b4"
       }
     ]
   },
   "ndl": {
     "worksZipUrl": "https://id.ndl.go.jp/information/wp-content/uploads/2026/04/work-tsv.zip",
     "license": "NDL Terms of Use (attribution required)",
-    "attribution": "Data from Web NDL Authorities (National Diet Library). 国立国会図書館の「Web NDL Authorities」から取得した典拠データです。"
+    "attribution": "Data from Web NDL Authorities (National Diet Library). 国立国会図書館の「Web NDL Authorities」から取得した典拠データです。",
+    "personsRawUrl": null,
+    "placesRawUrl": null,
+    "orgsRawUrl": null
   },
   "wikidata": {
     "license": "CC0",
-    "attribution": "Data from Wikidata (CC0)."
+    "attribution": "Data from Wikidata (CC0).",
+    "baseUrl": null,
+    "packs": [
+      { "slug": "person-zh-hant-tang", "file": "persons.ndjson" },
+      { "slug": "person-zh-hant-pre-ming", "file": "persons.ndjson" },
+      { "slug": "person-zh-hant-ming", "file": "persons.ndjson" },
+      { "slug": "person-zh-hant-qing", "file": "persons.ndjson" },
+      { "slug": "person-ja-japan", "file": "persons.ndjson" },
+      { "slug": "person-bo", "file": "persons.ndjson" },
+      { "slug": "place-bo", "file": "places.ndjson" },
+      { "slug": "org-zh-hant", "file": "orgs.ndjson" },
+      { "slug": "org-ja", "file": "orgs.ndjson" },
+      { "slug": "org-bo", "file": "orgs.ndjson" },
+      { "slug": "work-zh-hant", "file": "works.ndjson" },
+      { "slug": "work-ja", "file": "works.ndjson" }
+    ]
   }
 }

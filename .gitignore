@@ -4,13 +4,32 @@ dist/
 reports/*.ndjson
 reports/*.csv
 reports/*.tsv
-packs/
+
+# Ignore compiled packs (can be regenerated from sources)
+packs/cbdb/
+packs/dila/
+packs/ndl/persons-ja/
+packs/ndl/works-ja/
+packs/ndl/places-ja/
+packs/ndl/orgs-ja/
+packs/ndl/orgs-smoke-ja/
+packs/chgis/
+packs/chgis-test/
+
+# Ignore Wikidata raw extract directories (intermediate files)
+packs/wikidata/raw-*/
+packs/wikidata/raw-zh-hant-*/
+
+# Keep test packs for regression tests
 !packs/test-dila/
 !packs/test-dila/**
 !packs/test-ndl/
 !packs/test-ndl/**
+
+# Keep raw NDL files and Wikidata packs (needed for CI)
+!packs/ndl/raw/
+!packs/wikidata/
+
 *.bz2
 *.json.gz
-dist/
-packs/
 .DS_Store
