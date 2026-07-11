@@ -1,7 +1,7 @@
 import { addSearchString } from '../shared/normalize.mjs';
-import { dilaPersonClue, dilaPlaceClue, conciseFirstClause, yearFromTeiDate } from '../shared/clue.mjs';
+import { dilaPersonClue, dilaPlaceClue, conciseFirstClause, yearFromTeiDate, yearRangeFromText } from '../shared/clue.mjs';
 import { resolveDynastyByLabel } from '../shared/dynastyMap.mjs';
-import { asArray, hantNames, notesOfType, textContent, teiId } from '../shared/teiParse.mjs';
+import { asArray, hantNames, notesOfType, untypedNotes, textContent, teiId } from '../shared/teiParse.mjs';
 
 /** @typedef {import('../shared/types.mjs').AuthorityCandidate} AuthorityCandidate */
 
@@ -139,6 +139,13 @@ export function placeFromRecord(place, ctx) {
   /** @type {AuthorityCandidate['metadata']['crosswalk']} */
   const crosswalk = chgisId ? { chgis: chgisId } : undefined;
 
+  // DILA places have no dedicated 備註/朝代 elements in the TEI export; the
+  // remark text (with an embedded "(start ~ end)" date range, when present)
+  // lives in a plain untyped <note>.
+  const remark = untypedNotes(place)[0];
+  const remarkClause = conciseFirstClause(remark);
+  const yearRange = yearRangeFromText(remark);
+
   return {
     source: 'DILA',
     authorityId: String(authorityId),
@@ -148,7 +155,9 @@ export function placeFromRecord(place, ctx) {
     metadata: {
       subtype: category,
       geo,
-      description: dilaPlaceClue({ name: names[0], category, district }),
+      startYear: yearRange?.startYear,
+      endYear: yearRange?.endYear,
+      description: remarkClause || dilaPlaceClue({ name: names[0], category, district }),
       crosswalk,
     },
   };

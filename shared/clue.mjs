@@ -151,3 +151,23 @@ export function yearFromTeiDate(text) {
   const y = parseInt(m[1], 10);
   return Number.isFinite(y) ? y : undefined;
 }
+
+/**
+ * Extract a "(start ~ end)" year range from DILA place remark prose,
+ * e.g. "（265 ~ 316）郡級行政中心所在地" → { startYear: 265, endYear: 316 }.
+ * @param {string | undefined} text
+ * @returns {{ startYear: number, endYear: number } | undefined}
+ */
+export function yearRangeFromText(text) {
+  if (!text) return undefined;
+  const m = /[（(]\s*([+-]?\d{1,4})\s*[~～\-–]\s*([+-]?\d{1,4})\s*[）)]/.exec(text);
+  if (!m) return undefined;
+  // Reject ranges that are really a person's birth–death years quoted in prose
+  // (e.g. "寶賢尼（401-477）十九出家住建安寺") rather than the place/polity's own span.
+  const before = text.slice(0, m.index);
+  if (/[尼僧師]$/.test(before.trim())) return undefined;
+  const startYear = parseInt(m[1], 10);
+  const endYear = parseInt(m[2], 10);
+  if (!Number.isFinite(startYear) || !Number.isFinite(endYear)) return undefined;
+  return { startYear, endYear };
+}

@@ -92,6 +92,17 @@ export function notesOfType(personOrPlace, noteType) {
 }
 
 /**
+ * DILA place records carry their 備註/description as a plain <note> with no @_type.
+ * @param {Record<string, unknown>} personOrPlace
+ */
+export function untypedNotes(personOrPlace) {
+  return asArray(personOrPlace.note)
+    .filter((n) => !n?.['@_type'])
+    .map((n) => textContent(n))
+    .filter(Boolean);
+}
+
+/**
  * zho-Hant persName / placeName strings only.
  * @param {Record<string, unknown>} el
  * @param {string} tag

@@ -18,7 +18,7 @@ test('DILA compile fixture — persons and places', async () => {
   });
 
   assert.equal(result.persons, 5);
-  assert.equal(result.places, 3);
+  assert.equal(result.places, 4);
 
   const persons = readNdjson(path.join(out, 'persons.ndjson'));
   const jin = persons.find((p) => p.authorityId === 'A000001');
@@ -32,4 +32,11 @@ test('DILA compile fixture — persons and places', async () => {
   assert.equal(kalayashas.metadata?.startYear, 383);
   assert.equal(kalayashas.metadata?.endYear, 442);
   assert.equal(kalayashas.metadata?.dynasty, '劉宋');
+
+  const places = readNdjson(path.join(out, 'places.ndjson'));
+  const jianye = places.find((p) => p.authorityId === 'PL000000000004');
+  assert.ok(jianye);
+  assert.equal(jianye.metadata?.startYear, 265);
+  assert.equal(jianye.metadata?.endYear, 316);
+  assert.equal(jianye.metadata?.description, '（265 ~ 316）郡級行政中心所在地');
 });

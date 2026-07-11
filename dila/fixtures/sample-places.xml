@@ -18,4 +18,8 @@
 <place xml:id="PL000000000003">
  <placeName xml:lang="zho-Hant">勝境關</placeName>
  <placeName type="alternative" xml:lang="zho-Hant">界關</placeName>
- <location><place key="PLD002572">富源縣</place></listPlace></body></text></TEI>
+ <location><place key="PLD002572">富源縣</place>
+<place xml:id="PL000000000004">
+ <placeName xml:lang="zho-Hant">建業</placeName>
+ <note>（265 ~ 316）郡級行政中心所在地。孫吳、東晉、南朝定都於此。</note>
+ <location><place key="PLD000001">南京</place></listPlace></body></text></TEI>

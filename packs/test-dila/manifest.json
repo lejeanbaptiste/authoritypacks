@@ -2,7 +2,7 @@
   "id": "dila",
   "source": "DILA",
   "buildToolVersion": "0.2.0",
-  "compiledAt": "2026-07-08T06:06:29.139Z",
+  "compiledAt": "2026-07-09T18:54:10.197Z",
   "upstream": {
     "persons": "/Users/daniel/Code/authority extraction/dila/fixtures/sample-persons.xml",
     "places": "/Users/daniel/Code/authority extraction/dila/fixtures/sample-places.xml",
@@ -15,7 +15,7 @@
       "entityCount": 5
     },
     "places.ndjson": {
-      "entityCount": 3,
+      "entityCount": 4,
       "crosswalkChgisCount": 0
     }
   }
