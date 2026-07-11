@@ -15,8 +15,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 const distDir = path.join(repoRoot, 'dist');
 const releaseDir = path.join(repoRoot, 'release');
-const ref = process.env.GITHUB_REF ?? '';
-const isTagRelease = ref.startsWith('refs/tags/v');
 
 execFileSync('node', [path.join(repoRoot, 'scripts/build-pack-bundle.mjs')], {
   stdio: 'inherit',
@@ -62,11 +60,6 @@ const bundles = [
 ];
 
 await fs.copyFile(path.join(distDir, 'packs-index.json'), path.join(releaseDir, 'packs-index.json'));
-
-if (!isTagRelease) {
-  console.log(`Staged 1 release artifact in ${releaseDir} for non-tag build.`);
-  process.exit(0);
-}
 
 for (const bundle of bundles) {
   const entries = [];
