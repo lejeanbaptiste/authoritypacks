@@ -1,6 +1,7 @@
 node_modules/
 .upstream/
 dist/
+release/
 reports/*.ndjson
 reports/*.csv
 reports/*.tsv
