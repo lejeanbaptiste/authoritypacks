@@ -38,7 +38,7 @@
     "fetch:upstream": "node scripts/fetch-upstream.mjs",
     "build:packs": "node scripts/build-pack-bundle.mjs",
     "build:packs:full": "node scripts/fetch-upstream.mjs && node scripts/build-pack-bundle.mjs",
-    "authoritypacks:release": "node scripts/build-authority-pack-release.mjs",
+    "authoritypacks:release": "node scripts/fetch-upstream.mjs && node scripts/build-authority-pack-release.mjs",
     "test": "node --test '**/*.test.mjs'"
   },
   "license": "GPL-2.0",
