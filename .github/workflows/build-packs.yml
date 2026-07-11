@@ -18,6 +18,9 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          # The pre-compiled NDL and Wikidata packs are stored in Git LFS.
+          lfs: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
