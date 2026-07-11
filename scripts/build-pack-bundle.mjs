@@ -74,7 +74,11 @@ const resolveOptional = (...candidates) => candidates.find((candidate) => fs.exi
 
 const readJsonIfExists = async (filePath) => {
   if (!filePath || !fs.existsSync(filePath)) return null;
-  return JSON.parse(await fsp.readFile(filePath, 'utf8'));
+  const contents = await fsp.readFile(filePath, 'utf8');
+  if (contents.startsWith('version https://git-lfs.github.com/spec/v1')) {
+    return null;
+  }
+  return JSON.parse(contents);
 };
 
 const compactDate = (value) => {
