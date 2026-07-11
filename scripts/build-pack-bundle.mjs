@@ -70,12 +70,32 @@ const resolveUpstream = (fileName, fallbacks) => {
   throw new Error(`Missing ${fileName}. Run: node scripts/fetch-upstream.mjs`);
 };
 
-const resolveOptional = (...candidates) => candidates.find((candidate) => fs.existsSync(candidate)) ?? null;
+const isLfsPointer = (contents) =>
+  contents.startsWith('version https://git-lfs.github.com/spec/v1');
+
+const isUsableFile = async (filePath) => {
+  if (!filePath || !fs.existsSync(filePath)) return false;
+  const handle = await fsp.open(filePath, 'r');
+  try {
+    const buffer = Buffer.alloc(64);
+    const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0);
+    return !isLfsPointer(buffer.subarray(0, bytesRead).toString('utf8'));
+  } finally {
+    await handle.close();
+  }
+};
+
+const resolveOptional = async (...candidates) => {
+  for (const candidate of candidates) {
+    if (await isUsableFile(candidate)) return candidate;
+  }
+  return null;
+};
 
 const readJsonIfExists = async (filePath) => {
   if (!filePath || !fs.existsSync(filePath)) return null;
   const contents = await fsp.readFile(filePath, 'utf8');
-  if (contents.startsWith('version https://git-lfs.github.com/spec/v1')) {
+  if (isLfsPointer(contents)) {
     return null;
   }
   return JSON.parse(contents);
@@ -101,33 +121,33 @@ const placesPath = resolveUpstream('dila-place.xml', [
 ]);
 const districtsPath = resolveUpstream('dila-districts.xml', [path.join(leafWriterDb, 'districts.xml')]);
 
-const ndlPersonsRaw = resolveOptional(
+const ndlPersonsRaw = await resolveOptional(
   path.join(upstreamDir, 'ndl/raw/persons.raw.ndjson'),
   path.join(localPacksRoot, 'ndl/raw/persons.raw.ndjson'),
 );
-const ndlWorksRaw = resolveOptional(
+const ndlWorksRaw = await resolveOptional(
   path.join(upstreamDir, 'ndl/raw/works.raw.ndjson'),
   path.join(localPacksRoot, 'ndl/raw/works.raw.ndjson'),
 );
-const ndlPlacesRaw = resolveOptional(
+const ndlPlacesRaw = await resolveOptional(
   path.join(upstreamDir, 'ndl/raw/places.raw.ndjson'),
   path.join(localPacksRoot, 'ndl/raw/places.raw.ndjson'),
 );
-const ndlOrgsRaw = resolveOptional(
+const ndlOrgsRaw = await resolveOptional(
   path.join(upstreamDir, 'ndl/raw/orgs.raw.ndjson'),
   path.join(localPacksRoot, 'ndl/raw/orgs.raw.ndjson'),
 );
-const ndlPersonsMetaPath = resolveOptional(
+const ndlPersonsMetaPath = await resolveOptional(
   path.join(upstreamDir, 'ndl/raw/persons.raw-meta.json'),
   path.join(localPacksRoot, 'ndl/raw/persons.raw-meta.json'),
 );
 const ndlPersonsMeta = await readJsonIfExists(ndlPersonsMetaPath);
-const ndlPlacesMetaPath = resolveOptional(
+const ndlPlacesMetaPath = await resolveOptional(
   path.join(upstreamDir, 'ndl/raw/places.raw-meta.json'),
   path.join(localPacksRoot, 'ndl/raw/places.raw-meta.json'),
 );
 const ndlPlacesMeta = await readJsonIfExists(ndlPlacesMetaPath);
-const ndlOrgsMetaPath = resolveOptional(
+const ndlOrgsMetaPath = await resolveOptional(
   path.join(upstreamDir, 'ndl/raw/orgs.raw-meta.json'),
   path.join(localPacksRoot, 'ndl/raw/orgs.raw-meta.json'),
 );
@@ -138,24 +158,24 @@ const includeNdlPlaces = !!ndlPlacesRaw;
 const includeNdlOrgs = !!ndlOrgsRaw;
 const includeNdl = includeNdlPersons || includeNdlWorks || includeNdlPlaces || includeNdlOrgs;
 
-const wikidataMetaPath = resolveOptional(
+const wikidataMetaPath = await resolveOptional(
   path.join(upstreamDir, 'wikidata/extract-meta.json'),
   path.join(localPacksRoot, 'wikidata/raw-zh-hant-priority1/extract-meta.json'),
 );
 const wikidataMeta = await readJsonIfExists(wikidataMetaPath);
 
 const resolveWikidataPackDir = (slug) =>
-  resolveOptional(
+  [
     path.join(upstreamDir, 'wikidata', slug),
     path.join(localPacksRoot, 'wikidata', slug),
-  );
+  ].find((candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) ?? null;
 
-const stagedWikidataPacks = WIKIDATA_PACK_DIRS.map(({ slug, label, file }) => {
+const stagedWikidataPacks = (await Promise.all(WIKIDATA_PACK_DIRS.map(async ({ slug, label, file }) => {
   const srcDir = resolveWikidataPackDir(slug);
   const dataPath = srcDir ? path.join(srcDir, file) : null;
-  if (!dataPath || !fs.existsSync(dataPath)) return null;
+  if (!dataPath || !(await isUsableFile(dataPath))) return null;
   return { slug, label, file, srcDir, dataPath };
-}).filter(Boolean);
+}))).filter(Boolean);
 
 const includeWikidata = stagedWikidataPacks.length > 0;
 
