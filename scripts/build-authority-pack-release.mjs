@@ -6,6 +6,8 @@
  * workflow thin and makes the release payload local-dev friendly.
  */
 import { execFileSync } from 'node:child_process';
+import crypto from 'node:crypto';
+import fsSync from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
@@ -22,6 +24,14 @@ execFileSync('node', [path.join(repoRoot, 'scripts/build-pack-bundle.mjs')], {
 
 const index = JSON.parse(await fs.readFile(path.join(distDir, 'packs-index.json'), 'utf8'));
 const version = index.bundleVersion;
+
+const sha256File = async (filePath) => {
+  const hash = crypto.createHash('sha256');
+  for await (const chunk of fsSync.createReadStream(filePath)) {
+    hash.update(chunk);
+  }
+  return hash.digest('hex');
+};
 
 await fs.rm(releaseDir, { recursive: true, force: true });
 await fs.mkdir(releaseDir, { recursive: true });
@@ -88,5 +98,39 @@ for (const bundle of bundles) {
     await fs.rm(stageDir, { recursive: true, force: true });
   }
 }
+
+const releaseBundles = [];
+for (const bundle of bundles) {
+  const tarballPath = path.join(releaseDir, bundle.name);
+  const prefixes = bundle.entries.map((entry) => `${entry.replace(/^authority-packs\//, '')}/`);
+  const files = (index.files ?? []).filter((file) =>
+    prefixes.some((prefix) => file.path.startsWith(prefix)),
+  );
+  releaseBundles.push({
+    id: bundle.name.includes('-chinese-')
+      ? 'chinese'
+      : bundle.name.includes('-japanese-')
+        ? 'japanese'
+        : 'tibetan',
+    fileName: bundle.name,
+    bytes: (await fs.stat(tarballPath)).size,
+    sha256: await sha256File(tarballPath),
+    pathPrefix: 'authority-packs',
+    fileCount: files.length,
+    files,
+  });
+}
+
+const indexMetadata = { ...index };
+delete indexMetadata.tarball;
+delete indexMetadata.files;
+await fs.writeFile(
+  path.join(releaseDir, 'packs-index.json'),
+  `${JSON.stringify({
+    ...indexMetadata,
+    defaultBundleId: 'chinese',
+    bundles: releaseBundles,
+  }, null, 2)}\n`,
+);
 
 console.log(`Staged ${bundles.length + 1} release artifact(s) in ${releaseDir}.`);
