@@ -50,22 +50,54 @@ const sha256File = async (filePath) => {
   return hash.digest('hex');
 };
 
+const DOWNLOAD_ATTEMPTS = Math.max(
+  1,
+  Number.parseInt(process.env.UPSTREAM_DOWNLOAD_RETRIES ?? '5', 10) || 5,
+);
+const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
+const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
 const download = async (url, destPath, expectedSha256) => {
-  console.log(`  fetch ${url}`);
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
-  await fsp.mkdir(path.dirname(destPath), { recursive: true });
-  const buffer = Buffer.from(await response.arrayBuffer());
+  for (let attempt = 1; attempt <= DOWNLOAD_ATTEMPTS; attempt += 1) {
+    console.log(`  fetch ${url}${attempt > 1 ? ` (attempt ${attempt}/${DOWNLOAD_ATTEMPTS})` : ''}`);
+    try {
+      const response = await fetch(url, {
+        headers: { 'user-agent': 'authoritypacks-ci/1.0' },
+      });
+      if (!response.ok) {
+        const retryable = RETRYABLE_STATUS.has(response.status);
+        await response.body?.cancel().catch(() => undefined);
+        if (!retryable || attempt === DOWNLOAD_ATTEMPTS) {
+          throw new Error(`HTTP ${response.status} for ${url}`);
+        }
+        const retryAfter = Number(response.headers.get('retry-after'));
+        const delay = Number.isFinite(retryAfter)
+          ? Math.min(60_000, Math.max(1_000, retryAfter * 1_000))
+          : Math.min(30_000, 2_000 * 2 ** (attempt - 1));
+        console.warn(`  HTTP ${response.status}; retrying in ${delay} ms`);
+        await sleep(delay);
+        continue;
+      }
+      await fsp.mkdir(path.dirname(destPath), { recursive: true });
+      const buffer = Buffer.from(await response.arrayBuffer());
   
-  if (expectedSha256) {
-    const actualSha256 = createHash('sha256').update(buffer).digest('hex');
-    if (actualSha256 !== expectedSha256) {
-      throw new Error(`SHA256 mismatch for ${url}: got ${actualSha256}, expected ${expectedSha256}`);
+      if (expectedSha256) {
+        const actualSha256 = createHash('sha256').update(buffer).digest('hex');
+        if (actualSha256 !== expectedSha256) {
+          throw new Error(`SHA256 mismatch for ${url}: got ${actualSha256}, expected ${expectedSha256}`);
+        }
+      }
+
+      await fsp.writeFile(destPath, buffer);
+      return destPath;
+    } catch (error) {
+      if (attempt === DOWNLOAD_ATTEMPTS) throw error;
+      const message = error instanceof Error ? error.message : String(error);
+      const delay = Math.min(30_000, 2_000 * 2 ** (attempt - 1));
+      console.warn(`  ${message}; retrying in ${delay} ms`);
+      await sleep(delay);
     }
   }
-  
-  await fsp.writeFile(destPath, buffer);
-  return destPath;
 };
 
 // ============================================================================
@@ -279,4 +311,3 @@ console.log(`\nUpstream ready in ${outDir}`);
 console.log('\nNote: NDL persons/places/orgs and Wikidata packs require pre-built files.');
 console.log('      Either set the appropriate _URL environment variables or add them to upstream/pins.json');
 console.log('      and ensure the files are hosted at those locations.');
-
