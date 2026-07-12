@@ -60,6 +60,13 @@ const bundles = [
 ];
 
 await fs.copyFile(path.join(distDir, 'packs-index.json'), path.join(releaseDir, 'packs-index.json'));
+// The index's `tarball.fileName` points to the complete bundle produced by
+// build-pack-bundle.mjs. Keep that exact asset in the release: LJB downloads
+// the filename declared by the index, not one of the optional split bundles.
+await fs.copyFile(
+  path.join(distDir, index.tarball.fileName),
+  path.join(releaseDir, index.tarball.fileName),
+);
 
 for (const bundle of bundles) {
   const entries = [];
