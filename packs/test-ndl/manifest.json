@@ -1,17 +1,17 @@
 {
-  "id": "test-ndl-orgs",
+  "id": "test-ndl-works",
   "source": "NDL",
   "buildToolVersion": "0.1.0",
-  "compiledAt": "2026-07-14T14:14:28.519Z",
+  "compiledAt": "2026-07-14T19:15:00.850Z",
   "upstream": {
-    "raw": "C:\\Users\\dpm_g\\code\\authoritypacks\\ndl\\fixtures\\sample-orgs.raw.ndjson"
+    "raw": "/Users/daniel/Code/authority extraction/packs/test-ndl/works.raw.ndjson"
   },
   "license": "NDL Terms of Use (attribution required)",
   "attribution": "Data from Web NDL Authorities (National Diet Library). 国立国会図書館の「Web NDL Authorities」から取得した典拠データです。",
   "language": "ja",
   "files": {
-    "orgs.ndjson": {
-      "entityCount": 2
+    "works.ndjson": {
+      "entityCount": 3
     }
   }
 }

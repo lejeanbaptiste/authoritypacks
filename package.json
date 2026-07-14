@@ -26,6 +26,7 @@
     "ndl:compile-works": "node ndl/compileWorks.mjs",
     "ndl:sparql": "node ndl/run-sparql.mjs",
     "ndl:compile-persons": "node ndl/compilePersons.mjs",
+    "ndl:export-ime": "node ndl/exportIme.mjs",
     "ndl:compile-places": "node ndl/compilePlaces.mjs",
     "ndl:compile-orgs": "node ndl/compileOrgs.mjs",
     "compile:dila": "node dila/compile.mjs",

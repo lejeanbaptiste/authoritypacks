@@ -1,16 +1,19 @@
 const JAPANESE_SCRIPT_RE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/u;
+const KANJI_RE = /[\u4e00-\u9fff]/u;
 const LATIN_RE = /[A-Za-z]/u;
 const DIGIT_RE = /\d/u;
 
 /**
  * NDL's person authority set contains some Latin-only and catalog-like names.
- * The Japanese native-name tag pack keeps only names with Japanese script.
+ * The Japanese native-name tag pack keeps only names with Japanese script,
+ * no Latin characters or Arabic numerals, and requires at least one kanji.
  * @param {string | undefined} value
  */
 export function isUsableJapanesePersonName(value) {
   const name = value?.trim();
   if (!name || !JAPANESE_SCRIPT_RE.test(name)) return false;
   if (LATIN_RE.test(name) || DIGIT_RE.test(name)) return false;
+  if (!KANJI_RE.test(name)) return false;
   return true;
 }
 
