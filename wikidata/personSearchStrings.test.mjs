@@ -2,26 +2,27 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { personSearchStringsFromWikidata } from './personSearchStrings.mjs';
 
-test('蔣防 — bare 字 aliases become 姓+字 only', () => {
+test('蔣防 — bare 字 aliases are excluded', () => {
   const strings = personSearchStringsFromWikidata({
     primaryLabel: '蔣防',
     familyName: '蔣',
     aliases: ['子徴', '子微'],
   });
   assert.ok(strings.includes('蔣防'));
-  assert.ok(strings.includes('蔣徴') || strings.includes('蔣微'));
+  assert.equal(strings.includes('蔣徴'), false);
+  assert.equal(strings.includes('蔣微'), false);
   assert.equal(strings.includes('子徴'), false);
   assert.equal(strings.includes('子微'), false);
 });
 
-test('李益 — 君虞 as 字 not bare', () => {
+test('李益 — 君虞 is not synthesized into a search string', () => {
   const strings = personSearchStringsFromWikidata({
     primaryLabel: '李益',
     familyName: '李',
     aliases: ['君虞'],
   });
   assert.ok(strings.includes('李益'));
-  assert.ok(strings.includes('李君虞'));
+  assert.equal(strings.includes('李君虞'), false);
   assert.equal(strings.includes('君虞'), false);
 });
 
@@ -45,7 +46,7 @@ test('blocks placeholder 李某', () => {
   assert.equal(strings.length, 0);
 });
 
-test('李晟 — keeps long honorific aliases', () => {
+test('李晟 — keeps full aliases and excludes components', () => {
   const strings = personSearchStringsFromWikidata({
     primaryLabel: '李晟',
     familyName: '李',
@@ -53,6 +54,6 @@ test('李晟 — keeps long honorific aliases', () => {
   });
   assert.ok(strings.includes('李晟'));
   assert.ok(strings.includes('西平郡王'));
-  assert.ok(strings.includes('李良器'));
+  assert.equal(strings.includes('李良器'), false);
   assert.equal(strings.includes('良器'), false);
 });

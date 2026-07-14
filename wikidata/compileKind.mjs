@@ -4,7 +4,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compiledCrosswalkFromRaw } from './identifierClaims.mjs';
 import { kindSearchStringsFromWikidata, workSearchStringsFromWikidata } from './kindSearchStrings.mjs';
 import { compiledFileNameForKind } from './rawFromEntity.mjs';
 import { readNdjson, writePackFile } from '../shared/ndjson.mjs';
@@ -27,10 +26,12 @@ export function kindCandidateFromRaw(raw, kind, ctx) {
 
   if (searchStrings.length === 0) return null;
 
-  const crosswalk = compiledCrosswalkFromRaw(raw);
-  if (raw.chgisId) {
-    if (crosswalk) crosswalk.chgis = String(raw.chgisId);
-  }
+  const metadata = {
+    description: raw.description ?? `${raw.primaryLabel} (Wikidata ${raw.qid})`,
+  };
+  if (raw.publicationYear !== undefined) metadata.startYear = raw.publicationYear;
+  if (raw.inceptionYear !== undefined) metadata.startYear = raw.inceptionYear;
+  if (raw.dissolvedYear !== undefined) metadata.endYear = raw.dissolvedYear;
 
   /** @type {import('../shared/types.mjs').AuthorityCandidate} */
   return {
@@ -39,10 +40,7 @@ export function kindCandidateFromRaw(raw, kind, ctx) {
     kind,
     primaryName: String(raw.primaryLabel),
     searchStrings,
-    metadata: {
-      description: `${raw.primaryLabel} (Wikidata ${raw.qid})`,
-      crosswalk,
-    },
+    metadata,
   };
 }
 

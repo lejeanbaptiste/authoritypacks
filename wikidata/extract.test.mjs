@@ -30,6 +30,28 @@ test('timeClaimYear parses Wikidata time', () => {
   assert.equal(timeClaimYear(entity, 'P569'), 701);
 });
 
+test('raw person rows preserve names without synthesizing components', () => {
+  const entity = {
+    type: 'item',
+    id: 'Q42',
+    labels: {
+      'zh-hant': { value: '甲乙' },
+    },
+    aliases: {
+      'zh-hant': [{ value: '甲子' }],
+    },
+    descriptions: {
+    },
+    claims: {
+      P1705: [{ mainsnak: { datavalue: { value: '甲乙' } } }],
+      P31: [],
+    },
+  };
+
+  const raw = rawPersonFromEntity(entity, 'zh-hant');
+  assert.deepEqual(raw?.aliases, ['甲子']);
+});
+
 test('entityMatchesPersonSlice requires zh-hant label and Tang P27', () => {
   const lines = fs.readFileSync(fixture, 'utf8').trim().split('\n');
   const libai = JSON.parse(lines[0]);
@@ -79,7 +101,7 @@ test('extract fixture → compile Tang pack', async () => {
   );
   assert.ok(libai?.searchStrings.includes('李白'));
   assert.ok(libai?.searchStrings.includes('李太白'));
-  assert.deepEqual(libai?.metadata?.crosswalk?.wikidata, ['5581']);
+  assert.equal(libai?.metadata?.crosswalk, undefined);
 
   const fictional = JSON.parse(fs.readFileSync(fixture, 'utf8').split('\n')[3]);
   const ficCand = personCandidateFromRaw(rawPersonFromEntity(fictional, 'zh-hant'), {
@@ -87,6 +109,8 @@ test('extract fixture → compile Tang pack', async () => {
   });
   assert.equal(ficCand?.metadata?.ana, 'fictional');
   assert.ok(ficCand?.searchStrings.includes('虬髯客'));
+  assert.equal(ficCand?.metadata?.yomi, undefined);
+  assert.equal(ficCand?.metadata?.yomiHiragana, undefined);
 
   const soseki = {
     type: 'item',

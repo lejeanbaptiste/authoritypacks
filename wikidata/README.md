@@ -311,8 +311,8 @@ Wikidata has no CBDB altname type codes. [`personSearchStrings.mjs`](personSearc
 |-----------|-------------------|
 | Block 姓+某, 姓+氏 | Same; also block any two-char `X某` placeholder |
 | Type 7 行第 | Drop aliases like 岑二十七, 杜十五 |
-| Type 4 字 → 姓+字 only | Short aliases → `familyName + zi`; `子徴` → 姓+徴 |
-| Types 5/6 號 (longer than primary) | Include aliases **longer than** primary label |
+| Type 4 字 | Retain the component in raw data, but do not synthesize `familyName + zi` for tag packs |
+| Types 5/6 號 (longer than primary) | Include independently recorded full aliases **longer than** primary label |
 | P734 family name | Prefer when present; else infer from label |
 
 On a 500-row Tang sample, this drops ~17% of raw strings (mostly bare 字 and 行第).

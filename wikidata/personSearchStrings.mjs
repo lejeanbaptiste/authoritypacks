@@ -10,7 +10,6 @@ import {
   codePointLength,
   inferFamilyNameFromLabel,
   isBlockedPersonString,
-  ziBodyFromAlias,
 } from '../shared/personStringPolicy.mjs';
 import { normalizeSurface } from '../shared/normalize.mjs';
 
@@ -46,21 +45,11 @@ export function personSearchStringsFromWikidata(person) {
 
     if (isBlockedPersonString(alias, familyName)) continue;
 
-    // Longer than primary → include (CBDB types 3, 5, 6 style 別號/諡號)
+    // Retain independently recorded full aliases. Do not synthesize surname
+    // + courtesy-name combinations: they can be ambiguous in authority lookup.
     if (longerThanPrimary(alias)) {
       addPersonSearchString(out, alias, familyName);
-      continue;
     }
-
-    // Short alias → treat as 字 (type 4): surname + zi only, never bare
-    const ziBody = ziBodyFromAlias(alias);
-    if (familyName && codePointLength(ziBody) <= 2) {
-      addPersonSearchString(out, familyName + ziBody, familyName);
-      continue;
-    }
-
-    // Without surname, drop short bare aliases (would be noisy zi)
-    if (codePointLength(alias) <= 2) continue;
   }
 
   return [...out];

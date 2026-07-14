@@ -2,7 +2,12 @@
  * Build raw NDJSON rows per Wikidata kind.
  */
 
-import { claimEntityIds, labelsForPackLanguage, rawPersonFromEntity, timeClaimYear } from './entityParse.mjs';
+import {
+  claimEntityIds,
+  labelsForPackLanguage,
+  rawPersonFromEntity,
+  timeClaimYear,
+} from './entityParse.mjs';
 import { crosswalkFromEntity } from './identifierClaims.mjs';
 
 /**

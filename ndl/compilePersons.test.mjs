@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { personSearchStringsFromRaw, parseYear } from './personSearchStrings.mjs';
+import { isUsableJapanesePersonName, personSearchStringsFromRaw, parseYear } from './personSearchStrings.mjs';
 import { compileNdlPersonsPack, personCandidateFromRaw } from './compilePersons.mjs';
 import { authorityIdFromUri } from './constants.mjs';
 import { personCountQuery, personPageQuery } from './queries.mjs';
@@ -22,17 +22,17 @@ test('parseYear', () => {
   assert.equal(parseYear(undefined), undefined);
 });
 
-test('personSearchStringsFromRaw — name and distinct heading', () => {
+test('personSearchStringsFromRaw — native name only', () => {
   const strings = personSearchStringsFromRaw({
     authorityId: '1',
     authUri: 'http://example',
     name: '夏目漱石',
     heading: '夏目, 漱石, 1867-1916',
   });
-  assert.deepEqual(strings, ['夏目漱石', '夏目, 漱石, 1867-1916']);
+  assert.deepEqual(strings, ['夏目漱石']);
 });
 
-test('personSearchStringsFromRaw — kana readings for IME', () => {
+test('personSearchStringsFromRaw — kana readings stay out of tag strings', () => {
   const strings = personSearchStringsFromRaw({
     authorityId: '00054222',
     authUri: 'http://example',
@@ -40,9 +40,13 @@ test('personSearchStringsFromRaw — kana readings for IME', () => {
     yomi: 'ナツメ, ソウセキ, 1867-1916',
     yomiAlt: ['ナツメ, キンノスケ'],
   });
-  assert.ok(strings.includes('ナツメ ソウセキ'));
-  assert.ok(strings.includes('キンノスケ'));
-  assert.ok(strings.includes('なつめ'));
+  assert.deepEqual(strings, ['夏目漱石']);
+});
+
+test('personSearchStringsFromRaw — rejects Latin-only and dated names', () => {
+  assert.equal(isUsableJapanesePersonName('夏目漱石'), true);
+  assert.equal(isUsableJapanesePersonName('Natsume Soseki'), false);
+  assert.equal(isUsableJapanesePersonName('夏目漱石 1867-1916'), false);
 });
 
 test('personCandidateFromRaw — birth/death metadata', () => {
@@ -57,9 +61,9 @@ test('personCandidateFromRaw — birth/death metadata', () => {
   assert.ok(c);
   assert.equal(c.metadata?.startYear, 1867);
   assert.equal(c.metadata?.endYear, 1916);
-  assert.equal(c.metadata?.yomi, 'ナツメ ソウセキ');
-  assert.equal(c.metadata?.yomiHiragana, 'なつめ そうせき');
-  assert.ok(c.searchStrings.includes('なつめ'));
+  assert.equal(c.metadata?.yomi, undefined);
+  assert.equal(c.metadata?.yomiHiragana, undefined);
+  assert.deepEqual(c.searchStrings, ['夏目漱石']);
 });
 
 test('SPARQL query templates include correct namespaces', () => {

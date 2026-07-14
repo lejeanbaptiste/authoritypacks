@@ -20,6 +20,7 @@
     "wikidata:extract-works-zh": "node wikidata/extract.mjs --kinds work --membership label-only --language zh-hant",
     "wikidata:extract-zh-ja-orgs-works": "node wikidata/extract.mjs --kinds org,work --membership label-only --languages zh-hant,ja --out packs/wikidata/raw-zh-hant-ja-org-work",
     "wikidata:compile-zh-ja-orgs-works": "node wikidata/compile-zh-ja-orgs-works.mjs",
+    "wikidata:export-ime": "node wikidata/exportIme.mjs",
     "wikidata:report": "node wikidata/report.mjs",
     "ndl:parse-works": "node ndl/parseWorks.mjs",
     "ndl:compile-works": "node ndl/compileWorks.mjs",

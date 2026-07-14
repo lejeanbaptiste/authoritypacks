@@ -13,7 +13,6 @@ import {
   rawPersonMatchesPreMing,
 } from './periodMembership.mjs';
 import { readNdjson, writePackFile } from '../shared/ndjson.mjs';
-import { compiledCrosswalkFromRaw } from './identifierClaims.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -65,13 +64,11 @@ export function personCandidateFromRaw(raw, ctx) {
     dynasty: periodLabel,
     startYear: raw.birthYear ?? ctx.dynasty?.startYear,
     endYear: raw.deathYear ?? ctx.dynasty?.endYear,
-    description: `${raw.primaryLabel} (${periodLabel}${isFictional ? ', fictional' : ''}, Wikidata ${raw.qid})`,
+    description:
+      raw.description ??
+      `${raw.primaryLabel} (${periodLabel}${isFictional ? ', fictional' : ''}, Wikidata ${raw.qid})`,
     ana: isFictional ? 'fictional' : 'historical',
-    crosswalk: compiledCrosswalkFromRaw(raw),
   };
-  if (raw.yomiHiragana) metadata.yomiHiragana = raw.yomiHiragana;
-  if (raw.nameInKana?.length) metadata.yomi = raw.nameInKana.join(' ');
-
   return {
     source: 'Wikidata',
     authorityId: raw.qid,

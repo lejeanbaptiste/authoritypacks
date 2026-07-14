@@ -6,7 +6,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { NDL_ATTRIBUTION } from './constants.mjs';
 import { personSearchStringsFromRaw } from './personSearchStrings.mjs';
-import { yomiReadingsFromRaw } from './yomiReadings.mjs';
 import { readNdjson, writePackFile } from '../shared/ndjson.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -21,7 +20,6 @@ export function personCandidateFromRaw(raw) {
   const searchStrings = personSearchStringsFromRaw(raw);
   if (searchStrings.length === 0) return null;
 
-  const readings = yomiReadingsFromRaw(raw);
   /** @type {import('../shared/types.mjs').CandidateMetadata} */
   const metadata = {
     startYear: raw.birthYear,
@@ -29,11 +27,6 @@ export function personCandidateFromRaw(raw) {
     description: `${raw.name} (NDL ${raw.authorityId})`,
     ana: 'historical',
   };
-  if (readings.primaryKatakana) {
-    metadata.yomi = readings.primaryKatakana;
-    metadata.yomiHiragana = readings.primaryHiragana;
-  }
-
   return {
     source: 'NDL',
     authorityId: raw.authorityId,
