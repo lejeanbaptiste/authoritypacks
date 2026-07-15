@@ -30,12 +30,28 @@
  */
 
 /**
+ * @typedef {Object} NameEntry
+ * @property {string} text
+ * @property {string} [type] LJB canonical name-type id (see leaf-writer
+ *   `autoTagging/nameTypes.ts`: primary/courtesy/art/posthumous/temple/
+ *   dharma/pen/variant) or a source-specific label leaf-writer's
+ *   `normalizeNameType` understands (Wikidata P-ids, CJK category labels).
+ *   Absent/unrecognized → ingested as `variant`.
+ * @property {string} [lang]
+ */
+
+/**
  * @typedef {Object} AuthorityCandidate
  * @property {string} source
  * @property {string} authorityId
  * @property {EntityKind} kind
  * @property {string} primaryName
  * @property {string[]} searchStrings
+ * @property {NameEntry[]} [names] Typed names, when the source preserves name
+ *   categories (currently CBDB only — see `cbdb/constants.mjs`
+ *   `CBDB_NAME_TYPE_MAP`; DILA's TEI export has no structured name-type
+ *   attribute so its persName/placeName stay untyped). Absent on packs built
+ *   before this field existed; leaf-writer treats that as "no typed names".
  * @property {CandidateMetadata} [metadata]
  */
 

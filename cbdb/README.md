@@ -45,6 +45,42 @@ Type **0** stays **out** (~45k strings). Mythical persons are **in** (no special
 
 - `kind: office`, `metadata.teiTag: roleName` at match time (no entity mint in v1).
 
+### Typed names (`names[]`) — 👤 signed 2026-07-15
+
+Every string in `searchStrings` is also emitted as a `{ text, type }` entry in
+`names[]`, tagged with the LJB canonical name-type id
+(`autoTagging/nameTypes.ts`: primary/courtesy/art/posthumous/temple/dharma/
+pen/variant) via `CBDB_NAME_TYPE_MAP` in [`constants.mjs`](./constants.mjs).
+This is what LJB's entity database uses to keep courtesy names (字) — common
+words that make poor auto-tag seeds — out of corpus tagging by default while
+still surfacing them for manual disambiguation and search.
+
+| CBDB code | `c_name_type_desc_chn` | LJB type |
+|-----------|------------------------|----------|
+| — (`c_name_chn`) | — | `primary` |
+| 3 | 別名、曾用名 | `variant` |
+| 4 | 字 | `courtesy` |
+| 5 | 室名、別號 | `art` |
+| 6 | 諡號 | `posthumous` |
+| 8 | 封爵 | `variant` |
+| 11 | 賜號 | `variant` |
+| 12 + 13 | 俗姓 + 俗名 | `variant` |
+| 14 | 廟號 | `temple` |
+| 15 | 尊號 | `variant` |
+| 18 | 本姓 | `variant` |
+| 19 | 法號 | `dharma` |
+| 20 | 道號 | `dharma` (folded — see comment in `constants.mjs`) |
+
+Implementation: `personNameEntriesFromAlts` in
+[`personAltNames.mjs`](./personAltNames.mjs) is the single source of both
+`searchStrings` (flat) and `names` (typed) — same inclusion/length-gate rules,
+same dedup (first qualifying type wins for a given normalized string).
+
+DILA has no equivalent: its TEI `persName/@type` only distinguishes
+"alternative" from the primary name, not name category, so DILA-compiled
+candidates ship without a `names` field (leaf-writer treats that as "no typed
+names," same as any pre-this-feature pack).
+
 ## Run
 
 ```bash

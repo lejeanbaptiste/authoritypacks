@@ -1,7 +1,7 @@
 import { addSearchString, splitAltNamesField } from '../shared/normalize.mjs';
 import { cbdbPersonClue, cbdbPlaceClue, cbdbOfficeClue } from '../shared/clue.mjs';
 import { loadCbdbDynastyMap, resolveDynastyByCode } from '../shared/dynastyMap.mjs';
-import { personSearchStringsFromAlts } from './personAltNames.mjs';
+import { personNameEntriesFromAlts } from './personAltNames.mjs';
 import { SOURCE } from './constants.mjs';
 
 /** @typedef {import('../shared/types.mjs').AuthorityCandidate} AuthorityCandidate */
@@ -45,13 +45,13 @@ export function compileCbdbPersons(db, dynastyMap) {
   /** @type {AuthorityCandidate[]} */
   const out = [];
   for (const row of mainRows) {
-    const searchStrings = personSearchStringsFromAlts({
+    const nameEntries = personNameEntriesFromAlts({
       c_name_chn: row.c_name_chn,
       c_surname_chn: row.c_surname_chn,
       c_mingzi_chn: row.c_mingzi_chn,
       alts: altsByPerson.get(row.c_personid) ?? [],
     });
-    if (!searchStrings.length) continue;
+    if (!nameEntries.length) continue;
 
     const dynasty = resolveDynastyByCode(row.c_dy, dynastyMap);
     const startYear =
@@ -63,7 +63,8 @@ export function compileCbdbPersons(db, dynastyMap) {
       authorityId: String(row.c_personid),
       kind: 'person',
       primaryName: row.c_name_chn,
-      searchStrings,
+      searchStrings: nameEntries.map((entry) => entry.text),
+      names: nameEntries,
       metadata: {
         dynasty: row.c_dynasty_chn || dynasty?.label,
         startYear: startYear ?? undefined,

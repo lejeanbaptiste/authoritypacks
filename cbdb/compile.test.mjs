@@ -45,6 +45,22 @@ test('CBDB compile — 王安石 (person 1762)', () => {
   }
 });
 
+test('CBDB compile — 王安石 names[] carries LJB type per entry', () => {
+  const db = openDb(FIXTURE_SQLITE);
+  try {
+    const dynastyMap = loadCbdbDynastyMap(db);
+    const persons = compileCbdbPersons(db, dynastyMap);
+    const wang = persons.find((p) => p.authorityId === '1762');
+    assert.ok(wang?.names?.length, 'names[] should be populated');
+    assert.equal(wang.names.length, wang.searchStrings.length, 'names[] mirrors searchStrings 1:1');
+    const byText = Object.fromEntries(wang.names.map((n) => [n.text, n.type]));
+    assert.equal(byText['王安石'], 'primary');
+    assert.equal(byText['王介甫'], 'courtesy');
+  } finally {
+    db.close();
+  }
+});
+
 test('CBDB compile — drops single-character search strings', () => {
   const db = openDb(FIXTURE_SQLITE);
   try {
