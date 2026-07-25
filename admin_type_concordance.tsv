@@ -1,0 +1,42 @@
+cbdb_admin_type	chgis_type_ch	chgis_type_py	cbdb_count	chgis_count	confidence	suffix_char	notes
+Xian	县	Xian	13687	8870	high	县	County-level unit
+xian	县	Xian	1727	8870	high	县	Case variant of Xian
+Zhou	州	Zhou	3739	2500	high	州	Prefecture-level unit
+zhou	州	Zhou	179	2500	high	州	Case variant of Zhou
+Fu	府	Fu	574	497	high	府	Prefectural center
+fu	府	Fu	28	497	high	府	Case variant of Fu
+Wei	卫	Wei	517	103	high	卫	Military garrison
+wei	卫	Wei	36	103	high	卫	Case variant of Wei
+Lu	路	Lu	325	248	high	路	Circuit/route region
+lu	路	Lu	28	248	high	路	Case variant of Lu
+Ting	厅	Ting	101	143	high	厅	Provincial office
+ting	厅	Ting	15	143	high	厅	Case variant of Ting
+Zhangguansi	长官司	Zhangguansi	174	241	high	司	Official commissioner
+zhangguansi	长官司	Zhangguansi	8	241	high	司	Case variant of Zhangguansi
+Qianhusuo	千户所	Qianhusuo	120	30	high	所	Militia unit
+qianhusuo	千户所	Qianhusuo	14	30	high	所	Case variant of Qianhusuo
+Dao	道	Dao	405	2	medium	道	Route; RARE in CHGIS
+Jun	郡	Jun	184	1715	medium	郡	Commandery (primary), also military district (ambiguous)
+Fengjun	郡	Fengjun	499	1715	medium	郡	Enfeoffed commandery; variant of commandery
+County	县	County	505	8870	medium	县	English translation of Xian
+Prefecture	州	Prefecture	89	2500	medium	州	English translation of Zhou
+du	都	Du	586		low	都	Varies: 都护, 都督; CHGIS fragments into rare compounds
+shi	市	Shi	507		cbdb_only	市	Market/city admin unit; not in CHGIS
+state	国	State	247		cbdb_only	国	Kingdom/principality; estimated suffix
+pu	浦	Pu	318		cbdb_only	浦	Unknown admin level; CBDB-only
+qi	旗	Qi	245		cbdb_only	旗	Banner/flag unit (Qing); CBDB-only
+diqu	地区	Diqu	156		cbdb_only	地	Regional district (modern); CBDB-only
+shixiaqu	市辖区	Shixiaqu	65		cbdb_only	区	Municipal district (modern); CBDB-only
+bingbeidao	兵备道	Bingbeidao	124		cbdb_only	道	Military preparation circuit; specialized
+baqi	八旗	Baqi	40		cbdb_only	旗	Eight Banners (Qing); specialized
+fengguo	封国	Fengguo	215		cbdb_only	国	Enfeoffed kingdom; variant
+fenxundao	分巡道	Fenxundao	498		cbdb_only	道	Surveillance circuit (Ming); specialized
+dutuanlianguanchashi	都团练管察使	Dutuanlianguanchashi	40		cbdb_only	使	Long title; specialized military
+zhuangdi	庄地	Zhuangdi	73		cbdb_only	庄	Manor/estate; not an admin level
+zizhixian	自治县	Zizhixian	28		cbdb_only	县	Autonomous county (modern); CBDB-only
+zizhizhou	自治州	Zizhizhou	18		cbdb_only	州	Autonomous prefecture (modern); CBDB-only
+jiedu	节度	Jiedu	651	7	low	度	Military commissioner; RARE in CHGIS
+jiedushi	节度使	Jiedushi	83	7	low	度	Military commissioner title variant; RARE
+yamen	衙门	Yamen	52		cbdb_only	门	Administrative office; not primary admin level
+kailuo	开罗	Kailuo	31		cbdb_only		Foreign place (Cairo); not admin type
+gazeteer	gazetteer	Gazeteer	24		cbdb_only		Data entry artifact; not real admin type
