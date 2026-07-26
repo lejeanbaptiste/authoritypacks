@@ -3,6 +3,8 @@ import { cbdbPersonClue, cbdbPlaceClue, cbdbOfficeClue } from '../shared/clue.mj
 import { loadCbdbDynastyMap, resolveDynastyByCode } from '../shared/dynastyMap.mjs';
 import { personNameEntriesFromAlts } from './personAltNames.mjs';
 import { SOURCE } from './constants.mjs';
+import { nationalityFromDynasties } from '../shared/nationality.mjs';
+import { nationalityAssertion } from '../shared/nationalityConcordance.mjs';
 
 /** @typedef {import('../shared/types.mjs').AuthorityCandidate} AuthorityCandidate */
 /** @typedef {import('better-sqlite3').Database} Database */
@@ -57,6 +59,10 @@ export function compileCbdbPersons(db, dynastyMap) {
     const startYear =
       row.c_birthyear ?? row.c_fl_earliest_year ?? row.c_start ?? dynasty?.startYear;
     const endYear = row.c_deathyear ?? row.c_fl_latest_year ?? row.c_end ?? dynasty?.endYear;
+    const nationality = nationalityFromDynasties(
+      dynasty ? [dynasty] : [],
+      { startYear: row.c_birthyear ?? row.c_fl_earliest_year, endYear: row.c_deathyear ?? row.c_fl_latest_year },
+    );
 
     out.push({
       source: SOURCE,
@@ -67,6 +73,8 @@ export function compileCbdbPersons(db, dynastyMap) {
       names: nameEntries,
       metadata: {
         dynasty: row.c_dynasty_chn || dynasty?.label,
+        nationality: nationality.map((label) => nationalityAssertion({ source: 'CBDB', id: `dynasty:${row.c_dy}`, label })),
+        dateSource: row.c_birthyear != null || row.c_deathyear != null || row.c_fl_earliest_year != null || row.c_fl_latest_year != null ? 'fine' : 'nationality',
         startYear: startYear ?? undefined,
         endYear: endYear ?? undefined,
         pinyin: row.c_name || undefined,

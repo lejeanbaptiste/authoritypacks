@@ -29,6 +29,27 @@ export function cbdbPersonClue(p) {
   return p.name;
 }
 
+/**
+ * Norbert person clue: name (dates, dynasty, description snippet).
+ * @param {Object} p
+ * @param {string} p.name
+ * @param {number} [p.birthYear]
+ * @param {number} [p.deathYear]
+ * @param {string} [p.dynastyChn]
+ * @param {string} [p.dynastyEn]
+ * @param {string} [p.extra] short description from Norbert `person.description`
+ */
+export function norbertPersonClue(p) {
+  const tail = [];
+  const dates = formatLifeDates(p);
+  if (dates) tail.push(dates);
+  const dyn = formatDynasty(p.dynastyChn, p.dynastyEn);
+  if (dyn) tail.push(dyn);
+  if (p.extra) tail.push(p.extra);
+  if (tail.length) return `${p.name} (${tail.join(', ')})`;
+  return p.name;
+}
+
 /** Simpler format: 名 (dates, dynasty — extra) */
 function formatLifeDates(p) {
   if (p.birthYear != null && p.deathYear != null) return `${p.birthYear}–${p.deathYear}`;
@@ -118,6 +139,26 @@ export function chgisPlaceClue(p) {
   if (p.pinyin && !meta.length) meta.push(p.pinyin);
   if (!meta.length) return p.name;
   return `${p.name} (${meta.join(', ')})`;
+}
+
+/**
+ * Norbert office clue: name (place category, date range).
+ * @param {Object} p
+ * @param {string} p.name
+ * @param {string} [p.placeCat]
+ * @param {number} [p.startYear]
+ * @param {number} [p.endYear]
+ */
+export function norbertOfficeClue(p) {
+  const tail = [];
+  if (p.placeCat) tail.push(p.placeCat);
+  if (p.startYear != null || p.endYear != null) {
+    const start = p.startYear ?? '?';
+    const end = p.endYear ?? '?';
+    tail.push(`${start}–${end}`);
+  }
+  if (tail.length) return `${p.name} (${tail.join(', ')})`;
+  return p.name;
 }
 
 /**

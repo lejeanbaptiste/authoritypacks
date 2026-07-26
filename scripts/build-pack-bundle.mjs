@@ -22,6 +22,10 @@ import { compileNdlPlacesPack } from '../ndl/compilePlaces.mjs';
 import { compileNdlOrgsPack } from '../ndl/compileOrgs.mjs';
 import { compileNdlWorksPack } from '../ndl/compileWorks.mjs';
 import { NDL_ATTRIBUTION, NDL_WORKS_ZIP_URL } from '../ndl/constants.mjs';
+import { compileNorbertPack } from '../norbert/compile.mjs';
+import { buildNorbertConcordance } from '../norbert/concordance.mjs';
+import { integrateConcordance } from '../norbert/integrateConcordance.mjs';
+import { readNdjson, writeNdjson } from '../shared/ndjson.mjs';
 
 /** Compiled Wikidata packs (optional — staged locally like NDL). `file` is the
  * NDJSON basename compile.mjs writes for that kind (persons/places/orgs/works). */
@@ -113,6 +117,9 @@ const localPacksRoot = path.join(repoRoot, 'packs');
 const sqlitePath = resolveUpstream('cbdb.sqlite3', [
   path.join(leafWriterDb, 'cbdb_20260627.sqlite3'),
 ]);
+const norbertSqlPath = resolveUpstream('norbert-authority.sql', [
+  path.join(repoRoot, 'norbert_public/norbert-authority.sql'),
+]);
 const personsPath = resolveUpstream('dila-person.xml', [
   path.join(leafWriterDb, 'Buddhist_Studies_Person_Authority.xml'),
 ]);
@@ -187,7 +194,7 @@ if (requireNdl && !includeNdl) {
   );
 }
 
-const bundleParts = [`cbdb${pins.cbdb.version}`];
+const bundleParts = [`cbdb${pins.cbdb.version}`, `norbert${pins.norbert.version}`];
 if (includeWikidata) {
   bundleParts.push(`wikidata${compactDate(wikidataMeta?.extractedAt) ?? 'local'}`);
 }
@@ -211,6 +218,12 @@ await compileDila({
   placesPath,
   districtsPath,
   outDir: path.join(packsDir, 'dila'),
+});
+
+console.log('Compiling Norbert…');
+await compileNorbertPack({
+  sqlPath: norbertSqlPath,
+  outDir: path.join(packsDir, 'norbert'),
 });
 
 if (includeNdl) {
@@ -286,6 +299,33 @@ if (includeWikidata) {
   );
 }
 
+console.log('Building Norbert concordance…');
+const norbertDir = path.join(packsDir, 'norbert');
+const concordanceSources = {
+  CBDB: readNdjson(path.join(packsDir, 'cbdb/persons.ndjson')),
+  DILA: readNdjson(path.join(packsDir, 'dila/persons.ndjson')),
+};
+for (const pack of stagedWikidataPacks.filter((p) => p.file === 'persons.ndjson')) {
+  const records = readNdjson(path.join(packsDir, 'wikidata', pack.slug, pack.file));
+  concordanceSources.Wikidata = [...(concordanceSources.Wikidata ?? []), ...records];
+}
+const concordance = buildNorbertConcordance(
+  readNdjson(path.join(norbertDir, 'persons.ndjson')),
+  concordanceSources,
+);
+writeNdjson(path.join(norbertDir, 'concordance.ndjson'), concordance);
+const integrated = integrateConcordance(
+  concordance,
+  readNdjson(path.join(norbertDir, 'persons.ndjson')),
+  concordanceSources,
+);
+writeNdjson(path.join(norbertDir, 'persons.ndjson'), integrated.norbert);
+for (const [source, records] of Object.entries(integrated.sources)) {
+  const sourceDir = source === 'CBDB' ? 'cbdb' : source === 'DILA' ? 'dila' : null;
+  if (sourceDir) writeNdjson(path.join(packsDir, sourceDir, 'persons.ndjson'), records);
+}
+console.log(`  ${concordance.length} Norbert concordance matches; ${integrated.applied} links applied`);
+
 const patchManifest = async (sourceId, extras) => {
   const manifestPath = path.join(packsDir, sourceId, 'manifest.json');
   const manifest = JSON.parse(await fsp.readFile(manifestPath, 'utf8'));
@@ -311,6 +351,14 @@ await patchManifest('dila', {
     commit: pins.dila.commit,
     versionLabel: pins.dila.versionLabel,
   },
+});
+
+await patchManifest('norbert', {
+  license: pins.norbert.license,
+  attribution: pins.norbert.attribution,
+  source: 'Norbert',
+  upstream: { sql: norbertSqlPath, sha256: pins.norbert.sqlSha256, version: pins.norbert.version },
+  concordance: { file: 'concordance.ndjson', match: 'primary+style+dynasty', count: concordance.length },
 });
 
 if (includeNdl) {
@@ -354,7 +402,7 @@ if (includeWikidata) {
 }
 
 const packFiles = [];
-const bundleSourceIds = ['cbdb', 'dila'];
+const bundleSourceIds = ['cbdb', 'dila', 'norbert'];
 if (includeWikidata) bundleSourceIds.push('wikidata');
 if (includeNdl) bundleSourceIds.push('ndl');
 

@@ -13,6 +13,8 @@ import {
   rawPersonMatchesPreMing,
 } from './periodMembership.mjs';
 import { readNdjson, writePackFile } from '../shared/ndjson.mjs';
+import { compiledCrosswalkFromRaw } from './identifierClaims.mjs';
+import { nationalityAssertion, dedupeNationality } from '../shared/nationalityConcordance.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -62,6 +64,12 @@ export function personCandidateFromRaw(raw, ctx) {
   /** @type {import('../shared/types.mjs').AuthorityCandidate['metadata']} */
   const metadata = {
     dynasty: periodLabel,
+    nationality: dedupeNationality([
+      ...(ctx.dynasty?.labelZh ? [nationalityAssertion({ source: 'Wikidata', id: ctx.dynasty.id, qid: ctx.dynasty.qid, label: ctx.dynasty.labelZh })] : []),
+      ...(ctx.country?.labelJa ? [nationalityAssertion({ source: 'Wikidata', id: ctx.country.id, qid: ctx.country.qid, label: ctx.country.labelJa })] : []),
+      ...(raw.nationality ?? []).map((qid) => nationalityAssertion({ source: 'Wikidata', id: qid, qid, label: qid })),
+    ]),
+    dateSource: raw.birthYear != null || raw.deathYear != null ? 'fine' : 'nationality',
     startYear: raw.birthYear ?? ctx.dynasty?.startYear,
     endYear: raw.deathYear ?? ctx.dynasty?.endYear,
     description:
@@ -69,6 +77,8 @@ export function personCandidateFromRaw(raw, ctx) {
       `${raw.primaryLabel} (${periodLabel}${isFictional ? ', fictional' : ''}, Wikidata ${raw.qid})`,
     ana: isFictional ? 'fictional' : 'historical',
   };
+  const crosswalk = compiledCrosswalkFromRaw(raw);
+  if (crosswalk) metadata.crosswalk = crosswalk;
   return {
     source: 'Wikidata',
     authorityId: raw.qid,

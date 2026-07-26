@@ -1,5 +1,8 @@
 node_modules/
 .upstream/
+# Downloaded authority sources live in .upstream/; only pins.json is tracked here
+upstream/*
+!upstream/pins.json
 dist/
 release/
 reports/*.ndjson
@@ -17,6 +20,7 @@ packs/ndl/orgs-smoke-ja/
 packs/ndl/ime.csv
 packs/chgis/
 packs/chgis-test/
+packs/norbert/
 
 # Ignore Wikidata raw extract directories (intermediate files)
 packs/wikidata/raw-*/
@@ -35,3 +39,6 @@ packs/wikidata/raw-zh-hant-*/
 *.bz2
 *.json.gz
 .DS_Store
+
+# Norbert
+norbert_secret/

@@ -1,5 +1,12 @@
 {
   "compilePolicyVersion": "2026-07-05",
+  "norbert": {
+    "version": "2026-07-25-reduced-authority",
+    "sqlSha256": "b641926a4ca19dae482b1bc945eda3a5f8144a5984a67d3567f4d602d6073b62",
+    "license": "internal-derived-public",
+    "attribution": "Norbert person and office authority (Huma-Num); reduced authority export.",
+    "file": "norbert_public/norbert-authority.sql"
+  },
   "cbdb": {
     "version": "20260627",
     "zipUrl": "https://huggingface.co/datasets/cbdb/cbdb-sqlite/resolve/main/history/cbdb_202606/cbdb_20260627.zip",

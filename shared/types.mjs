@@ -12,13 +12,15 @@
 /**
  * @typedef {Object} CandidateMetadata
  * @property {string} [dynasty]
+ * @property {'fine'|'nationality'} [dateSource]
+ * @property {{ id: string, canonicalId: string, label: string, sourceIds?: string[], startYear?: number, endYear?: number }[]} [nationality]
  * @property {number} [startYear]
  * @property {number} [endYear]
  * @property {string} [subtype]
  * @property {string} [description]
  * @property {string} [teiTag]
  * @property {string} [ana]
- * @property {{ cbdb?: string, chgis?: string, dila?: string, wikidata?: string[], viaf?: string, ndl?: string, bdrc?: string }} [crosswalk]
+ * @property {{ cbdb?: string, chgis?: string, dila?: string, wikidata?: string[], norbert?: string, viaf?: string, ndl?: string, bdrc?: string }} [crosswalk]
  * @property {string} [pinyin]
  * @property {string} [yomi]
  * @property {string} [yomiHiragana]
@@ -27,6 +29,14 @@
  * @property {string} [nameCh]
  * @property {GeoPoint} [geo]
  * @property {string} [layer]
+ * @property {boolean} [geoAdminSuffix] Office typically follows a placeName (令, 太守, …).
+ * @property {string} [placeCat] Place category when geo-admin suffix wraps a place (縣/郡/州).
+ * @property {boolean} [followsPlace]
+ * @property {boolean} [followsOffice]
+ * @property {boolean} [followsPerson]
+ * @property {boolean} [isNobleTitle]
+ * @property {boolean} [isSite]
+ * @property {string} [parentString]
  */
 
 /**

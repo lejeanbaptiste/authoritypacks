@@ -42,6 +42,7 @@ const bundles = [
     entries: [
       'authority-packs/cbdb',
       'authority-packs/dila',
+      'authority-packs/norbert',
       'authority-packs/wikidata/person-zh-hant-tang',
       'authority-packs/wikidata/person-zh-hant-pre-ming',
       'authority-packs/wikidata/person-zh-hant-ming',

@@ -2,6 +2,8 @@ import { addSearchString } from '../shared/normalize.mjs';
 import { dilaPersonClue, dilaPlaceClue, conciseFirstClause, yearFromTeiDate, yearRangeFromText } from '../shared/clue.mjs';
 import { resolveDynastyByLabel } from '../shared/dynastyMap.mjs';
 import { asArray, hantNames, notesOfType, untypedNotes, textContent, teiId } from '../shared/teiParse.mjs';
+import { nationalityFromDynasties } from '../shared/nationality.mjs';
+import { nationalityAssertion } from '../shared/nationalityConcordance.mjs';
 
 /** @typedef {import('../shared/types.mjs').AuthorityCandidate} AuthorityCandidate */
 
@@ -42,6 +44,11 @@ export function personFromRecord(person, ctx) {
     searchStrings: [...searchStrings],
     metadata: {
       dynasty: dynastyNote,
+      nationality: nationalityFromDynasties(
+        dynastyRange ? [dynastyRange] : [],
+        { startYear: birthYear, endYear: deathYear },
+      ).map((label) => nationalityAssertion({ source: 'DILA', id: `dynasty:${label}`, label })),
+      dateSource: birthYear != null || deathYear != null ? 'fine' : 'nationality',
       startYear: birthYear ?? dynastyRange?.startYear,
       endYear: deathYear ?? dynastyRange?.endYear,
       description: dilaPersonClue({

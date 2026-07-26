@@ -42,7 +42,10 @@ export function rawEntityFromKind(entity, kindId, labelLangOrLangs) {
   const labelLangs = Array.isArray(labelLangOrLangs) ? labelLangOrLangs : [labelLangOrLangs];
   if (kindId === 'person') {
     const primary = labelLangs.find((lang) => entity?.labels?.[lang]?.value);
-    return primary ? rawPersonFromEntity(entity, primary) : null;
+    if (!primary) return null;
+    const raw = rawPersonFromEntity(entity, primary);
+    if (raw) raw.nationality = claimEntityIds(entity, 'P27').map((qid) => ({ qid, id: qid, label: qid }));
+    return raw;
   }
 
   const raw = baseRawFields(entity, labelLangs);

@@ -21,6 +21,8 @@ Bump pins when CBDB or DILA releases a new dump, then re-run the pipeline.
 
 CBDB and DILA are fetched automatically. NDL is different: the person harvest is generated locally from SPARQL and the works file is compiled from the NDL batch TSV.
 
+`build-pack-bundle.mjs` includes the public reduced Norbert authority export, compiles the Norbert pack, and builds/integrates `norbert/concordance.ndjson` before packaging. The reduced SQL source is pinned in `upstream/pins.json` and stored at `norbert_public/norbert-authority.sql`; the full Norbert dump remains private and is never required by CI.
+
 `build-pack-bundle.mjs` now includes NDL when these raw files already exist:
 
 - `.upstream/ndl/raw/persons.raw.ndjson`

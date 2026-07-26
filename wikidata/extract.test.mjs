@@ -101,7 +101,7 @@ test('extract fixture → compile Tang pack', async () => {
   );
   assert.ok(libai?.searchStrings.includes('李白'));
   assert.ok(libai?.searchStrings.includes('李太白'));
-  assert.equal(libai?.metadata?.crosswalk, undefined);
+  assert.deepEqual(libai?.metadata?.crosswalk, { wikidata: ['5581'] });
 
   const fictional = JSON.parse(fs.readFileSync(fixture, 'utf8').split('\n')[3]);
   const ficCand = personCandidateFromRaw(rawPersonFromEntity(fictional, 'zh-hant'), {

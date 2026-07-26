@@ -36,7 +36,7 @@ export function compileDila(options = {}) {
   const outputDir = options.outDir ?? outDir;
 
   const dynastyMap = loadCbdbDynastyMap(null);
-  const districtMap = loadDistrictMap(districtsFile);
+  const districtMap = fs.existsSync(districtsFile) ? loadDistrictMap(districtsFile) : new Map();
   const { dilaToChgis: chgisByDilaId } = loadChgisDilaCrosswalk(crosswalk || null);
 
   /** @type {import('../shared/types.mjs').AuthorityCandidate[]} */
@@ -48,9 +48,11 @@ export function compileDila(options = {}) {
 
   /** @type {import('../shared/types.mjs').AuthorityCandidate[]} */
   const places = [];
-  for (const record of iterateTeiRecords(placesFile, 'place')) {
-    const c = placeFromRecord(record, { districtMap, chgisByDilaId });
-    if (c) places.push(c);
+  if (fs.existsSync(placesFile)) {
+    for (const record of iterateTeiRecords(placesFile, 'place')) {
+      const c = placeFromRecord(record, { districtMap, chgisByDilaId });
+      if (c) places.push(c);
+    }
   }
 
   const crosswalkChgisCount = places.filter((c) => c.metadata?.crosswalk?.chgis).length;
