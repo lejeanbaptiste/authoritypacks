@@ -16,6 +16,7 @@ export const DEFAULT_TABLES = new Set([
   'date_lunation_table',
   'nat_raw',
   'office',
+  'person_offices',
   'biblio_work_names',
 ]);
 

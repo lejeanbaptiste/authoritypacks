@@ -5,6 +5,7 @@ import { personNameEntriesFromAlts } from './personAltNames.mjs';
 import { SOURCE } from './constants.mjs';
 import { nationalityFromDynasties } from '../shared/nationality.mjs';
 import { nationalityAssertion } from '../shared/nationalityConcordance.mjs';
+import { officeEntityId } from '../shared/officeGraph.mjs';
 
 /** @typedef {import('../shared/types.mjs').AuthorityCandidate} AuthorityCandidate */
 /** @typedef {import('better-sqlite3').Database} Database */
@@ -140,14 +141,111 @@ export function compileCbdbPlaces(db, _dynastyMap) {
   return out;
 }
 
+const firstValue = (row, names) => {
+  for (const name of names) {
+    if (row[name] != null && String(row[name]).trim() !== '') return row[name];
+  }
+  return undefined;
+};
+
+function sqliteTableExists(db, name) {
+  return Boolean(db
+    .prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?")
+    .get(name));
+}
+
+/**
+ * Export CBDB person-to-office assertions without attempting to reconstruct
+ * posting dates or sequence. The current and legacy CBDB schemas use the
+ * POSTING_DATA + POSTED_TO_OFFICE_DATA pair; missing tables simply produce an
+ * empty pack, which keeps the small fixture database useful for unit tests.
+ *
+ * @param {Database} db
+ * @param {AuthorityCandidate[]} offices
+ */
+export function compileCbdbAppointments(db, offices) {
+  const postingTable = ['POSTING_DATA', 'ZZZ_POSTING_DATA']
+    .find((name) => sqliteTableExists(db, name));
+  const postedTable = ['POSTED_TO_OFFICE_DATA', 'ZZZ_POSTED_TO_OFFICE_DATA']
+    .find((name) => sqliteTableExists(db, name));
+  if (!postedTable) return [];
+
+  const postings = new Map();
+  if (postingTable) {
+    for (const row of db.prepare(`SELECT * FROM "${postingTable}"`).all()) {
+      const postingId = firstValue(row, ['c_posting_id', 'c_postingid', 'c_id']);
+      if (postingId != null) postings.set(String(postingId), row);
+    }
+  }
+  const officeById = new Map(offices.map((office) => [String(office.authorityId), office]));
+  const out = [];
+  let fallbackIndex = 0;
+  for (const row of db.prepare(`SELECT * FROM "${postedTable}"`).all()) {
+    const postingId = firstValue(row, ['c_posting_id', 'c_postingid']);
+    const posting = postingId == null ? undefined : postings.get(String(postingId));
+    const personId = firstValue(row, ['c_personid', 'c_person_id'])
+      ?? firstValue(posting ?? {}, ['c_personid', 'c_person_id']);
+    const officeId = firstValue(row, ['c_office_id', 'c_officeid']);
+    if (personId == null || (officeId == null && !firstValue(row, ['c_office_chn', 'c_office_name']))) continue;
+
+    const office = officeId == null ? undefined : officeById.get(String(officeId));
+    const officeName = firstValue(row, ['c_office_chn', 'c_office_name'])
+      ?? office?.primaryName;
+    if (!officeName) continue;
+    const rowId = firstValue(row, [
+      'c_posted_to_office_id',
+      'c_posting_office_id',
+      'c_id',
+    ]) ?? `${postingId ?? 'unknown'}:${officeId ?? officeName}:${fallbackIndex++}`;
+    const appointmentType = firstValue(row, [
+      'c_appt_code_desc',
+      'c_appt_type_desc',
+      'c_appt_code',
+      'c_appt_type_code',
+    ]);
+    const sourceRef = firstValue(row, ['c_source', 'c_pages', 'c_notes'])
+      ?? firstValue(posting ?? {}, ['c_source', 'c_pages', 'c_notes']);
+
+    out.push({
+      source: SOURCE,
+      authorityId: String(rowId),
+      person: { source: SOURCE, authorityId: String(personId) },
+      office: {
+        source: SOURCE,
+        ...(officeId != null ? { authorityId: String(officeId) } : {}),
+        name: String(officeName),
+      },
+      ...(appointmentType != null ? { appointmentType: String(appointmentType) } : {}),
+      ...(sourceRef != null ? { sourceRef: String(sourceRef) } : {}),
+    });
+  }
+  return out;
+}
+
 /**
  * @param {Database} db
  * @param {ReturnType<typeof loadCbdbDynastyMap>} dynastyMap
  */
 export function compileCbdbOffices(db, dynastyMap) {
+  const officeTypeIds = new Map();
+  for (const row of db
+    .prepare(
+      `SELECT c_office_id, c_office_tree_id
+       FROM OFFICE_CODE_TYPE_REL
+       ORDER BY c_office_id, c_office_tree_id`,
+    )
+    .all()) {
+    const id = String(row.c_office_id);
+    const ids = officeTypeIds.get(id) ?? [];
+    ids.push(String(row.c_office_tree_id));
+    officeTypeIds.set(id, ids);
+  }
+
   const rows = db
     .prepare(
-      `SELECT o.c_office_id, o.c_office_chn, o.c_office_chn_alt, o.c_office_trans, o.c_dy,
+      `SELECT o.c_office_id, o.c_office_chn, o.c_office_chn_alt,
+              o.c_office_pinyin, o.c_office_pinyin_alt,
+              o.c_office_trans, o.c_office_trans_alt, o.c_source, o.c_pages, o.c_notes, o.c_dy,
               d.c_dynasty_chn, d.c_dynasty
        FROM OFFICE_CODES o
        LEFT JOIN DYNASTIES d ON o.c_dy = d.c_dy
@@ -177,7 +275,18 @@ export function compileCbdbOffices(db, dynastyMap) {
         dynasty: row.c_dynasty_chn || dynasty?.label,
         startYear: dynasty?.startYear,
         endYear: dynasty?.endYear,
+        entityId: officeEntityId(SOURCE, row.c_office_id),
+        canonicalEntityId: officeEntityId(SOURCE, row.c_office_id),
+        officeTypeIds: officeTypeIds
+          .get(String(row.c_office_id))
+          ?.map((id) => `cbdb:office-type:${id}`),
+        pinyin: row.c_office_pinyin || undefined,
+        alternatePinyin: row.c_office_pinyin_alt || undefined,
         translation: row.c_office_trans || undefined,
+        alternateTranslation: row.c_office_trans_alt || undefined,
+        sourceRef: row.c_source != null ? String(row.c_source) : undefined,
+        sourcePages: row.c_pages || undefined,
+        note: row.c_notes || undefined,
         description: cbdbOfficeClue({
           name: row.c_office_chn,
           translation: row.c_office_trans || undefined,
@@ -190,13 +299,87 @@ export function compileCbdbOffices(db, dynastyMap) {
 }
 
 /**
+ * Export CBDB's office classification tree and office-to-category membership.
+ * Classification nodes are not taggable office entities.
+ *
+ * @param {Database} db
+ */
+export function compileCbdbOfficeGraph(db) {
+  const types = db
+    .prepare(
+      `SELECT c_office_type_node_id, c_office_type_desc, c_office_type_desc_chn, c_parent_id
+       FROM OFFICE_TYPE_TREE
+       ORDER BY c_office_type_node_id`,
+    )
+    .all()
+    .map((row) => ({
+      id: `cbdb:office-type:${row.c_office_type_node_id}`,
+      source: SOURCE,
+      authorityId: String(row.c_office_type_node_id),
+      label:
+        row.c_office_type_desc_chn
+        || row.c_office_type_desc
+        || String(row.c_office_type_node_id),
+      translation: row.c_office_type_desc || undefined,
+      parentId:
+        row.c_parent_id != null && String(row.c_parent_id) !== String(row.c_office_type_node_id)
+          ? `cbdb:office-type:${row.c_parent_id}`
+          : undefined,
+    }));
+
+  const hierarchy = types
+    .filter((node) => node.parentId)
+    .map((node) => ({
+      id: `cbdb:office-type-parent:${node.parentId.slice('cbdb:office-type:'.length)}:${node.authorityId}`,
+      type: 'parentOf',
+      subject: node.parentId,
+      object: node.id,
+      source: SOURCE,
+      confidence: 'asserted',
+      evidence: {
+        rule: 'office-type-tree-parent',
+        table: 'OFFICE_TYPE_TREE',
+        sourceIds: [node.parentId.slice('cbdb:office-type:'.length), node.authorityId],
+      },
+    }));
+
+  const memberships = db
+    .prepare(
+      `SELECT c_office_id, c_office_tree_id
+       FROM OFFICE_CODE_TYPE_REL
+       ORDER BY c_office_id, c_office_tree_id`,
+    )
+    .all()
+    .map((row) => ({
+      id: `cbdb:office-membership:${row.c_office_id}:${row.c_office_tree_id}`,
+      type: 'belongsTo',
+      subject: officeEntityId(SOURCE, row.c_office_id),
+      object: `cbdb:office-type:${row.c_office_tree_id}`,
+      source: SOURCE,
+      confidence: 'asserted',
+      evidence: {
+        rule: 'office-type-membership',
+        table: 'OFFICE_CODE_TYPE_REL',
+        sourceIds: [String(row.c_office_id), String(row.c_office_tree_id)],
+      },
+    }));
+
+  return { types, relations: [...hierarchy, ...memberships] };
+}
+
+/**
  * @param {Database} db
  */
 export function compileCbdb(db) {
   const dynastyMap = loadCbdbDynastyMap(db);
+  const officeGraph = compileCbdbOfficeGraph(db);
+  const offices = compileCbdbOffices(db, dynastyMap);
   return {
     persons: compileCbdbPersons(db, dynastyMap),
     places: compileCbdbPlaces(db, dynastyMap),
-    offices: compileCbdbOffices(db, dynastyMap),
+    offices,
+    appointments: compileCbdbAppointments(db, offices),
+    officeTypes: officeGraph.types,
+    officeRelations: officeGraph.relations,
   };
 }

@@ -11,9 +11,12 @@ import { fileURLToPath } from 'node:url';
 import { writePackFile } from '../shared/ndjson.mjs';
 import { compileNorbertPersons } from './compileRecords.mjs';
 import { compileGeoAdminSuffixes, compileNorbertOffices } from './compileOffices.mjs';
+import { compileNorbertAppointments } from './compileAppointments.mjs';
 import { loadNorbertTables } from './parseSqlDump.mjs';
 import { NAME_TYPE_EXCLUDE } from './constants.mjs';
 import { compileNorbertSurnamesFromNameRows } from './surnames.mjs';
+import { inferNorbertSourceRelations } from '../shared/officeGraph.mjs';
+import { attachAppointmentsToPersons } from '../shared/appointmentIndex.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const defaultSql = path.resolve(__dirname, '../norbert_secret/norbert_humanum_2026-07-25-1938.sql');
@@ -32,6 +35,7 @@ const TABLES = [
   'date_dynasties',
   'nat_raw',
   'office',
+  'person_offices',
 ];
 
 export async function compileNorbertPack(options = {}) {
@@ -47,10 +51,19 @@ export async function compileNorbertPack(options = {}) {
     tables.nat_raw,
   );
   const offices = compileNorbertOffices(tables.office);
+  const appointments = compileNorbertAppointments(tables.person_offices, offices);
+  attachAppointmentsToPersons(persons, appointments);
 
   fs.mkdirSync(outputDir, { recursive: true });
   const personOut = writePackFile(outputDir, 'persons.ndjson', persons);
   const officeOut = writePackFile(outputDir, 'offices.ndjson', offices);
+  const appointmentOut = writePackFile(outputDir, 'appointments.ndjson', appointments);
+  const officeRelations = inferNorbertSourceRelations(offices);
+  const officeRelationOut = writePackFile(
+    outputDir,
+    'office-relations.ndjson',
+    officeRelations,
+  );
   const geoAdminSuffixes = compileGeoAdminSuffixes(offices);
   fs.writeFileSync(
     path.join(outputDir, 'geo-admin-suffixes.json'),
@@ -81,6 +94,12 @@ export async function compileNorbertPack(options = {}) {
         entityCount: officeOut.count,
         stringCount: officeStringCount,
       },
+      'office-relations.ndjson': {
+        relationCount: officeRelationOut.count,
+      },
+      'appointments.ndjson': {
+        entityCount: appointmentOut.count,
+      },
       'surnames.json': {
         count: surnames.length,
       },
@@ -101,6 +120,8 @@ export async function compileNorbertPack(options = {}) {
   return {
     persons: personOut.count,
     offices: officeOut.count,
+    appointments: appointmentOut.count,
+    officeRelations: officeRelationOut.count,
     personStringCount,
     officeStringCount,
     outDir: outputDir,

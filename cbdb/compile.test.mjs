@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
-import { compileCbdbPersons } from './compileRecords.mjs';
+import { compileCbdbAppointments, compileCbdbPersons } from './compileRecords.mjs';
 import { loadCbdbDynastyMap } from '../shared/dynastyMap.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -83,6 +83,40 @@ test('CBDB compile — fixture person count', () => {
     const dynastyMap = loadCbdbDynastyMap(db);
     const persons = compileCbdbPersons(db, dynastyMap);
     assert.ok(persons.length >= 5 && persons.length < 20, `unexpected fixture size: ${persons.length}`);
+  } finally {
+    db.close();
+  }
+});
+
+test('CBDB appointment compile preserves person and office assertions', () => {
+  const db = new Database(':memory:');
+  try {
+    db.exec(`
+      CREATE TABLE POSTING_DATA (c_posting_id INTEGER, c_personid INTEGER);
+      CREATE TABLE POSTED_TO_OFFICE_DATA (
+        c_posting_id INTEGER,
+        c_office_id INTEGER,
+        c_appt_code TEXT,
+        c_source TEXT
+      );
+      INSERT INTO POSTING_DATA VALUES (7, 1762);
+      INSERT INTO POSTED_TO_OFFICE_DATA VALUES (7, 42, 'regular', 'source A');
+    `);
+    const appointments = compileCbdbAppointments(db, [{
+      authorityId: '42',
+      primaryName: '尚書',
+      searchStrings: ['尚書'],
+      source: 'CBDB',
+      kind: 'office',
+    }]);
+    assert.deepEqual(appointments, [{
+      source: 'CBDB',
+      authorityId: '7:42:0',
+      person: { source: 'CBDB', authorityId: '1762' },
+      office: { source: 'CBDB', authorityId: '42', name: '尚書' },
+      appointmentType: 'regular',
+      sourceRef: 'source A',
+    }]);
   } finally {
     db.close();
   }

@@ -33,7 +33,7 @@ node norbert/sanitizeDump.mjs \
   --out norbert_secret/norbert-authority.sql
 ```
 
-The default allowlist is `person`, `person_names`, the Norbert `date_*` tables, `nat_raw`, `office`, and `biblio_work_names`. Biography/date-filter/death/residence/height tables, `test_*`, `knowledge_*`, and other `biblio_*` tables are excluded. Additional approved tables must be named explicitly with `--tables table_a,table_b`.
+The default allowlist is `person`, `person_names`, the Norbert `date_*` tables, `nat_raw`, `office`, `person_offices`, and `biblio_work_names`. Biography/date-filter/death/residence/height tables, `test_*`, `knowledge_*`, and other `biblio_*` tables are excluded. Additional approved tables must be named explicitly with `--tables table_a,table_b`.
 
 Output:
 
@@ -41,6 +41,7 @@ Output:
 |------|-----|
 | `packs/norbert/persons.ndjson` | Tag bomb → `persName` |
 | `packs/norbert/offices.ndjson` | Tag bomb → `roleName` |
+| `packs/norbert/appointments.ndjson` | Person-to-office assertions for person disambiguation and entity import |
 | `packs/norbert/surnames.json` | Person name split (plugin) |
 | `packs/norbert/geo-admin-suffixes.json` | Place+office concatenate pass (plugin, future) |
 | `packs/norbert/manifest.json` | Pack metadata |
@@ -57,9 +58,12 @@ node norbert/concordance.mjs --norbert packs/norbert \
 
 Rows are emitted only when primary name, structured style name (字), and dynasty all match exactly after surface normalization. Sources lacking structured style or dynasty metadata are skipped; each row retains the matched source ID and evidence.
 
-## Office metadata
+## Office entities and structure
 
-Norbert `office` rows compile to `kind: office` with `metadata.teiTag: roleName`. Flags preserved for the concatenate pass:
+Every Norbert `office` row retains its source id and compiles to `kind: office`
+with `metadata.teiTag: roleName` and a provisional
+`norbert:office:{office.id}` entity id. All structural flags, components,
+date bounds, and notes from the table are preserved.
 
 | Field | Source | Meaning |
 |-------|--------|---------|
@@ -67,6 +71,18 @@ Norbert `office` rows compile to `kind: office` with `metadata.teiTag: roleName`
 | `geoAdminSuffix` | `follows_place` or known suffix (令/太守/刺史) | Wrap preceding place into roleName |
 | `placeCat` | `office.cat` or Norbert custom rules | 縣/郡/州 on wrapped placeName |
 | `isNobleTitle` | `office.is_noble_title` | Noble-title pattern tagging |
+| `parentString` / `parentIsSite` | parent columns | Office parent evidence or place context |
+| `followsOffice` | `office.follows_office` | Infer first office as parent when concatenated |
+
+Unique, non-place `parentString` matches are exported as inferred `parentOf`
+rows in `office-relations.ndjson`. Place parents are not converted into office
+hierarchy.
+
+The bundle build compares Norbert offices with CBDB by exact normalized name
+and compatible period. It links only a single compatible CBDB result; homonyms
+remain unresolved. Accepted links are recorded in
+`office-concordance.ndjson`, and CBDB's office id becomes the canonical entity
+id while the Norbert row id remains as provenance.
 
 Implementation: [`compileOffices.mjs`](./compileOffices.mjs).
 

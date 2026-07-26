@@ -43,7 +43,26 @@ Type **0** stays **out** (~45k strings). Mythical persons are **in** (no special
 
 ### Offices
 
-- `kind: office`, `metadata.teiTag: roleName` at match time (no entity mint in v1).
+- `kind: office`, `metadata.teiTag: roleName` at match time.
+- `metadata.entityId` and `metadata.canonicalEntityId` are stable
+  `cbdb:office:{c_office_id}` identifiers.
+- `metadata.officeTypeIds` retains every `OFFICE_CODE_TYPE_REL` membership.
+- Pinyin, translations, notes, source ids, and source pages from
+  `OFFICE_CODES` are preserved as metadata when present.
+- LJB may mint a project office entity after disambiguation; corpus mentions
+  remain `roleName`.
+
+CBDB's `OFFICE_TYPE_TREE` is a classification hierarchy, not a table of
+appointments. It is exported intact. Tree edges are `parentOf`; links from an
+office to a tree node are `belongsTo`.
+
+### Appointments
+
+`appointments.ndjson` contains source-preserving person-to-office assertions
+from `POSTING_DATA` and `POSTED_TO_OFFICE_DATA`. It intentionally omits posting
+dates and sequence for now. The bundle builder combines these rows with
+Norbert `person_offices` assertions and attaches the resulting list to the
+corresponding person candidates' metadata.
 
 ### Typed names (`names[]`) — 👤 signed 2026-07-15
 
@@ -97,6 +116,8 @@ packs/cbdb/
   persons.ndjson
   places.ndjson
   offices.ndjson
+  office-types.ndjson
+  office-relations.ndjson
 ```
 
 ## 👤 Decisions still open

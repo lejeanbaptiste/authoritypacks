@@ -12,6 +12,7 @@ import Database from 'better-sqlite3';
 import { writePackFile } from '../shared/ndjson.mjs';
 import { compileCbdb } from './compileRecords.mjs';
 import { ALTNAME_EXCLUDE } from './constants.mjs';
+import { attachAppointmentsToPersons } from '../shared/appointmentIndex.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const defaultSqlite = path.resolve(__dirname, '../../leaf-writer/databases/cbdb_20260627.sqlite3');
@@ -30,12 +31,20 @@ export function compileCbdbPack(options = {}) {
 
   const db = new Database(dbFile, { readonly: true });
   try {
-    const { persons, places, offices } = compileCbdb(db);
+    const { persons, places, offices, appointments, officeTypes, officeRelations } = compileCbdb(db);
+    attachAppointmentsToPersons(persons, appointments);
 
     fs.mkdirSync(outputDir, { recursive: true });
     const personOut = writePackFile(outputDir, 'persons.ndjson', persons);
     const placeOut = writePackFile(outputDir, 'places.ndjson', places);
     const officeOut = writePackFile(outputDir, 'offices.ndjson', offices);
+    const appointmentOut = writePackFile(outputDir, 'appointments.ndjson', appointments);
+    const officeTypeOut = writePackFile(outputDir, 'office-types.ndjson', officeTypes);
+    const officeRelationOut = writePackFile(
+      outputDir,
+      'office-relations.ndjson',
+      officeRelations,
+    );
 
     const stringCount = (arr) => arr.reduce((n, c) => n + c.searchStrings.length, 0);
 
@@ -55,6 +64,9 @@ export function compileCbdbPack(options = {}) {
         },
         'places.ndjson': { entityCount: placeOut.count, stringCount: stringCount(places) },
         'offices.ndjson': { entityCount: officeOut.count, stringCount: stringCount(offices) },
+        'appointments.ndjson': { entityCount: appointmentOut.count },
+        'office-types.ndjson': { entityCount: officeTypeOut.count },
+        'office-relations.ndjson': { relationCount: officeRelationOut.count },
       },
       policy: {
         version: '2026-07-05',
@@ -70,6 +82,9 @@ export function compileCbdbPack(options = {}) {
       persons: personOut.count,
       places: placeOut.count,
       offices: officeOut.count,
+      appointments: appointmentOut.count,
+      officeTypes: officeTypeOut.count,
+      officeRelations: officeRelationOut.count,
       outDir: outputDir,
     };
   } finally {

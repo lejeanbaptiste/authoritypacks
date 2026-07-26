@@ -1,6 +1,7 @@
 import { norbertOfficeClue } from '../shared/clue.mjs';
 import { SOURCE } from './constants.mjs';
 import { OFFICE_COL, bitFlag } from './officeColumns.mjs';
+import { officeEntityId } from '../shared/officeGraph.mjs';
 
 /** @typedef {import('../shared/types.mjs').AuthorityCandidate} AuthorityCandidate */
 
@@ -52,6 +53,7 @@ export function officeRowToCandidate(row) {
   /** @type {AuthorityCandidate['metadata']} */
   const metadata = {
     teiTag: 'roleName',
+    entityId: officeEntityId(SOURCE, row[OFFICE_COL.id]),
     startYear: row[OFFICE_COL.startYear] ?? undefined,
     endYear: row[OFFICE_COL.endYear] ?? undefined,
     description: norbertOfficeClue({
@@ -69,13 +71,28 @@ export function officeRowToCandidate(row) {
   if (bitFlag(row[OFFICE_COL.followsOffice])) metadata.followsOffice = true;
   if (bitFlag(row[OFFICE_COL.followsPerson])) metadata.followsPerson = true;
   if (bitFlag(row[OFFICE_COL.isSite])) metadata.isSite = true;
+  if (bitFlag(row[OFFICE_COL.parentIsSite])) metadata.parentIsSite = true;
+  if (bitFlag(row[OFFICE_COL.isCollective])) metadata.isCollective = true;
+  if (bitFlag(row[OFFICE_COL.isReligious])) metadata.isReligious = true;
+  if (bitFlag(row[OFFICE_COL.isMilitary])) metadata.isMilitary = true;
+  if (bitFlag(row[OFFICE_COL.isMeritTitle])) metadata.isMeritTitle = true;
+  if (bitFlag(row[OFFICE_COL.isPrestigeTitle])) metadata.isPrestigeTitle = true;
+  if (bitFlag(row[OFFICE_COL.isQualifier])) metadata.isQualifier = true;
+  if (bitFlag(row[OFFICE_COL.catIsSuffix])) metadata.categoryIsSuffix = true;
+  if (bitFlag(row[OFFICE_COL.yieldPrefix])) metadata.yieldPrefix = true;
 
   const parentString = row[OFFICE_COL.parentString];
   if (parentString) metadata.parentString = String(parentString).trim();
+  const prefix = row[OFFICE_COL.prefix];
+  if (prefix) metadata.prefix = String(prefix).trim();
+  const core = row[OFFICE_COL.core];
+  if (core) metadata.core = String(core).trim();
+  if (cat) metadata.category = cat;
 
   const note = row[OFFICE_COL.note];
   if (note && String(note).trim()) {
-    metadata.description = `${metadata.description} — ${String(note).trim().slice(0, 80)}`;
+    metadata.note = String(note).trim();
+    metadata.description = `${metadata.description} — ${metadata.note.slice(0, 80)}`;
   }
 
   return {

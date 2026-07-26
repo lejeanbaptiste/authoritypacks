@@ -25,6 +25,8 @@
  * @property {string} [yomi]
  * @property {string} [yomiHiragana]
  * @property {string} [translation]
+ * @property {string} [alternateTranslation]
+ * @property {string} [alternatePinyin]
  * @property {string} [nameFt]
  * @property {string} [nameCh]
  * @property {GeoPoint} [geo]
@@ -35,8 +37,40 @@
  * @property {boolean} [followsOffice]
  * @property {boolean} [followsPerson]
  * @property {boolean} [isNobleTitle]
+ * @property {boolean} [isCollective]
+ * @property {boolean} [isReligious]
+ * @property {boolean} [isMilitary]
+ * @property {boolean} [isMeritTitle]
+ * @property {boolean} [isPrestigeTitle]
+ * @property {boolean} [isQualifier]
  * @property {boolean} [isSite]
  * @property {string} [parentString]
+ * @property {boolean} [parentIsSite]
+ * @property {{ source: string, authorityId: string, entityId: string, name: string }} [parentOffice]
+ * @property {string} [prefix]
+ * @property {string} [core]
+ * @property {string} [category]
+ * @property {boolean} [categoryIsSuffix]
+ * @property {boolean} [yieldPrefix]
+ * @property {string} [entityId] Stable source-scoped office entity id.
+ * @property {string} [canonicalEntityId] Canonical entity id after concordance.
+ * @property {string[]} [officeTypeIds] CBDB office classification node ids.
+ * @property {string} [sourceRef]
+ * @property {string} [sourcePages]
+ * @property {string} [note]
+ * @property {AppointmentRecord[]} [appointments] Person appointment assertions
+ *   retained for disambiguation and entity import. Deliberately omits dates
+ *   and biographical order for now.
+ */
+
+/**
+ * @typedef {Object} AppointmentRecord
+ * @property {string} source
+ * @property {string} authorityId Stable source row or derived assertion id.
+ * @property {{ source: string, authorityId: string }} person
+ * @property {{ source: string, authorityId?: string, name: string }} office
+ * @property {string} [appointmentType]
+ * @property {string} [sourceRef]
  */
 
 /**

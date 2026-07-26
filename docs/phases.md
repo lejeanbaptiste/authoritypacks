@@ -186,12 +186,14 @@ flowchart LR
 - [x] Per-type altname rules (type 4 → 姓+字; 12+13 concat; 18+名; length gates on 3/5/6/15) — see README table
 - [x] Filter symbols/Latin; block 姓+氏 / 姓+某; min **2** code points
 - [x] Mythical persons OK
-- [x] Offices → `kind: office`, tag as `roleName` at match time (no entity mint)
+- [x] Offices → `kind: office`, tag as `roleName` at match time; LJB also
+  supports disambiguated office entities
 - [x] **Sign off v1 altname policy** → [x]
 
-**👤 Decide (still open):**
-
-- [ ] **Office entity modeling** — keep roleName-only, or mint office entities later?
+**Office decision:** CBDB's office structure is canonical for shared office
+records, classification, and hierarchy. Norbert contributes tagging strings
+and observed parent/child relations where its period coverage extends beyond
+CBDB. Office source IDs remain source-local.
 
 **✓ Validate:** Skim `[reports/cbdb-ambiguous-top100.csv](../reports/cbdb-ambiguous-top100.csv)` (top: 李某, 王某 — placeholder names; expected one-to-many).
 
@@ -750,12 +752,12 @@ flowchart TB
     ON["orgName — institutions, temples as bodies"]
   end
   subgraph entity ["Entity DB (standoff)"]
-    OFF["office — optional 5th kind, Norbert-style"]
+    OFF["office — CBDB-shaped standoff entity"]
     ORG["org — when clearly institutional"]
     PER["person"]
   end
   subgraph later ["Later (relationships)"]
-    APP["appointment / tenure — who held what when"]
+    APP["appointment clues — person ↔ office"]
   end
   RN --> OFF
   ON --> OFF
@@ -781,16 +783,25 @@ flowchart TB
 - Add `office` as a standoff entity kind (alongside person/place/org/work) — one bucket for “slot” whether it behaved like a role or an institution in prose.
 - Corpus mentions use `roleName` or `orgName` with `@key` **pointing at the same office entity** when you disambiguate. TEI interchange stays readable; your mental model stays unified.
 - **Do not** mint separate “role entities” vs “org entities” for CBDB 官名 unless a project ODD requires it.
+- Person authority candidates may carry source-preserving appointment clues
+  from CBDB posting data and Norbert `person_offices` rows. These clues omit
+  years and biographical order for now and are used for disambiguation, not
+  TEI appointment encoding.
 
 **What to defer:**
 
-- `<appointment>` nesting, `person_id` on `roleName`, tenure dates — **relationship encoding**, not pack compile. Matches what you already noted in [Auto-tagging-phases.md](../leaf-writer/docs/Auto-tagging-phases.md) Phase 4a.
+- `<appointment>` nesting, `person_id` on `roleName`, and tenure dates remain
+  **relationship encoding** deferred from TEI output. Appointment *clues* are
+  now compiled into the authority packs for disambiguation, without those
+  temporal or biographical fields.
 - Splitting CBDB offices into role vs org at compile time — **not worth it**; the list is overwhelmingly 官名.
 
-**👤 Decide (office):**
+**Office status:**
 
-- [x] Accept v1: CBDB pack → `roleName` at tag time; standoff `office` entity kind added in LJB when we wire 4b
-- [ ] Or: single TEI tag for both (e.g. always `roleName`) until project guide says otherwise → [ ]
+- [x] CBDB pack → `roleName` at tag time; standoff `office` entity kind is
+  implemented in LJB.
+- [x] Norbert concatenated office strings produce provenance-marked observed
+  parent/child relations.
 
 ---
 
@@ -815,5 +826,4 @@ flowchart TB
 | 2026-07-06 | **Track H CHGIS** — `chgis/compile.mjs`, LJB Settings install-from-download UI            |
 | 2026-07-05 | **C1, D1 compile done** — CBDB + DILA NDJSON in `packs/`; tests pass; C2 ambiguity report |
 | 2026-07-05 | Initial phases doc; W0 moved from leaf-writer                                             |
-
 

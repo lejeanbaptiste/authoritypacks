@@ -25,7 +25,12 @@ import { NDL_ATTRIBUTION, NDL_WORKS_ZIP_URL } from '../ndl/constants.mjs';
 import { compileNorbertPack } from '../norbert/compile.mjs';
 import { buildNorbertConcordance } from '../norbert/concordance.mjs';
 import { integrateConcordance } from '../norbert/integrateConcordance.mjs';
+import {
+  buildOfficeConcordance,
+  integrateOfficeConcordance,
+} from '../norbert/officeConcordance.mjs';
 import { readNdjson, writeNdjson } from '../shared/ndjson.mjs';
+import { attachAppointmentsToPersons } from '../shared/appointmentIndex.mjs';
 
 /** Compiled Wikidata packs (optional — staged locally like NDL). `file` is the
  * NDJSON basename compile.mjs writes for that kind (persons/places/orgs/works). */
@@ -319,12 +324,39 @@ const integrated = integrateConcordance(
   readNdjson(path.join(norbertDir, 'persons.ndjson')),
   concordanceSources,
 );
+const cbdbAppointments = readNdjson(path.join(packsDir, 'cbdb/appointments.ndjson'));
+const norbertAppointments = readNdjson(path.join(norbertDir, 'appointments.ndjson'));
+const allAppointments = [...cbdbAppointments, ...norbertAppointments];
+attachAppointmentsToPersons(integrated.norbert, allAppointments);
+for (const records of Object.values(integrated.sources)) {
+  attachAppointmentsToPersons(records, allAppointments);
+}
+writeNdjson(path.join(norbertDir, 'appointments.ndjson'), allAppointments);
 writeNdjson(path.join(norbertDir, 'persons.ndjson'), integrated.norbert);
 for (const [source, records] of Object.entries(integrated.sources)) {
   const sourceDir = source === 'CBDB' ? 'cbdb' : source === 'DILA' ? 'dila' : null;
   if (sourceDir) writeNdjson(path.join(packsDir, sourceDir, 'persons.ndjson'), records);
 }
 console.log(`  ${concordance.length} Norbert concordance matches; ${integrated.applied} links applied`);
+
+console.log('Building Norbert office concordance…');
+const norbertOfficesPath = path.join(norbertDir, 'offices.ndjson');
+const norbertOfficeRelationsPath = path.join(norbertDir, 'office-relations.ndjson');
+const officeConcordance = buildOfficeConcordance(
+  readNdjson(norbertOfficesPath),
+  readNdjson(path.join(packsDir, 'cbdb/offices.ndjson')),
+);
+writeNdjson(path.join(norbertDir, 'office-concordance.ndjson'), officeConcordance);
+const integratedOffices = integrateOfficeConcordance(
+  officeConcordance,
+  readNdjson(norbertOfficesPath),
+  readNdjson(norbertOfficeRelationsPath),
+);
+writeNdjson(norbertOfficesPath, integratedOffices.offices);
+writeNdjson(norbertOfficeRelationsPath, integratedOffices.relations);
+console.log(
+  `  ${officeConcordance.length} office matches; ${integratedOffices.applied} links applied`,
+);
 
 const patchManifest = async (sourceId, extras) => {
   const manifestPath = path.join(packsDir, sourceId, 'manifest.json');
@@ -359,6 +391,17 @@ await patchManifest('norbert', {
   source: 'Norbert',
   upstream: { sql: norbertSqlPath, sha256: pins.norbert.sqlSha256, version: pins.norbert.version },
   concordance: { file: 'concordance.ndjson', match: 'primary+style+dynasty', count: concordance.length },
+  officeConcordance: {
+    file: 'office-concordance.ndjson',
+    match: 'exact-name+period-compatible+unique',
+    count: officeConcordance.length,
+  },
+  appointments: {
+    file: 'appointments.ndjson',
+    sources: ['Norbert', 'CBDB'],
+    count: allAppointments.length,
+    temporalFields: 'omitted-for-disambiguation',
+  },
 });
 
 if (includeNdl) {
