@@ -34,6 +34,7 @@ const TABLES = [
   'person_names',
   'date_dynasties',
   'nat_raw',
+  'person_origin',
   'office',
   'person_offices',
 ];
@@ -49,6 +50,7 @@ export async function compileNorbertPack(options = {}) {
     tables.date_dynasties,
     [],
     tables.nat_raw,
+    tables.person_origin,
   );
   const offices = compileNorbertOffices(tables.office);
   const appointments = compileNorbertAppointments(tables.person_offices, offices);
@@ -89,6 +91,7 @@ export async function compileNorbertPack(options = {}) {
       'persons.ndjson': {
         entityCount: personOut.count,
         stringCount: personStringCount,
+        originAssertionCount: persons.reduce((n, p) => n + (p.metadata?.origin?.length ?? 0), 0),
       },
       'offices.ndjson': {
         entityCount: officeOut.count,
@@ -119,6 +122,7 @@ export async function compileNorbertPack(options = {}) {
 
   return {
     persons: personOut.count,
+    originAssertions: persons.reduce((n, p) => n + (p.metadata?.origin?.length ?? 0), 0),
     offices: officeOut.count,
     appointments: appointmentOut.count,
     officeRelations: officeRelationOut.count,

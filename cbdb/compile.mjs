@@ -61,6 +61,7 @@ export function compileCbdbPack(options = {}) {
         'persons.ndjson': {
           entityCount: personOut.count,
           stringCount: stringCount(persons),
+          originAssertionCount: persons.reduce((n, p) => n + (p.metadata?.origin?.length ?? 0), 0),
         },
         'places.ndjson': { entityCount: placeOut.count, stringCount: stringCount(places) },
         'offices.ndjson': { entityCount: officeOut.count, stringCount: stringCount(offices) },

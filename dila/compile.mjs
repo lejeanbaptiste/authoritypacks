@@ -75,7 +75,10 @@ export function compileDila(options = {}) {
     license: 'CC-BY-SA-3.0',
     attribution: 'Dharma Drum Institute of Liberal Arts (DILA) Authority Databases.',
     files: {
-      'persons.ndjson': { entityCount: personOut.count },
+      'persons.ndjson': {
+        entityCount: personOut.count,
+        originAssertionCount: persons.reduce((n, p) => n + (p.metadata?.origin?.length ?? 0), 0),
+      },
       'places.ndjson': { entityCount: placeOut.count, crosswalkChgisCount },
     },
   };

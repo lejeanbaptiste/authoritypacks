@@ -49,6 +49,7 @@ const bundles = [
       'authority-packs/wikidata/person-zh-hant-qing',
       'authority-packs/wikidata/org-zh-hant',
       'authority-packs/wikidata/work-zh-hant',
+      'authority-packs/wikidata/place-zh-hant',
     ],
   },
   {
@@ -58,6 +59,7 @@ const bundles = [
       'authority-packs/wikidata/person-ja-japan',
       'authority-packs/wikidata/org-ja',
       'authority-packs/wikidata/work-ja',
+      'authority-packs/wikidata/place-ja',
     ],
   },
   {

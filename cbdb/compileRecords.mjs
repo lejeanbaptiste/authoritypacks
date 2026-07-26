@@ -34,6 +34,8 @@ export function compileCbdbPersons(db, dynastyMap) {
     )
     .all();
 
+  const originsByPerson = compileCbdbOrigins(db);
+
   /** @type {Map<number, { type: number; value: string }[]>} */
   const altsByPerson = new Map();
   for (const row of altRows) {
@@ -75,6 +77,7 @@ export function compileCbdbPersons(db, dynastyMap) {
       metadata: {
         dynasty: row.c_dynasty_chn || dynasty?.label,
         nationality: nationality.map((label) => nationalityAssertion({ source: 'CBDB', id: `dynasty:${row.c_dy}`, label })),
+        origin: originsByPerson.get(row.c_personid),
         dateSource: row.c_birthyear != null || row.c_deathyear != null || row.c_fl_earliest_year != null || row.c_fl_latest_year != null ? 'fine' : 'nationality',
         startYear: startYear ?? undefined,
         endYear: endYear ?? undefined,
@@ -104,7 +107,7 @@ export function compileCbdbPlaces(db, _dynastyMap) {
   const rows = db
     .prepare(
       `SELECT a.c_addr_id, a.c_name_chn, a.c_alt_names, a.c_firstyear, a.c_lastyear,
-              a.c_admin_type
+              a.c_admin_type, a.x_coord, a.y_coord
        FROM ADDR_CODES a
        WHERE a.c_name_chn IS NOT NULL AND TRIM(a.c_name_chn) != ''`,
     )
@@ -129,6 +132,7 @@ export function compileCbdbPlaces(db, _dynastyMap) {
         subtype: row.c_admin_type || undefined,
         startYear: row.c_firstyear ?? undefined,
         endYear: row.c_lastyear ?? undefined,
+        geo: geoPoint(row.y_coord, row.x_coord),
         description: cbdbPlaceClue({
           name: row.c_name_chn,
           subtype: row.c_admin_type || undefined,
@@ -139,6 +143,80 @@ export function compileCbdbPlaces(db, _dynastyMap) {
     });
   }
   return out;
+}
+
+/**
+ * Compile CBDB's person-to-address origin evidence. The address tables are
+ * absent from the small CI fixture, so this intentionally degrades to no
+ * assertions rather than making person compilation unavailable there.
+ *
+ * @param {Database} db
+ * @returns {Map<number, import('../shared/types.mjs').OriginAssertion[]>}
+ */
+export function compileCbdbOrigins(db) {
+  if (!sqliteTableExists(db, 'BIOG_ADDR_DATA') || !sqliteTableExists(db, 'ADDR_CODES')) {
+    return new Map();
+  }
+
+  const hasTypeCodes = sqliteTableExists(db, 'BIOG_ADDR_CODES');
+  const typeJoin = hasTypeCodes
+    ? 'LEFT JOIN BIOG_ADDR_CODES t ON t.c_addr_type = b.c_addr_type'
+    : '';
+  const typeLabel = hasTypeCodes ? 't.c_addr_desc_chn' : 'NULL';
+  const rows = db.prepare(`
+    SELECT b.c_personid, b.c_addr_id, b.c_addr_type, ${typeLabel} AS c_addr_type_desc,
+           b.c_firstyear, b.c_lastyear, b.c_source, b.c_pages, b.c_notes, b.c_natal,
+           a.c_name_chn, a.c_admin_type AS c_place_type, a.x_coord, a.y_coord
+    FROM BIOG_ADDR_DATA b
+    LEFT JOIN ADDR_CODES a ON a.c_addr_id = b.c_addr_id
+    ${typeJoin}
+    WHERE b.c_addr_type IN (1, 5, 7, 8)
+      AND (b.c_delete IS NULL OR b.c_delete = 0)
+      AND (a.c_name_chn IS NOT NULL OR b.c_addr_id IS NOT NULL)
+    ORDER BY b.c_personid, b.c_sequence
+  `).all();
+
+  /** @type {Map<number, import('../shared/types.mjs').OriginAssertion[]>} */
+  const out = new Map();
+  for (const row of rows) {
+    const placeName = row.c_name_chn ? String(row.c_name_chn).trim() : '';
+    if (!placeName && row.c_addr_id == null) continue;
+    const assertion = {
+      source: SOURCE,
+      originType: cbdbOriginType(row.c_addr_type),
+      placeName: placeName || String(row.c_addr_id),
+      placeAuthorityId: row.c_addr_id == null ? undefined : String(row.c_addr_id),
+      sourceCategory: row.c_addr_type_desc || String(row.c_addr_type),
+      placeType: row.c_place_type || undefined,
+      sourceRef: [row.c_source, row.c_pages].filter(Boolean).join(' ') || undefined,
+      note: row.c_notes || undefined,
+      qualification: row.c_natal ? 'natal' : undefined,
+      geo: geoPoint(row.y_coord, row.x_coord),
+    };
+    const list = out.get(row.c_personid) ?? [];
+    list.push(assertion);
+    out.set(row.c_personid, list);
+  }
+  return out;
+}
+
+function cbdbOriginType(type) {
+  return ({
+    1: 'jiguan',
+    5: 'ancestralOrigin',
+    7: 'benguan',
+    8: 'birthplace',
+  })[type] ?? 'placeOfOrigin';
+}
+
+/** @param {unknown} latValue @param {unknown} lonValue */
+function geoPoint(latValue, lonValue) {
+  const lat = Number(latValue);
+  const lon = Number(lonValue);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return undefined;
+  if (lat === 0 && lon === 0) return undefined;
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return undefined;
+  return { lat, lon };
 }
 
 const firstValue = (row, names) => {

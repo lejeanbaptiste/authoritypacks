@@ -13,6 +13,7 @@ Place a mysqldump under `norbert_secret/` (gitignored). The compile reads:
 | `codes_person_name_type` | mapped in [`constants.mjs`](./constants.mjs) |
 | `person_date_filter` | birth/death years |
 | `nat_raw` | `court_id` → dynasty via `date_dynasties` |
+| `person_origin` | source-preserving place-of-origin strings and qualifications |
 | `office` | office/role strings for `roleName` tag bomb |
 
 ## Run
@@ -33,7 +34,7 @@ node norbert/sanitizeDump.mjs \
   --out norbert_secret/norbert-authority.sql
 ```
 
-The default allowlist is `person`, `person_names`, the Norbert `date_*` tables, `nat_raw`, `office`, `person_offices`, and `biblio_work_names`. Biography/date-filter/death/residence/height tables, `test_*`, `knowledge_*`, and other `biblio_*` tables are excluded. Additional approved tables must be named explicitly with `--tables table_a,table_b`.
+The default allowlist is `person`, `person_names`, the Norbert `date_*` tables, `nat_raw`, `person_origin`, `office`, `person_offices`, and `biblio_work_names`. Biography/date-filter/death/residence/height tables, `test_*`, `knowledge_*`, and other `biblio_*` tables are excluded. Additional approved tables must be named explicitly with `--tables table_a,table_b`.
 
 Output:
 

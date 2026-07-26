@@ -32,6 +32,7 @@ export function personFromRecord(person, ctx) {
   const occupation = textContent(person.occupation) || undefined;
 
   const crosswalk = extractCrosswalk(person);
+  const origin = extractOrigins(person);
 
   const disambiguation = notesOfType(person, 'disambiguation')[0];
 
@@ -61,11 +62,33 @@ export function personFromRecord(person, ctx) {
       }),
       ana: person['@_ana'] ? String(person['@_ana']) : undefined,
       crosswalk: Object.keys(crosswalk).length ? crosswalk : undefined,
+      origin: origin.length ? origin : undefined,
       disambiguation: disambiguation || undefined,
     },
   };
 
   return candidate;
+}
+
+/** @param {Record<string, unknown>} person */
+function extractOrigins(person) {
+  return asArray(person.note)
+    .filter((note) => note?.['@_type'] === 'placeOfOrigin')
+    .flatMap((note) => asArray(note.placeName).map((placeName) => {
+      const ref = asArray(placeName.ref)[0];
+      const placeNameText = textContent(placeName);
+      const placeAuthorityId = ref ? textContent(ref) : undefined;
+      if (!placeNameText && !placeAuthorityId) return null;
+      return {
+        source: 'DILA',
+        originType: 'placeOfOrigin',
+        placeName: placeNameText || placeAuthorityId,
+        placeAuthorityId: placeAuthorityId || undefined,
+        sourceCategory: 'placeOfOrigin',
+        sourceRef: ref?.['@_target'] ? String(ref['@_target']) : undefined,
+      };
+    }))
+    .filter(Boolean);
 }
 
 /** @param {Record<string, unknown>} person */

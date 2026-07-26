@@ -12,6 +12,7 @@ import { nationalityAssertion } from '../shared/nationalityConcordance.mjs';
  * @param {any[][]} dynastyRows
  * @param {any[][]} dateFilterRows
  * @param {any[][]} natRawRows
+ * @param {any[][]} originRows
  * @returns {AuthorityCandidate[]}
  */
 export function compileNorbertPersons(
@@ -20,6 +21,7 @@ export function compileNorbertPersons(
   dynastyRows,
   dateFilterRows,
   natRawRows,
+  originRows = [],
 ) {
   /** @type {Map<number, string>} */
   const dynastyById = new Map();
@@ -58,6 +60,25 @@ export function compileNorbertPersons(
       courtCountsByPerson.set(personId, counts);
     }
     counts.set(courtId, (counts.get(courtId) ?? 0) + 1);
+  }
+
+  /** @type {Map<number, import('../shared/types.mjs').OriginAssertion[]>} */
+  const originsByPerson = new Map();
+  for (const row of originRows) {
+    const personId = row[1];
+    const placeName = row[2] == null ? '' : String(row[2]).trim();
+    if (personId == null || !placeName) continue;
+    const assertion = {
+      source: SOURCE,
+      originType: 'jiguan',
+      placeName,
+      placeType: row[3] == null ? undefined : String(row[3]).trim() || undefined,
+      qualification: row[4] == null ? undefined : String(row[4]).trim() || undefined,
+      sourceRef: row[5] == null ? undefined : String(row[5]).trim() || undefined,
+    };
+    const list = originsByPerson.get(personId) ?? [];
+    list.push(assertion);
+    originsByPerson.set(personId, list);
   }
 
   /** @type {Map<number, { type: number, value: string }[]>} */
@@ -127,6 +148,7 @@ export function compileNorbertPersons(
       metadata: {
         dynasty: dynastyLabel,
         nationality: nationality.map((label) => nationalityAssertion({ source: 'Norbert', id: `dynasty:${label}`, label })),
+        origin: originsByPerson.get(id),
         dateSource: dates?.birth != null || dates?.death != null ? 'fine' : 'nationality',
         startYear,
         endYear,

@@ -14,6 +14,7 @@
  * @property {string} [dynasty]
  * @property {'fine'|'nationality'} [dateSource]
  * @property {{ id: string, canonicalId: string, label: string, sourceIds?: string[], startYear?: number, endYear?: number }[]} [nationality]
+ * @property {OriginAssertion[]} [origin]
  * @property {number} [startYear]
  * @property {number} [endYear]
  * @property {string} [subtype]
@@ -61,6 +62,23 @@
  * @property {AppointmentRecord[]} [appointments] Person appointment assertions
  *   retained for disambiguation and entity import. Deliberately omits dates
  *   and biographical order for now.
+ */
+
+/**
+ * A source-preserving assertion that a person is associated with a place of
+ * origin. The place may be identified only by a string, or additionally by a
+ * source authority ID and coordinates.
+ * @typedef {Object} OriginAssertion
+ * @property {string} source
+ * @property {string} originType
+ * @property {string} placeName
+ * @property {string} [placeAuthorityId]
+ * @property {string} [sourceCategory]
+ * @property {string} [placeType]
+ * @property {string} [qualification]
+ * @property {string} [sourceRef]
+ * @property {string} [note]
+ * @property {GeoPoint} [geo]
  */
 
 /**

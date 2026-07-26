@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
-import { compileCbdbAppointments, compileCbdbPersons } from './compileRecords.mjs';
+import { compileCbdbAppointments, compileCbdbOrigins, compileCbdbPersons } from './compileRecords.mjs';
 import { loadCbdbDynastyMap } from '../shared/dynastyMap.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -83,6 +83,41 @@ test('CBDB compile — fixture person count', () => {
     const dynastyMap = loadCbdbDynastyMap(db);
     const persons = compileCbdbPersons(db, dynastyMap);
     assert.ok(persons.length >= 5 && persons.length < 20, `unexpected fixture size: ${persons.length}`);
+  } finally {
+    db.close();
+  }
+});
+
+test('CBDB origin assertions preserve category, source, and coordinates', () => {
+  const db = new Database(':memory:');
+  try {
+    db.exec(`
+      CREATE TABLE BIOG_ADDR_DATA (
+        c_personid INTEGER, c_addr_id INTEGER, c_addr_type INTEGER,
+        c_sequence INTEGER, c_firstyear INTEGER, c_lastyear INTEGER,
+        c_source TEXT, c_pages TEXT, c_notes TEXT, c_natal INTEGER, c_delete INTEGER
+      );
+      CREATE TABLE ADDR_CODES (
+        c_addr_id INTEGER, c_name_chn TEXT, c_admin_type TEXT, x_coord REAL, y_coord REAL
+      );
+      CREATE TABLE BIOG_ADDR_CODES (c_addr_type INTEGER, c_addr_desc_chn TEXT);
+      INSERT INTO BIOG_ADDR_CODES VALUES (1, '籍貫'), (8, '出生地');
+      INSERT INTO ADDR_CODES VALUES (42, '鄱陽', NULL, 116.68, 28.21);
+      INSERT INTO BIOG_ADDR_DATA VALUES (1762, 42, 1, 1, NULL, NULL, 'source', 'p. 2', 'note', 1, 0);
+    `);
+    const origins = compileCbdbOrigins(db);
+    assert.deepEqual(origins.get(1762), [{
+      source: 'CBDB',
+      originType: 'jiguan',
+      placeName: '鄱陽',
+      placeAuthorityId: '42',
+      sourceCategory: '籍貫',
+      placeType: undefined,
+      sourceRef: 'source p. 2',
+      note: 'note',
+      qualification: 'natal',
+      geo: { lat: 28.21, lon: 116.68 },
+    }]);
   } finally {
     db.close();
   }

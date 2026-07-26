@@ -15,6 +15,7 @@ export const DEFAULT_TABLES = new Set([
   'date_eras',
   'date_lunation_table',
   'nat_raw',
+  'person_origin',
   'office',
   'person_offices',
   'biblio_work_names',
