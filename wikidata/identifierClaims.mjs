@@ -96,9 +96,12 @@ export function crosswalkFromEntity(entity, spec = loadIdentifierProperties()) {
 
 /**
  * @param {{ qid?: string, crosswalk?: Record<string, string | string[]> }} raw
+ * @param {{ disableKeys?: string[] }} [opts] Keys to drop at compile time (e.g. ["chgis"]).
+ *   Raw NDJSON keeps every crosswalk id regardless — disabling is a recompile-time filter,
+ *   not a re-extraction, so it can be reversed by recompiling without `disableKeys`.
  * @returns {import('../shared/types.mjs').CandidateMetadata['crosswalk'] | undefined}
  */
-export function compiledCrosswalkFromRaw(raw) {
+export function compiledCrosswalkFromRaw(raw, opts = {}) {
   /** @type {Record<string, string | string[]>} */
   const crosswalk = { ...(raw.crosswalk ?? {}) };
 
@@ -110,6 +113,8 @@ export function compiledCrosswalkFromRaw(raw) {
     ];
     crosswalk.wikidata = wikidata;
   }
+
+  for (const key of opts.disableKeys ?? []) delete crosswalk[key];
 
   return Object.keys(crosswalk).length ? crosswalk : undefined;
 }

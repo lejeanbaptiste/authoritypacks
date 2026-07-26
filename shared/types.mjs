@@ -96,9 +96,11 @@
  * @property {string} text
  * @property {string} [type] LJB canonical name-type id (see leaf-writer
  *   `autoTagging/nameTypes.ts`: primary/courtesy/art/posthumous/temple/
- *   dharma/pen/variant) or a source-specific label leaf-writer's
- *   `normalizeNameType` understands (Wikidata P-ids, CJK category labels).
- *   Absent/unrecognized → ingested as `variant`.
+ *   dharma/pen/variant/family/given/birth) or a source-specific label
+ *   leaf-writer's `normalizeNameType` understands (Wikidata P-ids, CJK
+ *   category labels). Absent/unrecognized → ingested as `variant`. For CBDB,
+ *   `names[]` is a superset of `searchStrings` (bare 姓/名/字 and other
+ *   phase-2-only forms appear only in `names[]`).
  * @property {string} [lang]
  */
 

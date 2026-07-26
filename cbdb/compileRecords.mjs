@@ -1,7 +1,8 @@
 import { addSearchString, splitAltNamesField } from '../shared/normalize.mjs';
 import { cbdbPersonClue, cbdbPlaceClue, cbdbOfficeClue } from '../shared/clue.mjs';
 import { loadCbdbDynastyMap, resolveDynastyByCode } from '../shared/dynastyMap.mjs';
-import { personNameEntriesFromAlts } from './personAltNames.mjs';
+import { buildPersonNamesFromAlts } from './personAltNames.mjs';
+import { loadAdminSuffixMap, suffixedNameVariant } from './adminVocabulary.mjs';
 import { SOURCE } from './constants.mjs';
 import { nationalityFromDynasties } from '../shared/nationality.mjs';
 import { nationalityAssertion } from '../shared/nationalityConcordance.mjs';
@@ -50,13 +51,13 @@ export function compileCbdbPersons(db, dynastyMap) {
   /** @type {AuthorityCandidate[]} */
   const out = [];
   for (const row of mainRows) {
-    const nameEntries = personNameEntriesFromAlts({
+    const { names, searchStrings } = buildPersonNamesFromAlts({
       c_name_chn: row.c_name_chn,
       c_surname_chn: row.c_surname_chn,
       c_mingzi_chn: row.c_mingzi_chn,
       alts: altsByPerson.get(row.c_personid) ?? [],
     });
-    if (!nameEntries.length) continue;
+    if (!names.length) continue;
 
     const dynasty = resolveDynastyByCode(row.c_dy, dynastyMap);
     const startYear =
@@ -72,8 +73,8 @@ export function compileCbdbPersons(db, dynastyMap) {
       authorityId: String(row.c_personid),
       kind: 'person',
       primaryName: row.c_name_chn,
-      searchStrings: nameEntries.map((entry) => entry.text),
-      names: nameEntries,
+      searchStrings,
+      names,
       metadata: {
         dynasty: row.c_dynasty_chn || dynasty?.label,
         nationality: nationality.map((label) => nationalityAssertion({ source: 'CBDB', id: `dynasty:${row.c_dy}`, label })),
@@ -113,6 +114,8 @@ export function compileCbdbPlaces(db, _dynastyMap) {
     )
     .all();
 
+  const suffixMap = loadAdminSuffixMap();
+
   /** @type {AuthorityCandidate[]} */
   const out = [];
   for (const row of rows) {
@@ -120,6 +123,8 @@ export function compileCbdbPlaces(db, _dynastyMap) {
     const searchStrings = new Set();
     addSearchString(searchStrings, row.c_name_chn);
     for (const alt of splitAltNamesField(row.c_alt_names)) addSearchString(searchStrings, alt);
+    const suffixed = suffixedNameVariant(row.c_name_chn, row.c_admin_type, suffixMap);
+    if (suffixed) addSearchString(searchStrings, suffixed);
     if (!searchStrings.size) continue;
 
     out.push({

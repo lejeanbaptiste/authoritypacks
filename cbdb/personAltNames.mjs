@@ -21,15 +21,17 @@ export function addCbdbPersonSearchString(set, surface, surnameChn) {
 }
 
 /**
- * Build (text, LJB name-type) entries for one person from `c_name_chn`,
- * surname/mingzi, and typed alt rows — the single source of truth for both
- * {@link personSearchStringsFromAlts} (flat strings, for the matcher) and the
- * `names` field on the compiled candidate (typed, for LJB's entities.xml).
- * Rules: [`cbdb/README.md`](./README.md) altname section (👤 signed 2026-07-05).
+ * Build typed name entries + phase-1 search strings for one person.
  *
- * Dedup matches the original Set-based behavior: the first type a surface
- * form qualifies under wins; later occurrences of the same normalized string
- * are dropped rather than reclassified.
+ * - **`names`**: every typed form LJB may store on entities.xml at link time,
+ *   including bare 姓 / 名 / 字 and short 號/諡 that fail the phase-1 length
+ *   gates (min length 1 code point for those short forms).
+ * - **`searchStrings`**: phase-1 matcher only — same inclusion/length rules as
+ *   before (min 2, 姓+字 not bare 字, long 別號/諡號 only, …).
+ *
+ * Rules: [`cbdb/README.md`](./README.md) altname section.
+ *
+ * Dedup within each list: first type a surface qualifies under wins.
  *
  * @param {{
  *   c_name_chn: string;
@@ -37,9 +39,12 @@ export function addCbdbPersonSearchString(set, surface, surnameChn) {
  *   c_mingzi_chn?: string | null;
  *   alts: { type: number; value: string }[];
  * }} person
- * @returns {{ text: string, type: string }[]}
+ * @returns {{
+ *   names: { text: string, type: string }[],
+ *   searchStrings: string[],
+ * }}
  */
-export function personNameEntriesFromAlts(person) {
+export function buildPersonNamesFromAlts(person) {
   const primary = normalizeSurface(person.c_name_chn);
   const surname = normalizeSurface(person.c_surname_chn ?? '');
   const mingzi = normalizeSurface(person.c_mingzi_chn ?? '');
@@ -56,25 +61,39 @@ export function personNameEntriesFromAlts(person) {
     else byType.set(type, [v]);
   }
 
-  /** @type {Map<string, string>} text -> ljbType, first-qualifying-type wins */
-  const entries = new Map();
-  const add = (surface, ljbType) => {
+  /** @type {Map<string, string>} text -> ljbType */
+  const searchEntries = new Map();
+  /** @type {Map<string, string>} text -> ljbType (superset of search + short forms) */
+  const nameEntries = new Map();
+
+  /**
+   * @param {string} surface
+   * @param {string} ljbType
+   * @param {{ minLength?: number, search?: boolean }} [opts]
+   */
+  const add = (surface, ljbType, opts = {}) => {
+    const { minLength = 2, search = true } = opts;
     if (isBlockedPersonString(surface, surname)) return;
     const normalized = normalizeSurface(surface);
-    if (!isValidSearchString(normalized) || entries.has(normalized)) return;
-    entries.set(normalized, ljbType);
+    if (!isValidSearchString(normalized, { minLength })) return;
+    if (!nameEntries.has(normalized)) nameEntries.set(normalized, ljbType);
+    if (search && !searchEntries.has(normalized) && isValidSearchString(normalized)) {
+      searchEntries.set(normalized, ljbType);
+    }
   };
-
-  add(primary, 'primary');
 
   const longerThanPrimary = (alt) => codePointLength(alt) > primaryLen;
   const atLeastPrimaryLen = (alt) => codePointLength(alt) >= primaryLen;
+
+  // --- Phase-1 (and names[]) forms ---
+  add(primary, 'primary');
 
   for (const alt of byType.get(3) ?? []) {
     if (longerThanPrimary(alt)) add(alt, CBDB_NAME_TYPE_MAP.get(3));
   }
 
   for (const alt of byType.get(4) ?? []) {
+    // Matcher: 姓+字. Bare 字 is names[]-only (below).
     add(surname ? surname + alt : alt, CBDB_NAME_TYPE_MAP.get(4));
   }
 
@@ -108,18 +127,55 @@ export function personNameEntriesFromAlts(person) {
     add(combined, CBDB_NAME_TYPE_MAP.get(18));
   }
 
-  return [...entries].map(([text, type]) => ({ text, type }));
+  // --- Short forms: names[] only (phase-2 / Never at link time) ---
+  // Bare 姓 / 名 from BIOG_MAIN.
+  if (surname) add(surname, 'family', { minLength: 1, search: false });
+  if (mingzi) add(mingzi, 'given', { minLength: 1, search: false });
+
+  // Bare 字 (type 4 component).
+  for (const alt of byType.get(4) ?? []) {
+    add(alt, CBDB_NAME_TYPE_MAP.get(4), { minLength: 1, search: false });
+  }
+
+  // Short 別名 / 別號 / 諡號 / 尊號 that failed the phase-1 length gate.
+  for (const alt of byType.get(3) ?? []) {
+    if (!longerThanPrimary(alt)) {
+      add(alt, CBDB_NAME_TYPE_MAP.get(3), { minLength: 1, search: false });
+    }
+  }
+  for (const type of [5, 6]) {
+    for (const alt of byType.get(type) ?? []) {
+      if (!longerThanPrimary(alt)) {
+        add(alt, CBDB_NAME_TYPE_MAP.get(type), { minLength: 1, search: false });
+      }
+    }
+  }
+  for (const alt of byType.get(15) ?? []) {
+    if (!atLeastPrimaryLen(alt)) {
+      add(alt, CBDB_NAME_TYPE_MAP.get(15), { minLength: 1, search: false });
+    }
+  }
+
+  return {
+    names: [...nameEntries].map(([text, type]) => ({ text, type })),
+    searchStrings: [...searchEntries.keys()],
+  };
 }
 
 /**
- * Flat match strings for one person (matcher input) — same rules as
- * {@link personNameEntriesFromAlts}, stripped of type.
- *
- * @param {Parameters<typeof personNameEntriesFromAlts>[0]} person
- * @returns {string[]}
+ * All typed names for entities.xml ingestion (includes bare short forms).
+ * @param {Parameters<typeof buildPersonNamesFromAlts>[0]} person
+ */
+export function personNameEntriesFromAlts(person) {
+  return buildPersonNamesFromAlts(person).names;
+}
+
+/**
+ * Phase-1 matcher strings only (no bare 字 / 名 / 姓 / short 號).
+ * @param {Parameters<typeof buildPersonNamesFromAlts>[0]} person
  */
 export function personSearchStringsFromAlts(person) {
-  return personNameEntriesFromAlts(person).map((entry) => entry.text);
+  return buildPersonNamesFromAlts(person).searchStrings;
 }
 
 // Re-export for tests that import codePointLength via this module

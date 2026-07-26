@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { kindSearchStringsFromWikidata, workSearchStringsFromWikidata } from './kindSearchStrings.mjs';
 import { compiledFileNameForKind } from './rawFromEntity.mjs';
+import { compiledCrosswalkFromRaw } from './identifierClaims.mjs';
 import { readNdjson, writePackFile } from '../shared/ndjson.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -14,7 +15,7 @@ const ROOT = path.resolve(__dirname, '..');
 /**
  * @param {Record<string, unknown>} raw
  * @param {'place' | 'org' | 'work'} kind
- * @param {{ languageId: string, script?: string }} ctx
+ * @param {{ languageId: string, script?: string, disableCrosswalkKeys?: string[] }} ctx
  */
 export function kindCandidateFromRaw(raw, kind, ctx) {
   if (!raw?.qid || !raw.primaryLabel) return null;
@@ -32,6 +33,9 @@ export function kindCandidateFromRaw(raw, kind, ctx) {
   if (raw.publicationYear !== undefined) metadata.startYear = raw.publicationYear;
   if (raw.inceptionYear !== undefined) metadata.startYear = raw.inceptionYear;
   if (raw.dissolvedYear !== undefined) metadata.endYear = raw.dissolvedYear;
+
+  const crosswalk = compiledCrosswalkFromRaw(raw, { disableKeys: ctx.disableCrosswalkKeys });
+  if (crosswalk) metadata.crosswalk = crosswalk;
 
   /** @type {import('../shared/types.mjs').AuthorityCandidate} */
   return {
@@ -52,6 +56,7 @@ export function kindCandidateFromRaw(raw, kind, ctx) {
  *   outDir: string;
  *   packId?: string;
  *   script?: string;
+ *   disableCrosswalkKeys?: string[];
  * }} opts
  */
 export function compileWikidataKindPack(opts) {
@@ -62,6 +67,7 @@ export function compileWikidataKindPack(opts) {
     const c = kindCandidateFromRaw(raw, opts.kind, {
       languageId: opts.languageId,
       script: opts.script,
+      disableCrosswalkKeys: opts.disableCrosswalkKeys,
     });
     if (c) candidates.push(c);
   }
@@ -82,6 +88,7 @@ export function compileWikidataKindPack(opts) {
     kind: opts.kind,
     language: opts.languageId,
     membership: 'label-only',
+    disabledCrosswalkKeys: opts.disableCrosswalkKeys ?? [],
     files: {
       [outName]: { entityCount: fileOut.count },
     },
@@ -105,10 +112,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const kind = arg('--kind', 'work');
   const languageId = arg('--language', 'zh-hant');
   const outDir = arg('--out', '');
+  const disableCrosswalkArg = arg('--disable-crosswalk', '');
 
   if (!rawPath || !['place', 'org', 'work'].includes(kind)) {
     console.error(
-      'Usage: node wikidata/compileKind.mjs --raw PATH --kind work|place|org --language LANG [--out DIR]',
+      'Usage: node wikidata/compileKind.mjs --raw PATH --kind work|place|org --language LANG [--out DIR] [--disable-crosswalk key1,key2]',
     );
     process.exit(1);
   }
@@ -124,6 +132,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     languageId,
     outDir: path.resolve(outDir || defaultOut),
     script,
+    disableCrosswalkKeys: disableCrosswalkArg
+      ? disableCrosswalkArg.split(',').map((s) => s.trim()).filter(Boolean)
+      : undefined,
   });
   console.log(`Compiled ${result.count} ${kind} → ${result.outDir}/${compiledFileNameForKind(kind)}`);
 }

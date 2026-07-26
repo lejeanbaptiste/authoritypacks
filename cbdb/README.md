@@ -27,7 +27,7 @@ Type **0** stays **out** (~45k strings). Mythical persons are **in** (no special
 | Type | Label | Rule |
 |------|--------|------|
 | 3 | Alias / 曾用名 | Include only if **longer than** `c_name_chn` |
-| 4 | Courtesy 字 | **`c_surname_chn` + `c_alt_name_chn`** (not bare 字) |
+| 4 | Courtesy 字 | **`searchStrings`:** `c_surname_chn` + `c_alt_name_chn` (not bare 字). **`names[]`:** also bare 字. |
 | 5, 6 | 別號 / 諡號 | Include only if **longer than** `c_name_chn` |
 | 8, 11, 14, 19, 20 | 封爵, 賜號, 廟號, 法號, 道號 | Include as stored |
 | 15 | 尊號 | Include if **length ≥** `c_name_chn` |
@@ -66,10 +66,15 @@ corresponding person candidates' metadata.
 
 ### Typed names (`names[]`) — 👤 signed 2026-07-15
 
-Every string in `searchStrings` is also emitted as a `{ text, type }` entry in
-`names[]`, tagged with the LJB canonical name-type id
-(`autoTagging/nameTypes.ts`: primary/courtesy/art/posthumous/temple/dharma/
-pen/variant) via `CBDB_NAME_TYPE_MAP` in [`constants.mjs`](./constants.mjs).
+`names[]` is a **superset** of `searchStrings`: every phase-1 matcher string
+is also emitted as a `{ text, type }` entry, tagged with the LJB canonical
+name-type id (`autoTagging/nameTypes.ts`: primary/courtesy/art/posthumous/
+temple/dharma/pen/variant/family/given) via `CBDB_NAME_TYPE_MAP` in
+[`constants.mjs`](./constants.mjs). `names[]` additionally carries bare 姓 /
+名 / 字 and short 別號/諡號/尊號 that fail the phase-1 length gates — these are
+excluded from `searchStrings` (they're too ambiguous for the matcher) but are
+still useful for LJB's entities.xml at manual link time.
+
 This is what LJB's entity database uses to keep courtesy names (字) — common
 words that make poor auto-tag seeds — out of corpus tagging by default while
 still surfacing them for manual disambiguation and search.
@@ -90,10 +95,11 @@ still surfacing them for manual disambiguation and search.
 | 19 | 法號 | `dharma` |
 | 20 | 道號 | `dharma` (folded — see comment in `constants.mjs`) |
 
-Implementation: `personNameEntriesFromAlts` in
+Implementation: `buildPersonNamesFromAlts` in
 [`personAltNames.mjs`](./personAltNames.mjs) is the single source of both
-`searchStrings` (flat) and `names` (typed) — same inclusion/length-gate rules,
-same dedup (first qualifying type wins for a given normalized string).
+`searchStrings` (phase-1 matcher only) and `names` (typed, superset) — dedup
+within each list matches the original Set-based behavior (first qualifying
+type wins for a given normalized string).
 
 DILA has no equivalent: its TEI `persName/@type` only distinguishes
 "alternative" from the primary name, not name category, so DILA-compiled

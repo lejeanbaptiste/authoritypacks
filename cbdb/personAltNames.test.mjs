@@ -6,6 +6,19 @@ import {
   personSearchStringsFromAlts,
 } from './personAltNames.mjs';
 
+const WANG_ANSHI = {
+  c_name_chn: '王安石',
+  c_surname_chn: '王',
+  c_mingzi_chn: '安石',
+  alts: [
+    { type: 4, value: '介甫' },
+    { type: 5, value: '半山老人' },
+    { type: 6, value: '文' },
+    { type: 8, value: '王荊公' },
+    { type: 10, value: '獾郎' },
+  ],
+};
+
 test('blocks symbols, Latin, and surname+氏/某', () => {
   assert.equal(isBlockedCbdbPersonString('王*公', '王'), true);
   assert.equal(isBlockedCbdbPersonString('Wang', '王'), true);
@@ -14,26 +27,29 @@ test('blocks symbols, Latin, and surname+氏/某', () => {
   assert.equal(isBlockedCbdbPersonString('王安石', '王'), false);
 });
 
-test('王安石 — type 4 as 姓+字; drops short 諡號', () => {
-  const strings = personSearchStringsFromAlts({
-    c_name_chn: '王安石',
-    c_surname_chn: '王',
-    c_mingzi_chn: '安石',
-    alts: [
-      { type: 4, value: '介甫' },
-      { type: 5, value: '半山老人' },
-      { type: 6, value: '文' },
-      { type: 8, value: '王荊公' },
-      { type: 10, value: '獾郎' },
-    ],
-  });
+test('王安石 — searchStrings phase-1 only (excludes bare short forms)', () => {
+  const strings = personSearchStringsFromAlts(WANG_ANSHI);
   assert.ok(strings.includes('王安石'));
   assert.ok(strings.includes('王介甫'));
   assert.ok(strings.includes('半山老人'));
   assert.ok(strings.includes('王荊公'));
-  assert.equal(strings.includes('介甫'), false);
-  assert.equal(strings.includes('文'), false);
-  assert.equal(strings.includes('獾郎'), false);
+  for (const excluded of ['介甫', '安石', '王', '文', '獾郎']) {
+    assert.equal(strings.includes(excluded), false, `searchStrings must exclude ${excluded}`);
+  }
+});
+
+test('王安石 — names[] includes bare short forms with types', () => {
+  const entries = personNameEntriesFromAlts(WANG_ANSHI);
+  const byText = Object.fromEntries(entries.map((e) => [e.text, e.type]));
+  assert.equal(byText['王安石'], 'primary');
+  assert.equal(byText['王介甫'], 'courtesy');
+  assert.equal(byText['介甫'], 'courtesy');
+  assert.equal(byText['王'], 'family');
+  assert.equal(byText['安石'], 'given');
+  assert.equal(byText['文'], 'posthumous');
+  assert.equal(byText['半山老人'], 'art');
+  assert.equal(byText['王荊公'], 'variant');
+  assert.equal('獾郎' in byText, false, 'childhood type 10 excluded from names[]');
 });
 
 test('type 12 + 13 concatenate; Latin type 13 skipped', () => {
@@ -61,37 +77,15 @@ test('type 18 uses full value when already longer than surname', () => {
   assert.equal(strings.includes('丘旭鑑旭鑑'), false);
 });
 
-test('王安石 — typed entries map codes to LJB name types', () => {
-  const entries = personNameEntriesFromAlts({
-    c_name_chn: '王安石',
-    c_surname_chn: '王',
-    c_mingzi_chn: '安石',
-    alts: [
-      { type: 4, value: '介甫' }, // 字 -> courtesy, becomes 王介甫
-      { type: 5, value: '半山老人' }, // 別號 -> art
-      { type: 6, value: '文' }, // 諡號, dropped (shorter than primary)
-      { type: 8, value: '王荊公' }, // 封爵 -> variant
-      { type: 10, value: '獾郎' }, // childhood name, always excluded
-    ],
-  });
-  const byText = Object.fromEntries(entries.map((e) => [e.text, e.type]));
-  assert.equal(byText['王安石'], 'primary');
-  assert.equal(byText['王介甫'], 'courtesy');
-  assert.equal(byText['半山老人'], 'art');
-  assert.equal(byText['王荊公'], 'variant');
-  assert.equal('文' in byText, false);
-  assert.equal('獾郎' in byText, false);
-});
-
 test('temple, dharma, and Daoist-name codes map correctly (道號 folds into dharma)', () => {
   const entries = personNameEntriesFromAlts({
     c_name_chn: '甲',
     c_surname_chn: '',
     c_mingzi_chn: '',
     alts: [
-      { type: 14, value: '太祖' }, // 廟號 -> temple
-      { type: 19, value: '道濟禪師' }, // 法號 -> dharma
-      { type: 20, value: '純陽子' }, // 道號 -> dharma (folded)
+      { type: 14, value: '太祖' },
+      { type: 19, value: '道濟禪師' },
+      { type: 20, value: '純陽子' },
     ],
   });
   const byText = Object.fromEntries(entries.map((e) => [e.text, e.type]));
@@ -109,7 +103,7 @@ test('secular name (12+13) and 別名 (3) map to variant; first-qualifying type 
       { type: 12, value: '丁' },
       { type: 13, value: '謂' },
       { type: 3, value: '善堅曾用名' },
-      { type: 4, value: '善堅曾用名' }, // same normalized text as a type-3 entry above; type-3 wins
+      { type: 4, value: '善堅曾用名' },
     ],
   });
   const byText = Object.fromEntries(entries.map((e) => [e.text, e.type]));
@@ -118,19 +112,11 @@ test('secular name (12+13) and 別名 (3) map to variant; first-qualifying type 
   assert.equal(entries.filter((e) => e.text === '善堅曾用名').length, 1, 'deduped, not doubled');
 });
 
-test('personSearchStringsFromAlts stays in lockstep with personNameEntriesFromAlts', () => {
-  const person = {
-    c_name_chn: '王安石',
-    c_surname_chn: '王',
-    c_mingzi_chn: '安石',
-    alts: [
-      { type: 4, value: '介甫' },
-      { type: 5, value: '半山老人' },
-      { type: 8, value: '王荊公' },
-    ],
-  };
-  assert.deepEqual(
-    personSearchStringsFromAlts(person),
-    personNameEntriesFromAlts(person).map((e) => e.text),
-  );
+test('personSearchStringsFromAlts is a subset of personNameEntriesFromAlts texts', () => {
+  const search = personSearchStringsFromAlts(WANG_ANSHI);
+  const nameTexts = new Set(personNameEntriesFromAlts(WANG_ANSHI).map((e) => e.text));
+  for (const s of search) {
+    assert.ok(nameTexts.has(s), `search string ${s} missing from names[]`);
+  }
+  assert.ok(nameTexts.size > search.length, 'names[] is a strict superset of searchStrings');
 });

@@ -54,6 +54,7 @@
   "dependencies": {
     "better-sqlite3": "^12.11.1",
     "fast-xml-parser": "^5.9.3",
+    "proj4": "^2.20.9",
     "sax": "^1.6.0",
     "shapefile": "^0.6.6"
   },

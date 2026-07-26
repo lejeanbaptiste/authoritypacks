@@ -52,10 +52,17 @@ test('CBDB compile — 王安石 names[] carries LJB type per entry', () => {
     const persons = compileCbdbPersons(db, dynastyMap);
     const wang = persons.find((p) => p.authorityId === '1762');
     assert.ok(wang?.names?.length, 'names[] should be populated');
-    assert.equal(wang.names.length, wang.searchStrings.length, 'names[] mirrors searchStrings 1:1');
+    const nameTexts = new Set(wang.names.map((n) => n.text));
+    for (const s of wang.searchStrings) {
+      assert.ok(nameTexts.has(s), `names[] should include search string ${s}`);
+    }
+    assert.ok(wang.names.length > wang.searchStrings.length, 'names[] superset of searchStrings');
+    assert.equal(wang.searchStrings.includes('介甫'), false, 'bare 字 still excluded from searchStrings');
     const byText = Object.fromEntries(wang.names.map((n) => [n.text, n.type]));
     assert.equal(byText['王安石'], 'primary');
     assert.equal(byText['王介甫'], 'courtesy');
+    assert.equal(byText['介甫'], 'courtesy');
+    assert.equal(byText['王'], 'family');
   } finally {
     db.close();
   }
@@ -165,7 +172,10 @@ test(
     try {
       const dynastyMap = loadCbdbDynastyMap(db);
       const persons = compileCbdbPersons(db, dynastyMap);
-      assert.ok(persons.length > 595_000 && persons.length < 615_000);
+      // Range widened after `names[]` became a superset of `searchStrings`:
+      // persons who previously had zero valid search strings but do have a
+      // bare surname/mingzi now qualify via `names[]` alone.
+      assert.ok(persons.length > 650_000 && persons.length < 670_000);
     } finally {
       db.close();
     }
