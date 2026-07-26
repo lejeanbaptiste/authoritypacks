@@ -39,6 +39,32 @@ npm run compile:dila
 node cbdb/report.mjs
 ```
 
+To audit person-origin evidence after compiling source packs:
+
+```bash
+npm run audit:origins -- \
+  --cbdb /tmp/place-origin-cbdb-v2 \
+  --norbert /tmp/place-origin-norbert-v2 \
+  --dila /tmp/place-origin-dila-v2 \
+  --concordance /tmp/place-origin-norbert-v2/concordance.ndjson \
+  --out /tmp/origin-review.ndjson
+```
+
+The audit links people only through explicit crosswalks or the strict Norbert
+concordance, then classifies each origin type independently as
+`coordinate-mode`, `id-mode`, or `conflict-id-mode`. It does not create or
+modify project entities. `coordinate-mode` is the only mode eligible for
+automatic coordinate import. `id-mode` retains the source place string and
+authority id when coordinates are unavailable. `conflict-id-mode` retains all
+source assertions as place ids and requires review; the report records whether
+the conflict is due to `distance` or incompatible `place-type` values.
+
+Origin assertions are never merged across `jiguan`, `ancestralOrigin`,
+`benguan`, `birthplace`, and `placeOfOrigin`. Within one origin type, every
+source assertion remains evidence. A person crosswalk groups evidence for
+review, but does not make unlike place strings equivalent. This keeps a
+conflicting jiguan set reviewable without discarding either source record.
+
 **CI pack bundle** (same output GitLab produces):
 
 ```bash
@@ -46,6 +72,12 @@ npm run build:packs:full    # download pinned upstream + compile + dist/*.tar.gz
 ```
 
 See [docs/ci-packs.md](docs/ci-packs.md).
+
+Norbert’s reduced SQL export is compiled here into the backend `norbert/`
+authority pack. The Wikipedia-reviewed noble-title asset (`wiki-nt-links.ndjson`)
+is separate: it lives in the Norbert plugin repo and is bundled with the plugin
+as a runtime aid for tagging/disambiguation, not as part of the public CI pack
+tarball.
 
 See [**docs/phases.md**](docs/phases.md) for progress and **👤 decisions**.
 

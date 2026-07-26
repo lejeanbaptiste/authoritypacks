@@ -17,6 +17,7 @@ import { NAME_TYPE_EXCLUDE } from './constants.mjs';
 import { compileNorbertSurnamesFromNameRows } from './surnames.mjs';
 import { inferNorbertSourceRelations } from '../shared/officeGraph.mjs';
 import { attachAppointmentsToPersons } from '../shared/appointmentIndex.mjs';
+import { compileNorbertPersonWrappers } from './personWrappers.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const defaultSql = path.resolve(__dirname, '../norbert_secret/norbert_humanum_2026-07-25-1938.sql');
@@ -37,6 +38,7 @@ const TABLES = [
   'person_origin',
   'office',
   'person_offices',
+  'person_nt',
 ];
 
 export async function compileNorbertPack(options = {}) {
@@ -56,10 +58,17 @@ export async function compileNorbertPack(options = {}) {
   const appointments = compileNorbertAppointments(tables.person_offices, offices);
   attachAppointmentsToPersons(persons, appointments);
 
+  const peopleById = new Map(persons.map((person) => [String(person.authorityId), person]));
+  const personWrappers = compileNorbertPersonWrappers(
+    tables.person_nt,
+    peopleById,
+  );
+
   fs.mkdirSync(outputDir, { recursive: true });
   const personOut = writePackFile(outputDir, 'persons.ndjson', persons);
   const officeOut = writePackFile(outputDir, 'offices.ndjson', offices);
   const appointmentOut = writePackFile(outputDir, 'appointments.ndjson', appointments);
+  const wrapperOut = writePackFile(outputDir, 'person-wrappers.ndjson', personWrappers);
   const officeRelations = inferNorbertSourceRelations(offices);
   const officeRelationOut = writePackFile(
     outputDir,
@@ -84,7 +93,8 @@ export async function compileNorbertPack(options = {}) {
     source: 'Norbert',
     buildToolVersion: '0.1.0',
     compiledAt: new Date().toISOString(),
-    upstream: { sql: dumpPath },
+    // Never record the private SQL path in a derived pack or manifest.
+    upstream: { source: 'Norbert SQL dump' },
     license: 'internal',
     attribution: 'Norbert person and office authority (Huma-Num).',
     files: {
@@ -102,6 +112,10 @@ export async function compileNorbertPack(options = {}) {
       },
       'appointments.ndjson': {
         entityCount: appointmentOut.count,
+      },
+      'person-wrappers.ndjson': {
+        entityCount: wrapperOut.count,
+        stringCount: personWrappers.reduce((n, p) => n + p.searchStrings.length, 0),
       },
       'surnames.json': {
         count: surnames.length,
@@ -125,6 +139,7 @@ export async function compileNorbertPack(options = {}) {
     originAssertions: persons.reduce((n, p) => n + (p.metadata?.origin?.length ?? 0), 0),
     offices: officeOut.count,
     appointments: appointmentOut.count,
+    personWrappers: wrapperOut.count,
     officeRelations: officeRelationOut.count,
     personStringCount,
     officeStringCount,
@@ -140,7 +155,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   compileNorbertPack()
     .then((result) => {
       console.log(
-        `  → ${result.persons} persons (${result.personStringCount} strings), ${result.offices} offices (${result.officeStringCount} strings) (${((Date.now() - t0) / 1000).toFixed(1)}s)`,
+        `  → ${result.persons} persons (${result.personStringCount} strings), ${result.personWrappers} wrappers, ${result.offices} offices (${result.officeStringCount} strings) (${((Date.now() - t0) / 1000).toFixed(1)}s)`,
       );
     })
     .catch((err) => {

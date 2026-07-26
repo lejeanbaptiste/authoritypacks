@@ -43,6 +43,25 @@ Ordered by value for “finish and plug in tagging packs” ([leaf-writer todo](
 | 7 | **Tibetan persName / placeName** | T | SPARQL count first (`language=bo`); THL outreach if Wikidata too sparse |
 | — | Disambiguation 4b + entity DB | L | Parallel — not pack builds |
 
+### Place-of-origin status
+
+The source extraction and resolution layer is complete for CBDB, Norbert, and
+DILA. It produces a read-only review file before any project entity import:
+
+- `coordinate-mode`: same-type geo-coded assertions fall within the configured
+  radius and have compatible place types; eligible for automatic coordinate
+  import.
+- `id-mode`: no usable coordinates; retain the place string and source-local
+  id.
+- `conflict-id-mode`: distance or place-type disagreement; retain all source
+  assertions as ids and require review.
+
+The resolver never merges different origin types, and it does not infer
+cross-source person identity from matching place labels. The remaining
+milestones are human conflict review and the downstream `entities.xml` import.
+See [extraction-todo.md](extraction-todo.md) and the root
+[README.md](../README.md) for the command and contract.
+
 ---
 
 ## NDL vs Wikidata ja (persons)
@@ -62,6 +81,12 @@ What NDL *is* bounded by:
 - Overlap is OK — LJB dedupes at disambiguation via Q-id / authority id; NDL stays **primary** for Japanese projects.
 
 **Recommendation:** ship **NDL persons** as the Japanese `persName` pack; add **`wikidata-person-ja`** later as an optional checkbox, same pattern as Wikidata beside CBDB for Chinese.
+
+Norbert has one special case worth keeping separate from the CI bundle: the
+plugin ships a reviewed `wiki-nt-links.ndjson` asset for noble-title
+disambiguation. That asset is produced from the Norbert/wiki review workflow
+and bundled inside `plugin-norbert`, while this repo remains responsible for
+the backend `norbert/` pack compiled from the reduced SQL export.
 
 ---
 
@@ -826,4 +851,3 @@ flowchart TB
 | 2026-07-06 | **Track H CHGIS** — `chgis/compile.mjs`, LJB Settings install-from-download UI            |
 | 2026-07-05 | **C1, D1 compile done** — CBDB + DILA NDJSON in `packs/`; tests pass; C2 ambiguity report |
 | 2026-07-05 | Initial phases doc; W0 moved from leaf-writer                                             |
-

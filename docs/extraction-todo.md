@@ -8,6 +8,10 @@ The office and appointment authority-pack work is implemented for tagging and
 disambiguation. The remaining work is to refresh production inputs and publish
 the resulting artifacts.
 
+**Validation handoff (2026-07-26):** implementation has been handed back for
+local build and test verification. Keep the release and production-refresh
+items below open until those results and any bug fixes have been incorporated.
+
 - CBDB is canonical for office identity, office classification, and office
   hierarchy wherever CBDB covers the office.
 - Norbert remains a tagging source and an observational source for offices
@@ -27,6 +31,41 @@ the resulting artifacts.
 - Appointment metadata is attached to person authority candidates and is
   carried into the authority cache when a person is imported or refreshed in
   `entities.xml`. This is not yet TEI appointment/event encoding.
+
+## Current decision: places of origin (2026-07-26)
+
+Place-of-origin evidence is source-preserving and is grouped by `originType`:
+`jiguan`, `ancestralOrigin`, `benguan`, `birthplace`, and `placeOfOrigin` are
+independent assertions and are never merged with one another.
+
+- [x] Extract origin assertions from CBDB, Norbert, and DILA.
+- [x] Preserve source place strings, source-local place ids, source categories,
+  place types, and coordinates when supplied.
+- [x] Link people only through explicit crosswalks or the strict Norbert
+  concordance; a shared label is not an identity link.
+- [x] Resolve each origin type independently into `coordinate-mode`,
+  `id-mode`, or `conflict-id-mode`.
+- [x] Treat coordinates within the configured radius (default 5 km) as
+  coordinate-mode only when place types are compatible.
+- [x] Keep missing-coordinate evidence in id-mode and retain every assertion.
+- [x] Keep distance or place-type conflicts in conflict-id-mode for review;
+  never discard one of the conflicting source assertions.
+- [ ] Decide the human review/import UI for conflict-id-mode groups.
+- [ ] Import approved origin assertions into project `entities.xml`.
+
+Run the audit after compiling the source packs:
+
+```bash
+npm run audit:origins -- \
+  --cbdb /tmp/place-origin-cbdb-v2 \
+  --norbert /tmp/place-origin-norbert-v2 \
+  --dila /tmp/place-origin-dila-v2 \
+  --concordance /tmp/place-origin-norbert-v2/concordance.ndjson \
+  --out /tmp/origin-review.ndjson
+```
+
+The audit is read-only with respect to project entities. See the top-level
+`README.md` for the mode semantics and review policy.
 
 ## Refresh checklist
 
@@ -95,6 +134,7 @@ than web scrapes.
   them to person authority candidates.
 - [x] Carry appointment metadata into authority-cache entries for reused
   persons during disambiguation.
+- [x] Hand implementation to local build/test validation.
 - [ ] Commit/review the public reduced Norbert export and generated build changes.
 - [ ] Run the release build in CI and inspect the resulting Chinese bundle.
 

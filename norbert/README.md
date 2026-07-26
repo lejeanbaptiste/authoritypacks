@@ -43,6 +43,7 @@ Output:
 | `packs/norbert/persons.ndjson` | Tag bomb → `persName` |
 | `packs/norbert/offices.ndjson` | Tag bomb → `roleName` |
 | `packs/norbert/appointments.ndjson` | Person-to-office assertions for person disambiguation and entity import |
+| `packs/norbert/person-wrappers.ndjson` | Longest-first, transient person-wrapper combinations from `person_nt` |
 | `packs/norbert/surnames.json` | Person name split (plugin) |
 | `packs/norbert/geo-admin-suffixes.json` | Place+office concatenate pass (plugin, future) |
 | `packs/norbert/manifest.json` | Pack metadata |
@@ -86,6 +87,18 @@ remain unresolved. Accepted links are recorded in
 id while the Norbert row id remains as provenance.
 
 Implementation: [`compileOffices.mjs`](./compileOffices.mjs).
+
+## Person-wrapper export
+
+`compile.mjs` also reads Norbert's `person_nt` table and emits
+`person-wrappers.ndjson`. Each record preserves the person ID and separate
+wrapper components—dynasty/nationality, fief, noble rank, posthumous or temple
+name, and personal-name variants—alongside the generated search strings.
+
+These records are matcher input only. They are not merged into
+`persons.ndjson`, and they must never be imported into a user's `entities.xml`
+as hypothetical persons. The SQL field mapping is documented in
+`SQL/person_wrapper_export.sql`.
 
 ## Name-type policy
 

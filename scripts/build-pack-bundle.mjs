@@ -126,14 +126,20 @@ const sqlitePath = resolveUpstream('cbdb.sqlite3', [
 ]);
 const norbertSqlPath = resolveUpstream('norbert-authority.sql', [
   path.join(repoRoot, 'norbert_public/norbert-authority.sql'),
+  path.join(repoRoot, '../norbert_public/norbert-authority.sql'),
 ]);
 const personsPath = resolveUpstream('dila-person.xml', [
   path.join(leafWriterDb, 'Buddhist_Studies_Person_Authority.xml'),
+  path.join(upstreamDir, 'Buddhist_Studies_Person_Authority.xml'),
 ]);
 const placesPath = resolveUpstream('dila-place.xml', [
   path.join(leafWriterDb, 'Buddhist_Studies_Place_Authority.xml'),
+  path.join(upstreamDir, 'Buddhist_Studies_Place_Authority.xml'),
 ]);
-const districtsPath = resolveUpstream('dila-districts.xml', [path.join(leafWriterDb, 'districts.xml')]);
+const districtsPath = resolveUpstream('dila-districts.xml', [
+  path.join(leafWriterDb, 'districts.xml'),
+  path.join(upstreamDir, 'districts.xml'),
+]);
 
 const ndlPersonsRaw = await resolveOptional(
   path.join(upstreamDir, 'ndl/raw/persons.raw.ndjson'),

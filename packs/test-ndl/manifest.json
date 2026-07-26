@@ -2,7 +2,7 @@
   "id": "test-ndl-works",
   "source": "NDL",
   "buildToolVersion": "0.1.0",
-  "compiledAt": "2026-07-25T23:49:47.244Z",
+  "compiledAt": "2026-07-26T21:52:29.228Z",
   "upstream": {
     "raw": "/home/d/Python/ljb/authoritypacks/packs/test-ndl/works.raw.ndjson"
   },
