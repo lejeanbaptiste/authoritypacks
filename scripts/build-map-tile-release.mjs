@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
+import { createReadStream } from 'node:fs';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -10,6 +11,7 @@ const outputDir = path.resolve('release');
 const workDir = await fs.mkdtemp(path.join(os.tmpdir(), 'authoritypacks-map-'));
 const pmtilesVersion = '1.31.2';
 const sourceHost = 'https://build.protomaps.com';
+const maxZoom = 8;
 
 const regions = [
   { id: 'tibet', bbox: [78.0, 26.0, 103.5, 39.8] },
@@ -23,8 +25,10 @@ async function download(url, destination) {
   await fs.writeFile(destination, Buffer.from(await response.arrayBuffer()));
 }
 
-function sha256(file) {
-  return fs.readFile(file).then((data) => createHash('sha256').update(data).digest('hex'));
+async function sha256(file) {
+  const hash = createHash('sha256');
+  for await (const chunk of createReadStream(file)) hash.update(chunk);
+  return hash.digest('hex');
 }
 
 function dateString(date) {
@@ -60,6 +64,7 @@ for (const region of regions) {
   await execFileAsync(cli, [
     'extract', sourceUrl, outputPath,
     `--bbox=${region.bbox.join(',')}`,
+    `--maxzoom=${maxZoom}`,
   ], { maxBuffer: 2 * 1024 * 1024 });
   await execFileAsync(cli, ['verify', outputPath]);
   const stat = await fs.stat(outputPath);
