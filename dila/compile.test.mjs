@@ -47,4 +47,8 @@ test('DILA compile fixture — persons and places', async () => {
   assert.equal(jianye.metadata?.startYear, 265);
   assert.equal(jianye.metadata?.endYear, 316);
   assert.equal(jianye.metadata?.description, '（265 ~ 316）郡級行政中心所在地');
+
+  const khost = places.find((p) => p.authorityId === 'PL000000000001');
+  assert.ok(khost);
+  assert.deepEqual(khost.metadata?.geo, { lat: 36.555275, lon: 67.868089 });
 });

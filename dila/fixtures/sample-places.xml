@@ -2,7 +2,8 @@
  <placeName xml:lang="zho-Hant">闊悉多國</placeName>
  <placeName xml:lang="eng-Latn">Khost</placeName>
  <placeName xml:lang="jpn">カスタ</placeName>
- <location><place key="PLA000002">阿富汗</place>
+ <location><place key="PLA000002">阿富汗</place><geo>67.868089 36.555275</geo></location>
+</place>
 <place xml:id="PL000000000002">
  <placeName xml:lang="zho-Hant">興都庫什山</placeName>
  <placeName xml:lang="eng-Latn">Hindu Kush</placeName>
@@ -14,12 +15,15 @@
  <placeName type="alternative" xml:lang="zho-Hant">錫雅柯山</placeName>
  <placeName type="alternative" xml:lang="eng-Latn">Paropamisoa</placeName>
  <placeName type="alternative" xml:lang="eng-Latn">Paropamisus</placeName>
- <location><place key="PLA000002">阿富汗</place>
+ <location><place key="PLA000002">阿富汗</place><geo cert="high">71.84389 36.24583</geo></location>
+</place>
 <place xml:id="PL000000000003">
  <placeName xml:lang="zho-Hant">勝境關</placeName>
  <placeName type="alternative" xml:lang="zho-Hant">界關</placeName>
- <location><place key="PLD002572">富源縣</place>
+ <location><place key="PLD002572">富源縣</place><geo cert="high">104.313295 25.64813</geo></location>
+</place>
 <place xml:id="PL000000000004">
  <placeName xml:lang="zho-Hant">建業</placeName>
  <note>（265 ~ 316）郡級行政中心所在地。孫吳、東晉、南朝定都於此。</note>
- <location><place key="PLD000001">南京</place></listPlace></body></text></TEI>
+ <location><place key="PLD000001">南京</place></location>
+</place></listPlace></body></text></TEI>

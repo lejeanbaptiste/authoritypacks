@@ -28,8 +28,35 @@ export function teiId(node) {
  */
 export function splitTeiRecords(filePath, tag) {
   const content = fs.readFileSync(filePath, 'utf8');
-  const re = new RegExp(`<${tag}\\s+xml:id="[^"]+"[\\s\\S]*?<\\/${tag}>`, 'g');
-  return content.match(re) ?? [];
+  const startRe = new RegExp(`<${tag}\\s+xml:id="[^"]+"`, 'g');
+  // Depth-tracking rather than a lazy [\s\S]*? match: DILA place records
+  // nest a same-named <place key="..."> reference inside <location>, and a
+  // naive non-greedy match stops at that inner </place> instead of the
+  // outer record's, truncating everything after it (including <geo>).
+  const tagRe = new RegExp(`<${tag}(?:\\s[^>]*)?>|<\\/${tag}>`, 'g');
+  const fragments = [];
+  let start;
+  while ((start = startRe.exec(content)) !== null) {
+    tagRe.lastIndex = start.index;
+    let depth = 0;
+    let end = -1;
+    let m;
+    while ((m = tagRe.exec(content)) !== null) {
+      if (m[0].startsWith('</')) {
+        depth--;
+        if (depth === 0) {
+          end = tagRe.lastIndex;
+          break;
+        }
+      } else {
+        depth++;
+      }
+    }
+    if (end === -1) break;
+    fragments.push(content.slice(start.index, end));
+    startRe.lastIndex = end;
+  }
+  return fragments;
 }
 
 /**

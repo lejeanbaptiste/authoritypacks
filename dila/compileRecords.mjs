@@ -117,22 +117,26 @@ export function parseGeoFromLocation(location) {
   const loc = asArray(location)[0];
   if (!loc?.geo) return undefined;
   const geo = loc.geo;
-  if (typeof geo !== 'object' || geo === null) return undefined;
+  // <geo> parses as a plain string when it carries no attributes (e.g.
+  // "<geo>67.868089 36.555275</geo>"), and as an object with `#text` /
+  // `@_cert` etc. when it does — both are valid, so don't bail on strings.
+  if (typeof geo !== 'object' && typeof geo !== 'string' && typeof geo !== 'number') return undefined;
 
-  const latText = textContent(geo.lat);
-  const lonText = textContent(geo.long ?? geo.lon);
+  const latText = typeof geo === 'object' ? textContent(geo.lat) : '';
+  const lonText = typeof geo === 'object' ? textContent(geo.long ?? geo.lon) : '';
   if (latText && lonText) {
     const lat = parseFloat(latText);
     const lon = parseFloat(lonText);
     if (Number.isFinite(lat) && Number.isFinite(lon)) return { lat, lon };
   }
 
+  // DILA's <geo> text content is "lon lat" (x, y order), not "lat lon".
   const coords = geo['@_coordinates'] || textContent(geo);
   if (coords) {
     const parts = String(coords).trim().split(/\s+/);
     if (parts.length >= 2) {
-      const lat = parseFloat(parts[0]);
-      const lon = parseFloat(parts[1]);
+      const lon = parseFloat(parts[0]);
+      const lat = parseFloat(parts[1]);
       if (Number.isFinite(lat) && Number.isFinite(lon)) return { lat, lon };
     }
   }
