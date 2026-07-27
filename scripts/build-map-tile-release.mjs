@@ -11,7 +11,7 @@ const outputDir = path.resolve('release');
 const workDir = await fs.mkdtemp(path.join(os.tmpdir(), 'authoritypacks-map-'));
 const pmtilesVersion = '1.31.2';
 const sourceHost = 'https://build.protomaps.com';
-const maxZoom = 8;
+const maxZoom = 10;
 
 const regions = [
   { id: 'tibet', bbox: [78.0, 26.0, 103.5, 39.8] },
