@@ -45,7 +45,7 @@ const cliArchive = path.join(workDir, 'pmtiles.tar.gz');
 const cliDir = path.join(workDir, 'pmtiles');
 await fs.mkdir(cliDir);
 await download(
-  `https://github.com/protomaps/go-pmtiles/releases/download/${pmtilesVersion}/go-pmtiles_${pmtilesVersion}_Linux_x86_64.tar.gz`,
+  `https://github.com/protomaps/go-pmtiles/releases/download/v${pmtilesVersion}/go-pmtiles_${pmtilesVersion}_Linux_x86_64.tar.gz`,
   cliArchive,
 );
 await execFileAsync('tar', ['-xzf', cliArchive, '-C', cliDir]);
