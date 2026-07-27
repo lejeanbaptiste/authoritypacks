@@ -88,3 +88,15 @@ All tracks compile to the same **LJB `AuthorityCandidate` NDJSON** shape (see le
 ## License
 
 GPL-2.0 (leaf-writer). Upstream data licenses vary per source — each manifest records attribution.
+
+### Regional map assets
+
+The `china.pmtiles`, `japan.pmtiles`, and `tibet.pmtiles` release assets are
+generated in CI from the current [Protomaps daily OpenStreetMap-derived
+build](https://docs.protomaps.com/pmtiles/download). They are regional
+extracts, not original Protomaps data. Protomaps distributes its basemap data
+under the [OpenStreetMap ODbL](https://www.openstreetmap.org/copyright); users
+must retain the required OpenStreetMap attribution and share-alike notices.
+The extraction tool is [go-pmtiles](https://github.com/protomaps/go-pmtiles),
+licensed under the BSD 3-Clause license. The release `map-tiles-index.json`
+records the source build and checksums for each generated archive.

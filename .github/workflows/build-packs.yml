@@ -34,6 +34,9 @@ jobs:
       - name: Build release assets
         run: npm run authoritypacks:release
 
+      - name: Build regional map tile assets
+        run: npm run map-tiles:release
+
       - name: Upload release assets
         uses: actions/upload-artifact@v4
         with:
