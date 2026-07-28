@@ -54,7 +54,8 @@
  * @property {boolean} [categoryIsSuffix]
  * @property {boolean} [yieldPrefix]
  * @property {string} [entityId] Stable source-scoped office entity id.
- * @property {string} [canonicalEntityId] Canonical entity id after concordance.
+ * @property {string} [canonicalEntityId] Canonical entity id after concordance,
+ *   including CBDB's internal person merge table.
  * @property {string[]} [officeTypeIds] CBDB office classification node ids.
  * @property {string} [sourceRef]
  * @property {string} [sourcePages]

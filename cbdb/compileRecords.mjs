@@ -7,6 +7,7 @@ import { SOURCE } from './constants.mjs';
 import { nationalityFromDynasties } from '../shared/nationality.mjs';
 import { nationalityAssertion } from '../shared/nationalityConcordance.mjs';
 import { officeEntityId } from '../shared/officeGraph.mjs';
+import { loadCbdbPersonConcordance } from './personConcordance.mjs';
 
 /** @typedef {import('../shared/types.mjs').AuthorityCandidate} AuthorityCandidate */
 /** @typedef {import('better-sqlite3').Database} Database */
@@ -16,6 +17,7 @@ import { officeEntityId } from '../shared/officeGraph.mjs';
  * @param {ReturnType<typeof loadCbdbDynastyMap>} dynastyMap
  */
 export function compileCbdbPersons(db, dynastyMap) {
+  const { canonicalByPerson } = loadCbdbPersonConcordance(db);
   const mainRows = db
     .prepare(
       `SELECT m.c_personid, m.c_name_chn, m.c_name, m.c_surname_chn, m.c_mingzi_chn,
@@ -68,6 +70,7 @@ export function compileCbdbPersons(db, dynastyMap) {
       { startYear: row.c_birthyear ?? row.c_fl_earliest_year, endYear: row.c_deathyear ?? row.c_fl_latest_year },
     );
 
+    const canonicalPersonId = canonicalByPerson.get(String(row.c_personid));
     out.push({
       source: SOURCE,
       authorityId: String(row.c_personid),
@@ -76,6 +79,9 @@ export function compileCbdbPersons(db, dynastyMap) {
       searchStrings,
       names,
       metadata: {
+        canonicalEntityId: canonicalPersonId
+          ? `cbdb:person:${canonicalPersonId}`
+          : undefined,
         dynasty: row.c_dynasty_chn || dynasty?.label,
         nationality: nationality.map((label) => nationalityAssertion({ source: 'CBDB', id: `dynasty:${row.c_dy}`, label })),
         origin: originsByPerson.get(row.c_personid),
@@ -455,10 +461,12 @@ export function compileCbdbOfficeGraph(db) {
  */
 export function compileCbdb(db) {
   const dynastyMap = loadCbdbDynastyMap(db);
+  const personConcordance = loadCbdbPersonConcordance(db);
   const officeGraph = compileCbdbOfficeGraph(db);
   const offices = compileCbdbOffices(db, dynastyMap);
   return {
     persons: compileCbdbPersons(db, dynastyMap),
+    personConcordance: personConcordance.rows,
     places: compileCbdbPlaces(db, dynastyMap),
     offices,
     appointments: compileCbdbAppointments(db, offices),

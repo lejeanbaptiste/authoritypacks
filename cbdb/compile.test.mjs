@@ -4,7 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
-import { compileCbdbAppointments, compileCbdbOrigins, compileCbdbPersons } from './compileRecords.mjs';
+import { compileCbdb, compileCbdbAppointments, compileCbdbOrigins, compileCbdbPersons } from './compileRecords.mjs';
+import { loadCbdbPersonConcordance } from './personConcordance.mjs';
 import { loadCbdbDynastyMap } from '../shared/dynastyMap.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -90,6 +91,28 @@ test('CBDB compile — fixture person count', () => {
     const dynastyMap = loadCbdbDynastyMap(db);
     const persons = compileCbdbPersons(db, dynastyMap);
     assert.ok(persons.length >= 5 && persons.length < 20, `unexpected fixture size: ${persons.length}`);
+  } finally {
+    db.close();
+  }
+});
+
+test('CBDB internal person concordance is preserved and gives merged records one canonical entity', () => {
+  const db = new Database(':memory:');
+  try {
+    db.exec(`
+      CREATE TABLE MERGED_PERSON_DATA (
+        c_personid INTEGER NOT NULL,
+        c_merged_from_personid INTEGER NOT NULL,
+        c_notes TEXT, c_source TEXT, c_pages TEXT
+      );
+      INSERT INTO MERGED_PERSON_DATA VALUES (10, 20, 'same person', 'load', 'p. 1');
+      INSERT INTO MERGED_PERSON_DATA VALUES (10, 21, NULL, NULL, NULL);
+    `);
+    const concordance = loadCbdbPersonConcordance(db);
+    assert.equal(concordance.rows.length, 2);
+    assert.equal(concordance.canonicalByPerson.get('20'), '10');
+    assert.equal(concordance.canonicalByPerson.get('21'), '10');
+    assert.equal(concordance.canonicalByPerson.get('10'), '10');
   } finally {
     db.close();
   }

@@ -120,11 +120,18 @@ node cbdb/compile.mjs --sqlite ../../leaf-writer/databases/cbdb_20260627.sqlite3
 packs/cbdb/
   manifest.json
   persons.ndjson
+  person-concordance.ndjson
   places.ndjson
   offices.ndjson
   office-types.ndjson
   office-relations.ndjson
 ```
+
+`person-concordance.ndjson` preserves CBDB's `MERGED_PERSON_DATA` rows.
+Persons participating in a merge receive the same
+`metadata.canonicalEntityId` (`cbdb:person:<canonical CBDB id>`), so the LJB
+entity importer groups the canonical record and its duplicates into one local
+entity while retaining each CBDB authority ID.
 
 ## 👤 Decisions still open
 

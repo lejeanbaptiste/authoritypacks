@@ -31,7 +31,15 @@ export function compileCbdbPack(options = {}) {
 
   const db = new Database(dbFile, { readonly: true });
   try {
-    const { persons, places, offices, appointments, officeTypes, officeRelations } = compileCbdb(db);
+    const {
+      persons,
+      personConcordance,
+      places,
+      offices,
+      appointments,
+      officeTypes,
+      officeRelations,
+    } = compileCbdb(db);
     attachAppointmentsToPersons(persons, appointments);
 
     fs.mkdirSync(outputDir, { recursive: true });
@@ -39,6 +47,11 @@ export function compileCbdbPack(options = {}) {
     const placeOut = writePackFile(outputDir, 'places.ndjson', places);
     const officeOut = writePackFile(outputDir, 'offices.ndjson', offices);
     const appointmentOut = writePackFile(outputDir, 'appointments.ndjson', appointments);
+    const personConcordanceOut = writePackFile(
+      outputDir,
+      'person-concordance.ndjson',
+      personConcordance,
+    );
     const officeTypeOut = writePackFile(outputDir, 'office-types.ndjson', officeTypes);
     const officeRelationOut = writePackFile(
       outputDir,
@@ -66,6 +79,7 @@ export function compileCbdbPack(options = {}) {
         'places.ndjson': { entityCount: placeOut.count, stringCount: stringCount(places) },
         'offices.ndjson': { entityCount: officeOut.count, stringCount: stringCount(offices) },
         'appointments.ndjson': { entityCount: appointmentOut.count },
+        'person-concordance.ndjson': { relationCount: personConcordanceOut.count },
         'office-types.ndjson': { entityCount: officeTypeOut.count },
         'office-relations.ndjson': { relationCount: officeRelationOut.count },
       },
