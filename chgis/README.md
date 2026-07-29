@@ -4,7 +4,13 @@ Compiles [CHGIS v6](https://dataverse.harvard.edu/dataverse/chgis_v6) shapefiles
 
 **License:** academic use only — **no redistribution** of compiled packs. Users download from Harvard Dataverse and compile locally (LJB Settings → Authorities → CHGIS).
 
-## What to download
+## Required source assets
+
+The desktop installer can fetch these two assets directly from Harvard Dataverse and
+store them under the local authority-assets directory before compiling. The manual
+installer accepts the same ZIPs or an extracted folder containing both layers.
+
+Only these two point layers are required for the LJB historical-place pack:
 
 Place both layers in one folder before compiling:
 
@@ -69,7 +75,7 @@ packs/chgis/
 
 ## LJB install (desktop)
 
-**Settings → Authorities → CHGIS (historical places)** → accept license → **Install from download…** → pick the `.zip` or unzipped folder containing **both** county and prefecture layers. LJB extracts (if needed), compiles beside your entity database, and enables the pack in the auto-tag dialog.
+**Settings → Authorities → CHGIS (historical places)** → accept license → **Download from Dataverse & install**. LJB downloads the county and prefecture point-layer ZIPs, stores the original assets locally, extracts them, compiles beside your entity database, and enables the pack in the auto-tag dialog. **Install from download…** remains available for manually downloaded assets.
 
 ## Attribution (show in UI)
 
