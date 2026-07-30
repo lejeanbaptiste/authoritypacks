@@ -47,7 +47,7 @@ export async function compileChgisPack(options = {}) {
     throw new Error(`No .shp files found under ${input}`);
   }
 
-  const cbdbByChgisId = loadCbdbChgisCrosswalk(sqlite || null);
+  const cbdbByChgisId = await loadCbdbChgisCrosswalk(sqlite || null);
   const { chgisToDila: dilaByChgisId } = loadChgisDilaCrosswalk(crosswalk || null);
 
   /** @type {import('../shared/types.mjs').AuthorityCandidate[]} */

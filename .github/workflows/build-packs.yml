@@ -37,6 +37,9 @@ jobs:
       - name: Build regional map tile assets
         run: npm run map-tiles:release
 
+      - name: Build CHGIS compile toolchain bundle
+        run: npm run chgis-toolchain:release
+
       - name: Upload release assets
         uses: actions/upload-artifact@v4
         with:
