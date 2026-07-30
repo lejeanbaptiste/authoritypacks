@@ -5,3 +5,7 @@ packs/ndl/raw/*.json filter=lfs diff=lfs merge=lfs -text
 # Track Wikidata pack files with Git LFS
 packs/wikidata/**/*.ndjson filter=lfs diff=lfs merge=lfs -text
 packs/wikidata/**/manifest.json filter=lfs diff=lfs merge=lfs -text
+
+# Track the pre-compiled CHGIS pack with Git LFS (compiled locally from
+# Harvard Dataverse shapefiles; see chgis/README.md)
+packs/chgis/*.ndjson filter=lfs diff=lfs merge=lfs -text

@@ -14,8 +14,12 @@ test('parseGeoFromLocation — lat/long children', () => {
 });
 
 test('parseGeoFromLocation — space-separated coordinates text', () => {
+  // DILA's plain-text <geo> content is "lon lat" (x, y) order, not "lat lon"
+  // — see dila/compileRecords.mjs's parseGeoFromLocation and commit 2fcf296
+  // ("Geo debug"), confirmed against real DILA place data (e.g. Yunnan sites
+  // recorded as "100.116271 25.975079", i.e. lon 100.12 / lat 25.98).
   const geo = parseGeoFromLocation([{ geo: { '#text': '32.01 112.12' } }]);
-  assert.deepEqual(geo, { lat: 32.01, lon: 112.12 });
+  assert.deepEqual(geo, { lat: 112.12, lon: 32.01 });
 });
 
 test('loadChgisDilaCrosswalk — reads TSV into bidirectional maps', () => {

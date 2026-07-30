@@ -141,6 +141,18 @@ const districtsPath = resolveUpstream('dila-districts.xml', [
   path.join(upstreamDir, 'districts.xml'),
 ]);
 
+// CHGIS is compiled locally (maintainer has the Dataverse shapefiles on disk;
+// see chgis/README.md) and checked in via Git LFS, so CI just stages the
+// already-compiled pack rather than parsing shapefiles. The CHGIS<->DILA
+// crosswalk TSV is likewise built locally and checked in, so DILA's own
+// compile step below can stamp `crosswalkChgisCount` without recompiling CHGIS.
+const chgisPlacesPath = path.join(localPacksRoot, 'chgis/places.ndjson');
+const chgisManifestPath = path.join(localPacksRoot, 'chgis/manifest.json');
+const chgisDilaCrosswalkPath = path.join(repoRoot, 'reports/chgis-dila-crosswalk.tsv');
+const includeChgis = await isUsableFile(chgisPlacesPath);
+const chgisDilaCrosswalkAvailable =
+  includeChgis && fs.existsSync(chgisDilaCrosswalkPath);
+
 const ndlPersonsRaw = await resolveOptional(
   path.join(upstreamDir, 'ndl/raw/persons.raw.ndjson'),
   path.join(localPacksRoot, 'ndl/raw/persons.raw.ndjson'),
@@ -230,8 +242,17 @@ await compileDila({
   personsPath,
   placesPath,
   districtsPath,
+  crosswalkPath: chgisDilaCrosswalkAvailable ? chgisDilaCrosswalkPath : '',
   outDir: path.join(packsDir, 'dila'),
 });
+
+if (includeChgis) {
+  console.log('Staging CHGIS…');
+  const chgisDestDir = path.join(packsDir, 'chgis');
+  await fsp.mkdir(chgisDestDir, { recursive: true });
+  await fsp.copyFile(chgisPlacesPath, path.join(chgisDestDir, 'places.ndjson'));
+  await fsp.copyFile(chgisManifestPath, path.join(chgisDestDir, 'manifest.json'));
+}
 
 console.log('Compiling Norbert…');
 await compileNorbertPack({
@@ -412,6 +433,19 @@ await patchManifest('norbert', {
   },
 });
 
+if (includeChgis) {
+  await patchManifest('chgis', {
+    license: pins.chgis.license,
+    attribution: pins.chgis.attribution,
+    redistribution: pins.chgis.redistribution,
+    redistributionNote: pins.chgis.redistributionNote,
+    upstream: {
+      version: pins.chgis.version,
+      chgisDilaCrosswalk: chgisDilaCrosswalkAvailable ? 'reports/chgis-dila-crosswalk.tsv' : undefined,
+    },
+  });
+}
+
 if (includeNdl) {
   await patchManifest('ndl', {
     id: 'ndl-bundle-ja',
@@ -454,6 +488,7 @@ if (includeWikidata) {
 
 const packFiles = [];
 const bundleSourceIds = ['cbdb', 'dila', 'norbert'];
+if (includeChgis) bundleSourceIds.push('chgis');
 if (includeWikidata) bundleSourceIds.push('wikidata');
 if (includeNdl) bundleSourceIds.push('ndl');
 
@@ -502,6 +537,7 @@ const packsIndex = {
   upstream: {
     cbdb: { version: pins.cbdb.version, sqliteSha256: pins.cbdb.sqliteSha256 },
     dila: { commit: pins.dila.commit, versionLabel: pins.dila.versionLabel },
+    ...(includeChgis ? { chgis: { version: pins.chgis.version } } : {}),
     ...(includeNdl
       ? {
           ndl: {
@@ -530,12 +566,14 @@ const packsIndex = {
   licenses: {
     cbdb: pins.cbdb.license,
     dila: pins.dila.license,
+    ...(includeChgis ? { chgis: pins.chgis.license } : {}),
     ...(includeWikidata ? { wikidata: pins.wikidata.license } : {}),
     ...(includeNdl ? { ndl: pins.ndl.license } : {}),
   },
   attribution: {
     cbdb: pins.cbdb.attribution,
     dila: pins.dila.attribution,
+    ...(includeChgis ? { chgis: pins.chgis.attribution } : {}),
     ...(includeWikidata ? { wikidata: pins.wikidata.attribution } : {}),
     ...(includeNdl ? { ndl: pins.ndl.attribution } : {}),
   },
@@ -550,6 +588,9 @@ Bundle: ${tarballPath}`);
 console.log(`Index:  ${indexPath}`);
 console.log(`Version: ${bundleVersion}`);
 console.log(`Tarball sha256: ${tarballSha256}`);
+if (!includeChgis) {
+  console.log('CHGIS not included: run `npm run compile:chgis` locally and check in packs/chgis/places.ndjson (see chgis/README.md).');
+}
 if (!includeNdl) {
   console.log('NDL not included: add packs/ndl/raw/persons.raw.ndjson and packs/ndl/raw/works.raw.ndjson (or .upstream/ndl/raw/ equivalents).');
 }

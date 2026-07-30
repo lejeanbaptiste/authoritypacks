@@ -1,0 +1,41 @@
+{
+  "id": "chgis",
+  "source": "CHGIS",
+  "buildToolVersion": "0.2.0",
+  "compiledAt": "2026-07-27T02:48:19.484Z",
+  "upstream": {
+    "input": "/Users/daniel/Downloads/chgis_layers/",
+    "layers": [
+      "v6_time_cnty_pts_utf",
+      "v6_time_pref_pts_utf_wgs84"
+    ],
+    "chgisDilaCrosswalk": "reports/chgis-dila-crosswalk.tsv"
+  },
+  "license": "CHGIS-Academic",
+  "attribution": "CHGIS v6, Fairbank Center for Chinese Studies (Harvard University) and Center for Historical Geographical Studies (Fudan University), 2016.",
+  "redistribution": "local-compile-only",
+  "files": {
+    "places.ndjson": {
+      "entityCount": 15746,
+      "stringCount": 18756,
+      "crosswalkCbdbCount": 0,
+      "crosswalkDilaCount": 1783
+    }
+  },
+  "policy": {
+    "version": "2026-07-06",
+    "rulesRef": "chgis/README.md",
+    "minMatchLength": 2,
+    "nameField": "NAME_FT",
+    "layerCounts": [
+      {
+        "layer": "v6_time_cnty_pts_utf",
+        "count": 10520
+      },
+      {
+        "layer": "v6_time_pref_pts_utf_wgs84",
+        "count": 5226
+      }
+    ]
+  }
+}

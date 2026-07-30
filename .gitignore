@@ -8,6 +8,8 @@ release/
 reports/*.ndjson
 reports/*.csv
 reports/*.tsv
+# Checked-in CHGIS<->DILA crosswalk (built locally, shipped with the release)
+!reports/chgis-dila-crosswalk.tsv
 
 # Ignore compiled packs (can be regenerated from sources)
 packs/cbdb/
@@ -18,7 +20,6 @@ packs/ndl/places-ja/
 packs/ndl/orgs-ja/
 packs/ndl/orgs-smoke-ja/
 packs/ndl/ime.csv
-packs/chgis/
 packs/chgis-test/
 packs/norbert/
 
@@ -32,9 +33,11 @@ packs/wikidata/raw-zh-hant-*/
 !packs/test-ndl/
 !packs/test-ndl/**
 
-# Keep raw NDL files and Wikidata packs (needed for CI)
+# Keep raw NDL files, Wikidata packs, and the pre-compiled CHGIS pack (needed for CI)
 !packs/ndl/raw/
 !packs/wikidata/
+!packs/chgis/
+!packs/chgis/**
 
 *.bz2
 *.json.gz

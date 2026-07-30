@@ -37,6 +37,13 @@
       }
     ]
   },
+  "chgis": {
+    "version": "v6",
+    "license": "CHGIS-Academic",
+    "attribution": "CHGIS v6, Fairbank Center for Chinese Studies (Harvard University) and Center for Historical Geographical Studies (Fudan University), 2016.",
+    "redistribution": "bundled-derivative",
+    "redistributionNote": "Portions of CHGIS v6 place data folded into the multi-source `chinese` authority pack alongside CBDB/DILA/Wikidata; not a standalone CHGIS redistribution. Compiled locally from Harvard Dataverse shapefiles (DOIs 10.7910/DVN/Q9VOF5, 10.7910/DVN/WW1PD6) and checked in via Git LFS — see chgis/README.md."
+  },
   "ndl": {
     "worksZipUrl": "https://id.ndl.go.jp/information/wp-content/uploads/2026/04/work-tsv.zip",
     "license": "NDL Terms of Use (attribution required)",

@@ -2,7 +2,7 @@
   "id": "dila",
   "source": "DILA",
   "buildToolVersion": "0.2.0",
-  "compiledAt": "2026-07-29T07:44:14.687Z",
+  "compiledAt": "2026-07-30T18:38:34.787Z",
   "upstream": {
     "persons": "/Users/daniel/Code/leJeanBaptiste/authority extraction/dila/fixtures/sample-persons.xml",
     "places": "/Users/daniel/Code/leJeanBaptiste/authority extraction/dila/fixtures/sample-places.xml",

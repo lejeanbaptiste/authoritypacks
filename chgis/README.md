@@ -2,17 +2,11 @@
 
 Compiles [CHGIS v6](https://dataverse.harvard.edu/dataverse/chgis_v6) shapefiles → LJB `AuthorityCandidate` NDJSON.
 
-**License:** academic use only — **no redistribution** of compiled packs. Users download from Harvard Dataverse and compile locally (LJB Settings → Authorities → CHGIS).
+**License:** academic use only (CHGIS-Academic). Portions of the CHGIS data are folded into LJB's multi-source `chinese` authority pack alongside CBDB/DILA/Wikidata, with mandatory attribution — see `upstream/pins.json`'s `chgis.redistributionNote` for the reasoning. CHGIS is compiled once locally by a maintainer (see below) and the result is checked into this repo via Git LFS; CI ships it pre-compiled like every other source, and end users no longer compile it themselves.
 
 ## Required source assets
 
-The desktop installer can fetch these two assets directly from Harvard Dataverse and
-store them under the local authority-assets directory before compiling. The manual
-installer accepts the same ZIPs or an extracted folder containing both layers.
-
-Only these two point layers are required for the LJB historical-place pack:
-
-Place both layers in one folder before compiling:
+Only these two point layers are required for the LJB historical-place pack. Download both from Harvard Dataverse and place them in one folder before compiling:
 
 | Dataset | DOI | File |
 |---------|-----|------|
@@ -35,48 +29,43 @@ Place both layers in one folder before compiling:
 DILA does not ship a CHGIS index. Build one locally from name + geo (~0.5° tolerance):
 
 ```bash
-# 1. Extract intermediate TSV (gitignored under reports/)
+# 1. Extract intermediate TSV (gitignored under reports/, except the crosswalk itself)
 npm run extract:chgis-places -- --input ~/Downloads/chgis_layers/
 npm run extract:dila-places
 
 # 2. Build crosswalk
 npm run crosswalk:chgis-dila
-# → reports/chgis-dila-crosswalk.tsv
-# → reports/chgis-dila-ambiguous.tsv (manual review)
+# → reports/chgis-dila-crosswalk.tsv   (checked in — shipped with the release so
+#                                        build-pack-bundle.mjs can stamp DILA's
+#                                        crosswalkChgisCount without recompiling CHGIS)
+# → reports/chgis-dila-ambiguous.tsv (manual review, not checked in)
 
-# 3. Compile packs with crosswalk stamped
+# 3. Compile the pack with both crosswalks stamped
 npm run compile:chgis -- \
   --input ~/Downloads/chgis_layers/ \
   --crosswalk reports/chgis-dila-crosswalk.tsv \
-  --out packs/chgis
-
-npm run compile:dila -- --crosswalk reports/chgis-dila-crosswalk.tsv
-```
-
-## Run locally (compile only)
-
-```bash
-npm run compile:chgis -- --input ~/Downloads/chgis_layers/ --out packs/chgis
-
-# With CBDB crosswalk (if sqlite is available):
-npm run compile:chgis -- \
-  --input ~/Downloads/chgis_layers/ \
   --cbdb-sqlite ../leaf-writer/databases/cbdb_20260627.sqlite3 \
   --out packs/chgis
 ```
+
+## Maintainer release flow
+
+CHGIS v6 is static, so this only needs re-running on a rare version bump — not on every release:
+
+1. Run the crosswalk + compile steps above, producing `packs/chgis/places.ndjson` + `packs/chgis/manifest.json` and `reports/chgis-dila-crosswalk.tsv`.
+2. Commit them (Git LFS tracks `packs/chgis/*.ndjson`; see `.gitattributes`).
+3. `scripts/build-pack-bundle.mjs` stages the checked-in pack into the release bundle automatically (no shapefile parsing happens in CI) and feeds the checked-in crosswalk TSV into DILA's own compile step so DILA's `crosswalkChgisCount` stays correct.
 
 ## Output
 
 ```
 packs/chgis/
-  manifest.json    # license: CHGIS-Academic, redistribution: local-compile-only
+  manifest.json    # license: CHGIS-Academic; redistribution/attribution patched from pins.json at release time
   places.ndjson
 ```
-
-## LJB install (desktop)
-
-**Settings → Authorities → CHGIS (historical places)** → accept license → **Download from Dataverse & install**. LJB downloads the county and prefecture point-layer ZIPs, stores the original assets locally, extracts them, compiles beside your entity database, and enables the pack in the auto-tag dialog. **Install from download…** remains available for manually downloaded assets.
 
 ## Attribution (show in UI)
 
 > CHGIS, Version 6. (c) Fairbank Center for Chinese Studies of Harvard University and the Center for Historical Geographical Studies at Fudan University, 2016.
+
+This citation is surfaced in the LJB desktop app via the generic manifest-driven attributions disclosure under the `chinese` authority profile — there is no CHGIS-specific settings UI.
