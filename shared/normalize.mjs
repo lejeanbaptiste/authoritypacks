@@ -3,6 +3,20 @@
 const DEFAULT_MIN = 2;
 const LATIN_MIN = 3;
 
+/** Chinese numeral characters (digits + place-value units, incl. 萬). */
+const CHINESE_NUMERAL_ONLY_RE = /^[一二三四五六七八九十百千萬]+$/;
+
+/**
+ * True when `surface` is composed entirely of Chinese numeral characters
+ * (e.g. 三, 十二, 一百), which occur as junk placeName/title/persName
+ * entries picked up from ordinal/enumeration text rather than real names.
+ * @param {string} surface
+ */
+export function isChineseNumeralOnly(surface) {
+  const s = normalizeSurface(surface);
+  return s.length > 0 && CHINESE_NUMERAL_ONLY_RE.test(s);
+}
+
 /**
  * NFC trim; collapse internal whitespace.
  * @param {string} raw
