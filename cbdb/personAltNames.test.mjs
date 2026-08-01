@@ -52,6 +52,25 @@ test('王安石 — names[] includes bare short forms with types', () => {
   assert.equal('獾郎' in byText, false, 'childhood type 10 excluded from names[]');
 });
 
+test('type 4 ALTNAME that already includes 姓 is stripped to bare 字 in names[]', () => {
+  const entries = personNameEntriesFromAlts({
+    c_name_chn: '安惇',
+    c_surname_chn: '安',
+    c_mingzi_chn: '惇',
+    alts: [{ type: 4, value: '安處厚' }],
+  });
+  const byText = Object.fromEntries(entries.map((e) => [e.text, e.type]));
+  assert.equal(byText['處厚'], 'courtesy');
+  assert.equal('安處厚' in byText, false, 'compound 字 must not land in names[]');
+  const search = personSearchStringsFromAlts({
+    c_name_chn: '安惇',
+    c_surname_chn: '安',
+    c_mingzi_chn: '惇',
+    alts: [{ type: 4, value: '安處厚' }],
+  });
+  assert.ok(search.includes('安處厚'), 'search still has 姓+字 for tagging');
+});
+
 test('type 12 + 13 concatenate; Latin type 13 skipped', () => {
   const strings = personSearchStringsFromAlts({
     c_name_chn: '善堅',

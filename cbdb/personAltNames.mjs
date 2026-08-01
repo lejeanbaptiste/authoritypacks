@@ -4,6 +4,7 @@ import {
   codePointLength,
   isBlockedPersonString,
 } from '../shared/personStringPolicy.mjs';
+import { stripFamilyPrefixFromCourtesyName } from '../norbert/personNames.mjs';
 import { ALTNAME_EXCLUDE, CBDB_NAME_TYPE_MAP } from './constants.mjs';
 
 /** @deprecated Use isBlockedPersonString from shared/personStringPolicy.mjs */
@@ -94,8 +95,10 @@ export function buildPersonNamesFromAlts(person) {
 
   for (const alt of byType.get(4) ?? []) {
     // Matcher keeps 姓+字 for phase-1 tagging; typed courtesy names store bare 字 only
-    // (below) so entity intake never has to strip a synthetic composite.
-    add(surname ? surname + alt : alt, CBDB_NAME_TYPE_MAP.get(4), { names: false });
+    // so entity intake never has to strip a synthetic composite. CBDB ALTNAME values
+    // sometimes already include 姓 — strip before storing or synthesizing.
+    const bare = stripFamilyPrefixFromCourtesyName(alt, surname ? [surname] : []);
+    add(surname ? surname + bare : bare, CBDB_NAME_TYPE_MAP.get(4), { names: false });
   }
 
   for (const type of [5, 6]) {
@@ -133,9 +136,11 @@ export function buildPersonNamesFromAlts(person) {
   if (surname) add(surname, 'family', { minLength: 1, search: false });
   if (mingzi) add(mingzi, 'given', { minLength: 1, search: false });
 
-  // Bare 字 (type 4 component).
+  // Bare 字 (type 4 component). Strip leading 姓 when the ALTNAME row already
+  // stored 姓+字 (common in CBDB dumps).
   for (const alt of byType.get(4) ?? []) {
-    add(alt, CBDB_NAME_TYPE_MAP.get(4), { minLength: 1, search: false });
+    const bare = stripFamilyPrefixFromCourtesyName(alt, surname ? [surname] : []);
+    add(bare, CBDB_NAME_TYPE_MAP.get(4), { minLength: 1, search: false });
   }
 
   // Short 別名 / 別號 / 諡號 / 尊號 that failed the phase-1 length gate.
