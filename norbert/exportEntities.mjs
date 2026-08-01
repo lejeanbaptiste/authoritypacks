@@ -12,11 +12,19 @@ import { loadNorbertTables } from './parseSqlDump.mjs';
 import { compileNorbertPersons } from './compileRecords.mjs';
 import { compileNorbertOffices } from './compileOffices.mjs';
 import { compileNorbertPersonWrappers } from './personWrappers.mjs';
-import { officeEntityId } from '../shared/officeGraph.mjs';
+import {
+  buildNorbertConcordance,
+  concordanceIdnosByNorbertId,
+  loadWikidataZhHantPersons,
+  uniqueConcordanceRows,
+} from './concordance.mjs';
+import { readNdjson, writeNdjson } from '../shared/ndjson.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const defaultSql = path.resolve(here, '../../norbert_PRIVATE.sql');
-const defaultOut = path.resolve(here, '../../outputs/norbert/entities.xml');
+const root = path.resolve(here, '..');
+const defaultSql = '/Users/daniel/ShareDocs/@Home/norbert_PRIVATE.sql';
+const defaultOut = path.resolve(root, '../outputs/import_test/entities.xml');
+const defaultPacks = path.join(root, 'packs');
 
 function arg(name, fallback) {
   const i = process.argv.indexOf(name);
@@ -33,6 +41,12 @@ const attr = (name, value) => value == null || String(value).trim() === '' ? '' 
 function provenance(origin = 'authority', source = 'NORBERT') {
   return ` origin="${origin}" source="${esc(source)}"`;
 }
+
+const IDNO_TYPE_BY_SOURCE = {
+  cbdb: 'CBDB',
+  wikidata: 'Wikidata',
+  dila: 'DILA',
+};
 
 function appointmentRows(rows, offices) {
   const byName = new Map();
@@ -80,7 +94,14 @@ function titleRows(rows) {
   return byPerson;
 }
 
-function personXml(person, appointments, titles) {
+function externalIdnosXml(extraBySource = {}) {
+  return Object.entries(extraBySource).map(([source, value]) => {
+    const type = IDNO_TYPE_BY_SOURCE[source] ?? source.toUpperCase();
+    return text('idno', value, ` type="${esc(type)}"${provenance('authority', type)}`);
+  }).join('');
+}
+
+function personXml(person, appointments, titles, extraIdnos = {}) {
   const id = `person-norbert-${person.authorityId}`;
   const names = (person.names ?? []).filter((name) => name.text !== person.primaryName).map((name) =>
     text('persName', name.text, ` type="${esc(name.type ?? 'variant')}" xml:lang="zh-Hant"${provenance()}`),
@@ -100,7 +121,7 @@ function personXml(person, appointments, titles) {
     const attrs = `${attr('dynasty', t.dynasty)} ref="NORBERT:person_nt:${esc(t.id)}"${provenance()}`;
     return `<nobleTitle${attrs}>${text('placeName', t.fief, provenance())}${text('roleName', t.rank, provenance())}${text('persName', t.posthumous, ` type="posthumous"${provenance()}`)}${text('persName', t.temple, ` type="temple"${provenance()}`)}</nobleTitle>`;
   }).join('');
-  return `<person xml:id="${id}" type="person">${text('persName', person.primaryName, ` type="primary" xml:lang="zh-Hant"${provenance()}`)}${names}${text('idno', person.authorityId, ` type="NORBERT"${provenance()}`)}${description}${nationalities}${origins}${affiliationValues}${cache}${noble}${text('note', new Date().toISOString(), ' type="ljb-changed"')}</person>`;
+  return `<person xml:id="${id}" type="person">${text('persName', person.primaryName, ` type="primary" xml:lang="zh-Hant"${provenance()}`)}${names}${text('idno', person.authorityId, ` type="NORBERT"${provenance()}`)}${externalIdnosXml(extraIdnos)}${description}${nationalities}${origins}${affiliationValues}${cache}${noble}${text('note', new Date().toISOString(), ' type="ljb-changed"')}</person>`;
 }
 
 function officeXml(office) {
@@ -108,7 +129,35 @@ function officeXml(office) {
   return `<org xml:id="${id}" type="office">${text('orgName', office.primaryName, ` type="primary" xml:lang="zh-Hant"${provenance()}`)}${text('idno', office.authorityId, ` type="NORBERT"${provenance()}`)}${text('note', office.metadata?.description, ` type="description"${provenance()}`)}${empty('state', ` type="norbert-office" ref="${esc(office.metadata?.entityId ?? office.authorityId)}"`)}${text('note', new Date().toISOString(), ' type="ljb-changed"')}</org>`;
 }
 
-export async function exportNorbertEntities({ sqlPath = defaultSql, outputPath = defaultOut } = {}) {
+function loadConcordanceSources(packsRoot) {
+  /** @type {Record<string, any[]>} */
+  const sources = {};
+  const cbdbPath = path.join(packsRoot, 'cbdb', 'persons.ndjson');
+  if (fs.existsSync(cbdbPath)) sources.cbdb = readNdjson(cbdbPath);
+  const wikidata = loadWikidataZhHantPersons(path.join(packsRoot, 'wikidata'));
+  if (wikidata.length) sources.wikidata = wikidata;
+  return sources;
+}
+
+/**
+ * @param {{
+ *   sqlPath?: string;
+ *   outputPath?: string;
+ *   packsRoot?: string;
+ *   concordancePath?: string | null;
+ *   skipConcordance?: boolean;
+ * }} [options]
+ */
+export async function exportNorbertEntities({
+  sqlPath = defaultSql,
+  outputPath = defaultOut,
+  packsRoot = defaultPacks,
+  concordancePath = null,
+  skipConcordance = false,
+} = {}) {
+  if (!fs.existsSync(sqlPath)) {
+    throw new Error(`Norbert SQL dump not found: ${sqlPath}`);
+  }
   const tables = await loadNorbertTables(sqlPath, [
     'person', 'person_names', 'date_dynasties', 'nat_raw', 'person_origin',
     'office', 'officeholding_raw', 'person_nt',
@@ -122,23 +171,61 @@ export async function exportNorbertEntities({ sqlPath = defaultSql, outputPath =
   const titles = titleRows(tables.person_nt);
   const peopleById = new Map(persons.map((p) => [String(p.authorityId), p]));
   const wrapperCount = compileNorbertPersonWrappers(tables.person_nt, peopleById).length;
-  const personXmls = persons.map((p) => personXml(p, appointments.get(String(p.authorityId)) ?? [], titles.get(String(p.authorityId)) ?? [])).join('');
+
+  let concordanceRows = [];
+  /** @type {Map<string, Record<string, string>>} */
+  let idnosByPerson = new Map();
+  const resolvedConcordancePath = concordancePath
+    ?? path.join(path.dirname(outputPath), 'norbert-concordance.ndjson');
+  if (!skipConcordance) {
+    const sources = loadConcordanceSources(packsRoot);
+    concordanceRows = buildNorbertConcordance(persons, sources);
+    const uniqueRows = uniqueConcordanceRows(concordanceRows);
+    idnosByPerson = concordanceIdnosByNorbertId(concordanceRows);
+    fs.mkdirSync(path.dirname(resolvedConcordancePath), { recursive: true });
+    writeNdjson(resolvedConcordancePath, concordanceRows);
+    concordanceRows = uniqueRows;
+  }
+
+  const personXmls = persons.map((p) => personXml(
+    p,
+    appointments.get(String(p.authorityId)) ?? [],
+    titles.get(String(p.authorityId)) ?? [],
+    idnosByPerson.get(String(p.authorityId)) ?? {},
+  )).join('');
   const officeXmls = offices.map(officeXml).join('');
-  const databaseId = 'norbert-private-2026-07-31';
+  const databaseId = 'norbert-private-import-test';
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<TEI xmlns="http://www.tei-c.org/ns/1.0"><teiHeader><fileDesc><titleStmt><title>Norbert entity database</title></titleStmt><publicationStmt><p>Generated from the private Norbert SQL dump.</p><idno type="ljb-entity-database">${databaseId}</idno></publicationStmt><sourceDesc><p>Norbert authority data.</p></sourceDesc></fileDesc></teiHeader><standOff><listPerson>${personXmls}</listPerson><listPlace/><listOrg/><listOrg type="offices">${officeXmls}</listOrg><listBibl/></standOff></TEI>\n`;
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, xml);
+
+  const cbdbLinks = [...idnosByPerson.values()].filter((bag) => bag.cbdb).length;
+  const wikidataLinks = [...idnosByPerson.values()].filter((bag) => bag.wikidata).length;
   return {
-    outputPath, persons: persons.length, offices: offices.length,
+    outputPath,
+    concordancePath: skipConcordance ? null : resolvedConcordancePath,
+    persons: persons.length,
+    offices: offices.length,
     appointments: [...appointments.values()].reduce((n, rows) => n + rows.length, 0),
     nobleTitles: [...titles.values()].reduce((n, rows) => n + rows.length, 0),
-    wrapperRows: tables.person_nt.length, wrapperCandidates: wrapperCount,
+    wrapperRows: tables.person_nt.length,
+    wrapperCandidates: wrapperCount,
     nationalities: persons.reduce((n, p) => n + (p.metadata?.nationality?.length ?? 0), 0),
+    origins: persons.reduce((n, p) => n + (p.metadata?.origin?.length ?? 0), 0),
+    concordanceMatches: concordanceRows.length,
+    concordanceCbdb: cbdbLinks,
+    concordanceWikidata: wikidataLinks,
   };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  exportNorbertEntities({ sqlPath: arg('--sql', defaultSql), outputPath: arg('--out', defaultOut) })
+  exportNorbertEntities({
+    sqlPath: arg('--sql', defaultSql),
+    outputPath: arg('--out', defaultOut),
+    packsRoot: arg('--packs', defaultPacks),
+    concordancePath: arg('--concordance', null),
+    skipConcordance: process.argv.includes('--skip-concordance'),
+  })
     .then((result) => console.log(JSON.stringify(result, null, 2)))
     .catch((error) => { console.error(error); process.exit(1); });
 }

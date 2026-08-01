@@ -7,6 +7,31 @@ import {
 import { NAME_TYPE_EXCLUDE, NORBERT_NAME_TYPE_MAP } from './constants.mjs';
 
 /**
+ * If a courtesy name begins with a known family name, return the bare 字.
+ * Authority rows sometimes store 姓+字 as the courtesy value; keep the bare form.
+ *
+ * @param {string} text
+ * @param {string[]} familyNames
+ * @returns {string}
+ */
+export function stripFamilyPrefixFromCourtesyName(text, familyNames) {
+  const normalizedText = normalizeSurface(text);
+  if (!normalizedText) return normalizedText;
+  let bestPrefix = '';
+  for (const familyName of familyNames) {
+    const normalizedFamily = normalizeSurface(familyName);
+    if (
+      normalizedFamily.length > bestPrefix.length &&
+      normalizedText.length > normalizedFamily.length &&
+      normalizedText.startsWith(normalizedFamily)
+    ) {
+      bestPrefix = normalizedFamily;
+    }
+  }
+  return bestPrefix ? normalizedText.slice(bestPrefix.length) : normalizedText;
+}
+
+/**
  * Build typed name entries for one Norbert person.
  *
  * Each accepted Norbert name row is emitted as its own surface value. Do not
@@ -28,6 +53,7 @@ export function personNameEntriesFromNorbert(person) {
         '',
     ) || inferFamilyNameFromLabel(primary);
   const primaryLen = codePointLength(primary);
+  const familyNames = [surname].filter(Boolean);
 
   /** @type {Map<number, string[]>} */
   const byType = new Map();
@@ -54,14 +80,20 @@ export function personNameEntriesFromNorbert(person) {
   const longerThanPrimary = (alt) => codePointLength(alt) > primaryLen;
   const atLeastPrimaryLen = (alt) => codePointLength(alt) >= primaryLen;
 
-  for (const alt of byType.get(0) ?? []) add(alt, NORBERT_NAME_TYPE_MAP.get(0));
+  for (const alt of byType.get(0) ?? []) {
+    add(alt, NORBERT_NAME_TYPE_MAP.get(0));
+    familyNames.push(alt);
+  }
   for (const alt of byType.get(1) ?? []) add(alt, NORBERT_NAME_TYPE_MAP.get(1));
 
   for (const alt of byType.get(3) ?? []) {
     if (longerThanPrimary(alt)) add(alt, NORBERT_NAME_TYPE_MAP.get(3));
   }
 
-  for (const alt of byType.get(2) ?? []) add(alt, NORBERT_NAME_TYPE_MAP.get(2));
+  for (const alt of byType.get(2) ?? []) {
+    const bare = stripFamilyPrefixFromCourtesyName(alt, familyNames);
+    if (bare) add(bare, NORBERT_NAME_TYPE_MAP.get(2));
+  }
 
   for (const type of [4, 9]) {
     for (const alt of byType.get(type) ?? []) {

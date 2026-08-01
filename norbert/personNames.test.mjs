@@ -26,6 +26,20 @@ test('courtesy name is imported one-to-one without surname synthesis', () => {
   assert.equal(byText['王介甫'], undefined);
 });
 
+test('family-prefixed courtesy values are stripped to bare 字', () => {
+  const entries = personNameEntriesFromNorbert({
+    can_name: '王安石',
+    names: [
+      { type: 0, value: '王' },
+      { type: 1, value: '安石' },
+      { type: 2, value: '王介甫' },
+    ],
+  });
+  const byText = Object.fromEntries(entries.map((e) => [e.text, e.type]));
+  assert.equal(byText['介甫'], 'courtesy');
+  assert.equal(byText['王介甫'], undefined);
+});
+
 test('compound Norbert name rows are not concatenated', () => {
   const entries = personNameEntriesFromNorbert({
     can_name: '成公世德',
