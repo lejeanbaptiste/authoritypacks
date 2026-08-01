@@ -1,0 +1,759 @@
+{
+  "dynasties": {
+    "1": {
+      "zh": "先秦",
+      "en": "Pre-Qin",
+      "startYear": -5999,
+      "endYear": -220
+    },
+    "2": {
+      "zh": "三皇五帝",
+      "en": "Mythic",
+      "startYear": -5999,
+      "endYear": -2001
+    },
+    "3": {
+      "zh": "夏",
+      "en": "Xia",
+      "startYear": -2001,
+      "endYear": -1558
+    },
+    "4": {
+      "zh": "商",
+      "en": "Shang",
+      "startYear": -1574,
+      "endYear": -1044
+    },
+    "5": {
+      "zh": "周",
+      "en": "Zhou",
+      "startYear": -1044,
+      "endYear": -475
+    },
+    "6": {
+      "zh": "西周",
+      "en": "Western Zhou",
+      "startYear": -1044,
+      "endYear": -770
+    },
+    "7": {
+      "zh": "春秋",
+      "en": "Spring and Autumn",
+      "startYear": -721,
+      "endYear": -480
+    },
+    "8": {
+      "zh": "戰國",
+      "en": "Warring States",
+      "startYear": -480,
+      "endYear": -220
+    },
+    "9": {
+      "zh": "東周",
+      "en": "Eastern Zhou",
+      "startYear": -770,
+      "endYear": -475
+    },
+    "10": {
+      "zh": "魯",
+      "en": "Lu (pre-Qin)",
+      "startYear": -1042,
+      "endYear": -255
+    },
+    "11": {
+      "zh": "齊",
+      "en": "Qi (pre-Qin)",
+      "startYear": -999,
+      "endYear": -220
+    },
+    "12": {
+      "zh": "姜齊",
+      "en": "Jiang Qi (pre-Qin)"
+    },
+    "13": {
+      "zh": "田齊",
+      "en": "Tian Qi (pre-Qin)"
+    },
+    "14": {
+      "zh": "晉",
+      "en": "Jin (pre-Qin)",
+      "startYear": -1041,
+      "endYear": -348
+    },
+    "15": {
+      "zh": "秦",
+      "en": "Qin (pre-Qin)",
+      "startYear": -899,
+      "endYear": -205
+    },
+    "16": {
+      "zh": "楚",
+      "en": "Chu (pre-Qin)",
+      "startYear": -845
+    },
+    "17": {
+      "zh": "宋",
+      "en": "Song (pre-Qin)",
+      "startYear": -857
+    },
+    "18": {
+      "zh": "衛",
+      "en": "Wei (pre-Qin)",
+      "startYear": -865
+    },
+    "19": {
+      "zh": "鄭",
+      "en": "Zheng (pre-Qin)",
+      "startYear": -805
+    },
+    "20": {
+      "zh": "燕",
+      "en": "Yan (pre-Qin)",
+      "startYear": -863
+    },
+    "21": {
+      "zh": "吳",
+      "en": "Wu (pre-Qin)",
+      "startYear": -584
+    },
+    "22": {
+      "zh": "越",
+      "en": "Yue (pre-Qin)",
+      "startYear": -620
+    },
+    "23": {
+      "zh": "蔡",
+      "en": "Cai (pre-Qin)",
+      "startYear": -862,
+      "endYear": -446
+    },
+    "24": {
+      "zh": "曹",
+      "en": "Cao (pre-Qin)",
+      "startYear": -1044
+    },
+    "25": {
+      "zh": "陳",
+      "en": "Chen (pre-Qin)",
+      "startYear": -853
+    },
+    "26": {
+      "zh": "杞",
+      "en": "Qi (pre-Qin)",
+      "startYear": -749
+    },
+    "27": {
+      "zh": "滕",
+      "en": "Teng (pre-Qin)",
+      "startYear": -650
+    },
+    "28": {
+      "zh": "韓",
+      "en": "Han (pre-Qin)",
+      "startYear": -407
+    },
+    "29": {
+      "zh": "魏",
+      "en": "Wei (pre-Qin)",
+      "startYear": -444
+    },
+    "30": {
+      "zh": "趙",
+      "en": "Zhao (pre-Qin)",
+      "startYear": -407
+    },
+    "41": {
+      "zh": "秦",
+      "en": "Qin",
+      "startYear": -220,
+      "endYear": -205
+    },
+    "42": {
+      "zh": "漢",
+      "en": "Han",
+      "startYear": -205,
+      "endYear": 220
+    },
+    "43": {
+      "zh": "西漢",
+      "en": "Western Han",
+      "startYear": -205,
+      "endYear": 9
+    },
+    "44": {
+      "zh": "新",
+      "en": "Xin (Wang Mang)",
+      "startYear": 9,
+      "endYear": 25
+    },
+    "45": {
+      "zh": "更始",
+      "en": "Gengshi"
+    },
+    "46": {
+      "zh": "東漢",
+      "en": "Eastern Han",
+      "startYear": 25,
+      "endYear": 220
+    },
+    "47": {
+      "zh": "三國",
+      "en": "SanGuo",
+      "startYear": 220,
+      "endYear": 265
+    },
+    "48": {
+      "zh": "三國魏",
+      "en": "SanGuo Wei",
+      "startYear": 220,
+      "endYear": 265
+    },
+    "49": {
+      "zh": "三國蜀",
+      "en": "SanGuo Shu",
+      "startYear": 221,
+      "endYear": 263
+    },
+    "50": {
+      "zh": "三國吳",
+      "en": "SanGuo Wu",
+      "startYear": 222,
+      "endYear": 280
+    },
+    "51": {
+      "zh": "晉",
+      "en": "Jin",
+      "startYear": 265,
+      "endYear": 419
+    },
+    "52": {
+      "zh": "西晉",
+      "en": "Western Jin",
+      "startYear": 265,
+      "endYear": 316
+    },
+    "53": {
+      "zh": "東晉",
+      "en": "Eastern Jin",
+      "startYear": 317,
+      "endYear": 419
+    },
+    "54": {
+      "zh": "北漢",
+      "en": "Northern Han (16 states)",
+      "startYear": 304,
+      "endYear": 318
+    },
+    "55": {
+      "zh": "前趙",
+      "en": "Former Zhao (16 states)",
+      "startYear": 318,
+      "endYear": 329
+    },
+    "56": {
+      "zh": "成漢",
+      "en": "Cheng Han (16 states)",
+      "startYear": 304,
+      "endYear": 347
+    },
+    "57": {
+      "zh": "後趙",
+      "en": "Later Zhao (16 states)",
+      "startYear": 319,
+      "endYear": 351
+    },
+    "58": {
+      "zh": "前涼",
+      "en": "Former Liang (16 states)",
+      "startYear": 317,
+      "endYear": 376
+    },
+    "59": {
+      "zh": "前燕",
+      "en": "Former Yan (16 states)",
+      "startYear": 337,
+      "endYear": 370
+    },
+    "60": {
+      "zh": "冉魏",
+      "en": "Ran Wei (16 states)",
+      "startYear": 350,
+      "endYear": 352
+    },
+    "61": {
+      "zh": "前仇池",
+      "en": "Former Chouchi (16 states)",
+      "startYear": 296,
+      "endYear": 371
+    },
+    "62": {
+      "zh": "前秦",
+      "en": "Former Qin (16 states)",
+      "startYear": 350,
+      "endYear": 394
+    },
+    "63": {
+      "zh": "後燕",
+      "en": "Later Yan (16 states)",
+      "startYear": 384,
+      "endYear": 407
+    },
+    "64": {
+      "zh": "後秦",
+      "en": "Later Qin (16 states)",
+      "startYear": 384,
+      "endYear": 417
+    },
+    "65": {
+      "zh": "西秦",
+      "en": "Western Qin (16 states)",
+      "startYear": 385,
+      "endYear": 431
+    },
+    "66": {
+      "zh": "後涼",
+      "en": "Later Liang (16 states)",
+      "startYear": 386,
+      "endYear": 403
+    },
+    "67": {
+      "zh": "南涼",
+      "en": "Southern Liang (16 states)",
+      "startYear": 397,
+      "endYear": 414
+    },
+    "68": {
+      "zh": "北涼",
+      "en": "Northern Liang (16 states",
+      "startYear": 401,
+      "endYear": 439
+    },
+    "69": {
+      "zh": "南燕",
+      "en": "Southern Yan (16 states)",
+      "startYear": 398,
+      "endYear": 410
+    },
+    "70": {
+      "zh": "西涼",
+      "en": "Western Liang (16 states)",
+      "startYear": 400,
+      "endYear": 421
+    },
+    "71": {
+      "zh": "夏",
+      "en": "Xia (16 states)",
+      "startYear": 407,
+      "endYear": 431
+    },
+    "72": {
+      "zh": "北燕",
+      "en": "Northern Yan (16 states)",
+      "startYear": 407,
+      "endYear": 436
+    },
+    "73": {
+      "zh": "西燕",
+      "en": "Western Yan (16 states)",
+      "startYear": 384,
+      "endYear": 394
+    },
+    "74": {
+      "zh": "後仇池",
+      "en": "Later Chouchi (16 states)",
+      "startYear": 385,
+      "endYear": 473
+    },
+    "75": {
+      "zh": "西蜀",
+      "en": "Western Shu (16 states)",
+      "startYear": 405,
+      "endYear": 413
+    },
+    "76": {
+      "zh": "高昌",
+      "en": "Gaochang"
+    },
+    "77": {
+      "zh": "桓楚",
+      "en": "Huan Chu",
+      "startYear": 403,
+      "endYear": 404
+    },
+    "80": {
+      "zh": "侯漢",
+      "en": "Hou Han",
+      "startYear": 551,
+      "endYear": 552
+    },
+    "81": {
+      "zh": "拓跋魏",
+      "en": "Tuoba Wei",
+      "startYear": 386,
+      "endYear": 557
+    },
+    "82": {
+      "zh": "南北朝",
+      "en": "NanBei Chao",
+      "startYear": 420,
+      "endYear": 589
+    },
+    "83": {
+      "zh": "劉宋",
+      "en": "Song (Liu)",
+      "startYear": 420,
+      "endYear": 479
+    },
+    "84": {
+      "zh": "南齊",
+      "en": "Southern Qi",
+      "startYear": 479,
+      "endYear": 502
+    },
+    "85": {
+      "zh": "南梁",
+      "en": "Southern Liang",
+      "startYear": 502,
+      "endYear": 557
+    },
+    "86": {
+      "zh": "東梁",
+      "en": "Eastern Liang (North. Dy)",
+      "startYear": 555,
+      "endYear": 587
+    },
+    "87": {
+      "zh": "西梁",
+      "en": "Western Liang",
+      "startYear": 557,
+      "endYear": 560
+    },
+    "88": {
+      "zh": "陳",
+      "en": "Chen",
+      "startYear": 557,
+      "endYear": 589
+    },
+    "89": {
+      "zh": "北魏",
+      "en": "Northern Wei",
+      "startYear": 386,
+      "endYear": 534
+    },
+    "90": {
+      "zh": "武興",
+      "en": "Wuxing",
+      "startYear": 473,
+      "endYear": 555
+    },
+    "91": {
+      "zh": "陰平",
+      "en": "Yinping",
+      "startYear": 477,
+      "endYear": 511
+    },
+    "92": {
+      "zh": "東魏",
+      "en": "Eastern Wei",
+      "startYear": 534,
+      "endYear": 550
+    },
+    "93": {
+      "zh": "西魏",
+      "en": "Western Wei",
+      "startYear": 535,
+      "endYear": 557
+    },
+    "94": {
+      "zh": "北齊",
+      "en": "Northern Qi",
+      "startYear": 550,
+      "endYear": 578
+    },
+    "95": {
+      "zh": "北周",
+      "en": "Northern Zhou",
+      "startYear": 557,
+      "endYear": 581
+    },
+    "96": {
+      "zh": "隋",
+      "en": "Sui",
+      "startYear": 581,
+      "endYear": 618
+    },
+    "97": {
+      "zh": "唐",
+      "en": "Tang",
+      "startYear": 618,
+      "endYear": 907
+    },
+    "98": {
+      "zh": "鄭（王世充）",
+      "en": "Zheng (Wang Shichong)",
+      "startYear": 619,
+      "endYear": 621
+    },
+    "99": {
+      "zh": "周",
+      "en": "Zhou (Wu Zetian)",
+      "startYear": 684,
+      "endYear": 705
+    },
+    "100": {
+      "zh": "前蜀",
+      "en": "Former Shu (10 states)",
+      "startYear": 903,
+      "endYear": 925
+    },
+    "101": {
+      "zh": "吳",
+      "en": "Wu",
+      "startYear": 904,
+      "endYear": 937
+    },
+    "102": {
+      "zh": "吳(楊)",
+      "en": "Wu (Yang: 10 states)",
+      "startYear": 904,
+      "endYear": 937
+    },
+    "103": {
+      "zh": "五代",
+      "en": "Five Dynasties",
+      "startYear": 907,
+      "endYear": 960
+    },
+    "104": {
+      "zh": "吳越",
+      "en": "WuYue (10 states)",
+      "startYear": 907,
+      "endYear": 978
+    },
+    "105": {
+      "zh": "後梁",
+      "en": "Later Liang (5 dynasties)",
+      "startYear": 907,
+      "endYear": 923
+    },
+    "106": {
+      "zh": "楚(馬)",
+      "en": "Chu (Ma:10 states)",
+      "startYear": 907,
+      "endYear": 951
+    },
+    "107": {
+      "zh": "閩國",
+      "en": "Min (10 states)",
+      "startYear": 909,
+      "endYear": 945
+    },
+    "108": {
+      "zh": "南漢",
+      "en": "Southern Han (10 states)",
+      "startYear": 917,
+      "endYear": 971
+    },
+    "109": {
+      "zh": "後唐",
+      "en": "Later Tang (5 dynasties)",
+      "startYear": 923,
+      "endYear": 936
+    },
+    "110": {
+      "zh": "南平",
+      "en": "Nanping (10 states)",
+      "startYear": 924,
+      "endYear": 963
+    },
+    "111": {
+      "zh": "後蜀",
+      "en": "Later Shu (10 states)",
+      "startYear": 933,
+      "endYear": 965
+    },
+    "112": {
+      "zh": "閩",
+      "en": "Min",
+      "startYear": 909,
+      "endYear": 925
+    },
+    "113": {
+      "zh": "後晉",
+      "en": "Later Jin (5 dynasties)",
+      "startYear": 936,
+      "endYear": 947
+    },
+    "114": {
+      "zh": "南唐",
+      "en": "Southern Tang (10 states)",
+      "startYear": 937,
+      "endYear": 975
+    },
+    "115": {
+      "zh": "遼",
+      "en": "Liao",
+      "startYear": 947,
+      "endYear": 1115
+    },
+    "116": {
+      "zh": "後漢",
+      "en": "Later Han (5 dynasties)",
+      "startYear": 947,
+      "endYear": 951
+    },
+    "117": {
+      "zh": "後周",
+      "en": "Later Zhou (5 dynasties)",
+      "startYear": 951,
+      "endYear": 960
+    },
+    "118": {
+      "zh": "北漢",
+      "en": "Northern Han (10 states)",
+      "startYear": 951,
+      "endYear": 979
+    },
+    "119": {
+      "zh": "宋",
+      "en": "Song",
+      "startYear": 960,
+      "endYear": 1279
+    },
+    "120": {
+      "zh": "西夏",
+      "en": "Western Xia",
+      "startYear": 1032,
+      "endYear": 1227
+    },
+    "121": {
+      "zh": "金",
+      "en": "Jin",
+      "startYear": 1115,
+      "endYear": 1234
+    },
+    "122": {
+      "zh": "偽齊",
+      "en": "Qi (Wei Qi)",
+      "startYear": 1130,
+      "endYear": 1137
+    },
+    "123": {
+      "zh": "西遼",
+      "en": "Qara-Khitay",
+      "startYear": 1132,
+      "endYear": 1218
+    },
+    "124": {
+      "zh": "元",
+      "en": "Yuan",
+      "startYear": 1234,
+      "endYear": 1367
+    },
+    "125": {
+      "zh": "明",
+      "en": "Ming",
+      "startYear": 1368,
+      "endYear": 1644
+    },
+    "126": {
+      "zh": "北元",
+      "en": "Northern Yuan",
+      "startYear": 1371,
+      "endYear": 1387
+    },
+    "127": {
+      "zh": "清",
+      "en": "Qing",
+      "startYear": 1644,
+      "endYear": 1911
+    },
+    "128": {
+      "zh": "南明",
+      "en": "Soutthern Ming",
+      "startYear": 1644,
+      "endYear": 1661
+    },
+    "129": {
+      "zh": "中華民國",
+      "en": "Republic of China",
+      "startYear": 1912,
+      "endYear": 3000
+    },
+    "130": {
+      "zh": "中華人民共和國",
+      "en": "People's Republic of China",
+      "startYear": 1949,
+      "endYear": 3000
+    },
+    "131": {
+      "zh": "偽燕",
+      "en": "Fake Yan"
+    },
+    "132": {
+      "zh": "北宋",
+      "en": "Northern Song"
+    },
+    "133": {
+      "zh": "日本",
+      "en": "Japan",
+      "startYear": -2000,
+      "endYear": 3000
+    },
+    "134": {
+      "zh": "高句麗",
+      "en": "Goguryeo",
+      "startYear": -36,
+      "endYear": 668
+    },
+    "135": {
+      "zh": "百濟",
+      "en": "Baekje",
+      "startYear": -17,
+      "endYear": 660
+    },
+    "136": {
+      "zh": "新羅",
+      "en": "Silla",
+      "startYear": -56,
+      "endYear": 935
+    },
+    "137": {
+      "zh": "金官伽倻",
+      "en": "Geumgwan Gaya",
+      "startYear": 42,
+      "endYear": 532
+    },
+    "138": {
+      "zh": "渤海",
+      "en": "Balhae",
+      "startYear": 698,
+      "endYear": 926
+    },
+    "139": {
+      "zh": "後百濟",
+      "en": "L. Baekje",
+      "startYear": 900,
+      "endYear": 936
+    },
+    "140": {
+      "zh": "後高句麗",
+      "en": "L. Goguryeo",
+      "startYear": 901,
+      "endYear": 918
+    },
+    "141": {
+      "zh": "高麗",
+      "en": "Goryeo",
+      "startYear": 918,
+      "endYear": 1392
+    },
+    "142": {
+      "zh": "朝鮮",
+      "en": "Joseon",
+      "startYear": 1392,
+      "endYear": 1910
+    }
+  },
+  "compiledAt": "2026-08-01T07:46:50.528Z"
+}

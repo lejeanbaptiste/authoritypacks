@@ -32,19 +32,17 @@ export function stripFamilyPrefixFromCourtesyName(text, familyNames) {
 }
 
 /**
- * Build typed name entries for one Norbert person.
- *
- * Each accepted Norbert name row is emitted as its own surface value. Do not
- * synthesize a new name by prefixing a surname, appending a given name, or
- * pairing two separate rows.
- *
  * @param {{
  *   can_name: string;
  *   names: { type: number; value: string }[];
  * }} person
+ * @param {{ forTagging?: boolean }} [options]
+ *   When `forTagging` is true, apply tag-bomb filters (min length, block list,
+ *   longer-than-primary heuristics). Intake / disambiguation must leave this false.
  * @returns {{ text: string, type: string }[]}
  */
-export function personNameEntriesFromNorbert(person) {
+export function personNameEntriesFromNorbert(person, options = {}) {
+  const forTagging = options.forTagging === true;
   const primary = normalizeSurface(person.can_name);
   const surname =
     normalizeSurface(
@@ -69,9 +67,13 @@ export function personNameEntriesFromNorbert(person) {
   /** @type {Map<string, string>} */
   const entries = new Map();
   const add = (surface, ljbType) => {
-    if (!ljbType || isBlockedPersonString(surface, surname)) return;
+    if (!ljbType) return;
     const normalized = normalizeSurface(surface);
-    if (!isValidSearchString(normalized) || entries.has(normalized)) return;
+    if (!normalized || entries.has(normalized)) return;
+    if (forTagging) {
+      if (isBlockedPersonString(normalized, surname)) return;
+      if (!isValidSearchString(normalized)) return;
+    }
     entries.set(normalized, ljbType);
   };
 
@@ -87,7 +89,7 @@ export function personNameEntriesFromNorbert(person) {
   for (const alt of byType.get(1) ?? []) add(alt, NORBERT_NAME_TYPE_MAP.get(1));
 
   for (const alt of byType.get(3) ?? []) {
-    if (longerThanPrimary(alt)) add(alt, NORBERT_NAME_TYPE_MAP.get(3));
+    if (!forTagging || longerThanPrimary(alt)) add(alt, NORBERT_NAME_TYPE_MAP.get(3));
   }
 
   for (const alt of byType.get(2) ?? []) {
@@ -97,7 +99,7 @@ export function personNameEntriesFromNorbert(person) {
 
   for (const type of [4, 9]) {
     for (const alt of byType.get(type) ?? []) {
-      if (longerThanPrimary(alt)) add(alt, NORBERT_NAME_TYPE_MAP.get(type));
+      if (!forTagging || longerThanPrimary(alt)) add(alt, NORBERT_NAME_TYPE_MAP.get(type));
     }
   }
 
@@ -108,7 +110,7 @@ export function personNameEntriesFromNorbert(person) {
   }
 
   for (const alt of byType.get(14) ?? []) {
-    if (atLeastPrimaryLen(alt)) add(alt, NORBERT_NAME_TYPE_MAP.get(14));
+    if (!forTagging || atLeastPrimaryLen(alt)) add(alt, NORBERT_NAME_TYPE_MAP.get(14));
   }
 
   for (const alt of byType.get(15) ?? []) add(alt, NORBERT_NAME_TYPE_MAP.get(15));
@@ -124,9 +126,13 @@ export function personNameEntriesFromNorbert(person) {
 }
 
 /**
+ * Tag-bomb surfaces only (min length, block list, length-vs-primary gates).
+ * Bare 姓/名 stay in intake `names[]` only — same policy as CBDB.
  * @param {Parameters<typeof personNameEntriesFromNorbert>[0]} person
  * @returns {string[]}
  */
 export function personSearchStringsFromNorbert(person) {
-  return personNameEntriesFromNorbert(person).map((entry) => entry.text);
+  return personNameEntriesFromNorbert(person, { forTagging: true })
+    .filter((entry) => entry.type !== 'family' && entry.type !== 'given')
+    .map((entry) => entry.text);
 }

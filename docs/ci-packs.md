@@ -8,8 +8,10 @@ Pipeline stages: **test** → **build-packs**.
 |----------|-------------|
 | `dist/packs-index.json` | Bundle version, policy, upstream pins, per-file sha256, tarball hash |
 | `dist/authority-packs-{version}.tar.gz` | `authority-packs/cbdb/` + `authority-packs/dila/` and, when staged, `authority-packs/wikidata/` + `authority-packs/ndl/` ready for LJB |
+| `release/authority-reference-person-*.zip` | Sibling of tagging tarballs: `norbert.sqlite3` + `cbdb-person.sqlite3` + `manifest.json` (A6) |
+| `release/reference-index.json` | Version + sha256 for LJB reference download |
 
-Artifacts expire in **30 days** until you attach them to a GitLab **Release** (when ready).
+Artifacts expire in **30 days** until you attach them to a GitLab **Release** (when ready). Build reference alone with `npm run build:reference`.
 
 ## Pinned upstream
 

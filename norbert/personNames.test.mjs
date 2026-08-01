@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parseValueTuples } from './parseSqlDump.mjs';
-import { personNameEntriesFromNorbert } from './personNames.mjs';
+import {
+  personNameEntriesFromNorbert,
+  personSearchStringsFromNorbert,
+} from './personNames.mjs';
 
 test('parseValueTuples handles strings, NULL, and _binary', () => {
   const rows = [...parseValueTuples("(1,'卜顯',NULL,'疇人',NULL),(2,'蔡子元',NULL,NULL,_binary '\\0')")];
@@ -60,4 +63,26 @@ test('childhood names are excluded', () => {
     ],
   });
   assert.deepEqual(entries, [{ text: '王安石', type: 'primary' }]);
+});
+
+test('intake names keep single-character 姓/名; tagging searchStrings do not', () => {
+  const person = {
+    can_name: '王安石',
+    names: [
+      { type: 0, value: '王' },
+      { type: 1, value: '安石' },
+      { type: 2, value: '介甫' },
+    ],
+  };
+  const entries = personNameEntriesFromNorbert(person);
+  const byType = Object.fromEntries(entries.map((e) => [e.type, e.text]));
+  assert.equal(byType.family, '王');
+  assert.equal(byType.given, '安石');
+  assert.equal(byType.courtesy, '介甫');
+
+  const search = personSearchStringsFromNorbert(person);
+  assert.ok(search.includes('王安石'));
+  assert.ok(search.includes('介甫'));
+  assert.equal(search.includes('王'), false);
+  assert.equal(search.includes('安石'), false, 'given name is intake-only, not a tag seed');
 });

@@ -19,7 +19,8 @@ import {
   uniqueConcordanceRows,
 } from './concordance.mjs';
 import { readNdjson, writeNdjson } from '../shared/ndjson.mjs';
-import { formatNorbertAuthorityValue } from './norbertAuthorityId.mjs';
+import { bareNorbertAuthorityValue, formatNorbertAuthorityValue } from './norbertAuthorityId.mjs';
+import { extractDynastyLabelsFromSql } from './sanitizeDump.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
@@ -63,17 +64,18 @@ function appointmentRows(rows, offices) {
     if (personId == null || !officeName) continue;
     const matches = byName.get(officeName) ?? [];
     const office = matches.length === 1 ? matches[0] : undefined;
+    const barePersonId = bareNorbertAuthorityValue(personId);
     const item = {
       id: String(row[0]),
-      personId: String(personId),
+      personId: barePersonId,
       officeName,
       officeId: office?.authorityId,
-      sourceRef: row[38] == null ? undefined : String(row[38]).trim(),
+      sourceRef: row[37] == null ? undefined : String(row[37]).trim(),
       appointmentType: row[2] == null ? undefined : String(row[2]).trim(),
     };
-    const list = byPerson.get(item.personId) ?? [];
+    const list = byPerson.get(barePersonId) ?? [];
     list.push(item);
-    byPerson.set(item.personId, list);
+    byPerson.set(barePersonId, list);
   }
   return byPerson;
 }
@@ -88,9 +90,10 @@ function titleRows(rows) {
       rank: row[6], temple: row[7], placeId: row[9], start: row[10], end: row[11],
     };
     if (![title.fief, title.posthumous, title.rank, title.temple].some((v) => v != null && String(v).trim())) continue;
-    const list = byPerson.get(String(personId)) ?? [];
+    const barePersonId = bareNorbertAuthorityValue(personId);
+    const list = byPerson.get(barePersonId) ?? [];
     list.push(title);
-    byPerson.set(String(personId), list);
+    byPerson.set(barePersonId, list);
   }
   return byPerson;
 }
@@ -162,17 +165,26 @@ export async function exportNorbertEntities({
     throw new Error(`Norbert SQL dump not found: ${sqlPath}`);
   }
   const tables = await loadNorbertTables(sqlPath, [
-    'person', 'person_names', 'date_dynasties', 'nat_raw', 'person_origin',
+    'person', 'person_names', 'nat_raw', 'person_dynasties', 'person_origin',
     'office', 'officeholding_raw', 'person_nt',
   ]);
+  const sidecar = path.join(path.dirname(sqlPath), 'dynasty-labels.json');
+  const dynastyLabels = fs.existsSync(sidecar)
+    ? (JSON.parse(fs.readFileSync(sidecar, 'utf8')).dynasties ?? {})
+    : extractDynastyLabelsFromSql(fs.readFileSync(sqlPath, 'utf8'));
   const persons = compileNorbertPersons(
-    tables.person, tables.person_names, tables.date_dynasties,
-    tables.person_date_filter, tables.nat_raw, tables.person_origin,
+    tables.person, tables.person_names, dynastyLabels,
+    tables.person_dynasties, tables.nat_raw, tables.person_origin,
   );
   const offices = compileNorbertOffices(tables.office);
   const appointments = appointmentRows(tables.officeholding_raw, offices);
   const titles = titleRows(tables.person_nt);
-  const peopleById = new Map(persons.map((p) => [String(p.authorityId), p]));
+  const peopleById = new Map();
+  for (const p of persons) {
+    const bare = bareNorbertAuthorityValue(p.authorityId);
+    peopleById.set(bare, p);
+    peopleById.set(String(p.authorityId), p);
+  }
   const wrapperCount = compileNorbertPersonWrappers(tables.person_nt, peopleById).length;
 
   let concordanceRows = [];
@@ -190,12 +202,15 @@ export async function exportNorbertEntities({
     concordanceRows = uniqueRows;
   }
 
-  const personXmls = persons.map((p) => personXml(
-    p,
-    appointments.get(String(p.authorityId)) ?? [],
-    titles.get(String(p.authorityId)) ?? [],
-    idnosByPerson.get(String(p.authorityId)) ?? {},
-  )).join('');
+  const personXmls = persons.map((p) => {
+    const bare = bareNorbertAuthorityValue(p.authorityId);
+    return personXml(
+      p,
+      appointments.get(bare) ?? [],
+      titles.get(bare) ?? [],
+      idnosByPerson.get(String(p.authorityId)) ?? idnosByPerson.get(bare) ?? {},
+    );
+  }).join('');
   const officeXmls = offices.map(officeXml).join('');
   const databaseId = 'norbert-private-import-test';
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<TEI xmlns="http://www.tei-c.org/ns/1.0"><teiHeader><fileDesc><titleStmt><title>Norbert entity database</title></titleStmt><publicationStmt><p>Generated from the private Norbert SQL dump.</p><idno type="ljb-entity-database">${databaseId}</idno></publicationStmt><sourceDesc><p>Norbert authority data.</p></sourceDesc></fileDesc></teiHeader><standOff><listPerson>${personXmls}</listPerson><listPlace/><listOrg/><listOrg type="offices">${officeXmls}</listOrg><listBibl/></standOff></TEI>\n`;

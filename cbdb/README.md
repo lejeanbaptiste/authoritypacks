@@ -2,6 +2,16 @@
 
 Compiles CBDB sqlite → LJB `AuthorityCandidate` NDJSON.
 
+## Person reference sqlite (A6)
+
+For link/backfill enrichment LJB ships a **stripped** `cbdb-person.sqlite3` (not the full ~550 MB dump):
+
+```bash
+npm run cbdb:strip-reference -- --sqlite .upstream/cbdb.sqlite3 --out dist/reference/cbdb-person.sqlite3
+```
+
+Tables kept: `BIOG_MAIN`, `ALTNAME_DATA`, `ALTNAME_CODES`, `DYNASTIES`, `BIOG_ADDR_DATA`, `ADDR_CODES`, `BIOG_ADDR_CODES`, `OFFICE_CODES`, `POSTING_DATA` / `ZZZ_POSTING_DATA`, `POSTED_TO_OFFICE_DATA` / `ZZZ_POSTED_TO_OFFICE_DATA`. See [`stripReferenceDb.mjs`](./stripReferenceDb.mjs). Per-id lookup: [`lookupPerson.mjs`](./lookupPerson.mjs).
+
 ## v1 policy (👤 signed 2026-07-05)
 
 Implementation: [`personAltNames.mjs`](./personAltNames.mjs) + [`constants.mjs`](./constants.mjs).

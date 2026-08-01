@@ -51,3 +51,21 @@ test('Norbert person.description is preserved as sourceDescription for entity on
   assert.match(person.metadata.description, /疇人/);
   assert.match(person.metadata.description, /卜顯/);
 });
+
+test('Norbert nationalities union person_dynasties with extra nat_raw court_id pairs', () => {
+  const [person] = compileNorbertPersons(
+    [[1, '王安石', null, null, null]],
+    [],
+    {
+      7: { zh: '宋', en: 'Song', startYear: 960, endYear: 1279 },
+      46: { zh: '漢', en: 'Han', startYear: -202, endYear: 220 },
+    },
+    [[1, 1, 7]],
+    [[10, '漢人', 1, 46, null, null, 7]],
+  );
+
+  const labels = person.metadata.nationality.map((n) => n.label).sort();
+  assert.deepEqual(labels, ['宋', '漢']);
+  const han = person.metadata.nationality.find((n) => n.label === '漢');
+  assert.equal(han.evidence, '漢人');
+});

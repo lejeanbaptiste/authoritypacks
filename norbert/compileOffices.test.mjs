@@ -132,18 +132,17 @@ test('explicit non-place parent strings become inferred parentOf relations', () 
   ]);
 });
 
-test('Norbert person_offices compile links person and unique office rows', () => {
+test('Norbert officeholding_raw compile links person and unique office rows', () => {
   const offices = compileNorbertOffices([
     officeRow({ id: 7, fullString: '侍中' }),
   ]);
-  const appointments = compileNorbertAppointments([
-    new Array(17).fill(null).map((value, index) => ({
-      0: 99,
-      1: 123,
-      2: '侍中',
-      12: '史書',
-    }[index] ?? value)),
-  ], offices);
+  const row = new Array(43).fill(null);
+  row[0] = 99;
+  row[5] = '侍中';
+  row[7] = 123;
+  row[8] = 7;
+  row[37] = '史書';
+  const appointments = compileNorbertAppointments([row], offices);
   assert.deepEqual(appointments, [{
     source: 'Norbert',
     authorityId: '99',

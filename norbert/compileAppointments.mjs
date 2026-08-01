@@ -1,16 +1,17 @@
 import { SOURCE } from './constants.mjs';
 import { formatNorbertAuthorityValue } from './norbertAuthorityId.mjs';
 
-/** `person_offices` columns in the Norbert MySQL dump. */
+/** `officeholding_raw` columns in the Norbert MySQL dump. */
 const COL = {
   id: 0,
-  personId: 1,
-  officeName: 2,
-  source: 12,
+  officeName: 5,
+  personId: 7, // recipient_id
+  officeId: 8,
+  source: 37,
 };
 
 /**
- * Compile Norbert's person_offices table into source-preserving assertions.
+ * Compile Norbert's officeholding_raw table into source-preserving assertions.
  * Dates and bio_seq are intentionally not exported yet; this pack is used to
  * enrich person disambiguation records, not to display a career chronology.
  *
@@ -18,8 +19,12 @@ const COL = {
  * @param {import('../shared/types.mjs').AuthorityCandidate[]} offices
  */
 export function compileNorbertAppointments(rows, offices) {
+  const officesById = new Map();
   const officesByName = new Map();
   for (const office of offices) {
+    const bare = String(office.authorityId).replace(/^office[-:]/i, '');
+    officesById.set(bare, office);
+    officesById.set(String(office.authorityId), office);
     const list = officesByName.get(office.primaryName) ?? [];
     list.push(office);
     officesByName.set(office.primaryName, list);
@@ -32,12 +37,17 @@ export function compileNorbertAppointments(rows, offices) {
       : String(row[COL.officeName]).trim();
     if (personId == null || !officeName) return [];
 
-    const matches = officesByName.get(officeName) ?? [];
-    const office = matches.length === 1 ? matches[0] : undefined;
+    let office = row[COL.officeId] != null
+      ? officesById.get(String(row[COL.officeId]))
+      : undefined;
+    if (!office) {
+      const matches = officesByName.get(officeName) ?? [];
+      office = matches.length === 1 ? matches[0] : undefined;
+    }
     const sourceRef = row[COL.source];
     return [{
       source: SOURCE,
-      authorityId: String(row[COL.id] ?? `person_offices:${index}`),
+      authorityId: String(row[COL.id] ?? `officeholding_raw:${index}`),
       person: { source: SOURCE, authorityId: formatNorbertAuthorityValue('person', personId) },
       office: {
         source: SOURCE,

@@ -4,49 +4,73 @@ Compiles a local Norbert MySQL dump → LJB `AuthorityCandidate` NDJSON for pers
 
 ## Input
 
-Place a mysqldump under `norbert_secret/` (gitignored). The compile reads:
+Keep the full private dump out of git. Sanitize it first (below), then compile from the reduced public SQL.
 
 | Table | Use |
 |-------|-----|
-| `person` | `id`, `can_name`, `description`, `mythical` |
-| `person_names` | typed alternate names |
-| `codes_person_name_type` | mapped in [`constants.mjs`](./constants.mjs) |
-| `person_date_filter` | upstream date rows; not exported as person birth/death dates |
-| `nat_raw` | `court_id` → dynasty via `date_dynasties` |
-| `person_origin` | source-preserving place-of-origin strings and qualifications |
-| `office` | office/role strings for `roleName` tag bomb |
+| `person` | People: `id`, one-line `can_name` / `description` |
+| `person_names` | Typed names (姓/名/字/…) for tagging + intake |
+| `codes_person_name_type` | Interpret `person_names.name_type_id` (mapped in [`constants.mjs`](./constants.mjs)) |
+| `nat_raw` | Nationality evidence + extra person/dynasty pairs (`court_id`) |
+| `person_dynasties` | Clean person↔dynasty links (unioned with `nat_raw`, deduped at compile) |
+| `person_origin` | Origin strings (kept; lower priority) |
+| `office` | Office/role catalogue for `roleName` tag bomb |
+| `officeholding_raw` | Appointments |
+| `person_nt` | Noble titles → also person-wrappers |
+
+Dynasty **labels** are not shipped as SQL (`date_*` stays private). Sanitize writes `dynasty-labels.json` beside the reduced dump; `norbert/sqlToSqlite.mjs` embeds them as table `dynasty_labels` in the **reference** `norbert.sqlite3` (A6 lookup). Compile for tagging packs still loads the sidecar or extracts from a private dump.
+
+### Reference sqlite (A6)
+
+```bash
+npm run norbert:sqlite -- --sql norbert_secret/norbert-authority.sql \
+  --labels norbert_secret/dynasty-labels.json \
+  --out dist/reference/norbert.sqlite3
+# or with the release bundle:
+npm run build:reference
+```
+
+Shipped with stripped CBDB in `authority-reference-person-*.zip` (GitHub releases). Tagging NDJSON remains a separate artifact.
 
 ## Run
 
 ```bash
 npm run compile:norbert
 # or
-node norbert/compile.mjs --sql norbert_secret/norbert_humanum_YYYY-MM-DD.sql --out packs/norbert
+node norbert/compile.mjs --sql norbert_secret/norbert-authority.sql --out packs/norbert
 ```
 
-## Reduced private export
+## Reduced public extract
 
 Keep the full SQL dump private and create a minimal authority-only copy:
 
 ```bash
 node norbert/sanitizeDump.mjs \
-  --sql norbert_secret/norbert_humanum_YYYY-MM-DD.sql \
+  --sql /path/to/norbert_PRIVATE.sql \
   --out norbert_secret/norbert-authority.sql
 ```
 
-The default allowlist is `person`, `person_names`, the Norbert `date_*` tables, `nat_raw`, `person_origin`, `office`, `person_offices`, and `biblio_work_names`. Biography/date-filter/death/residence/height tables, `test_*`, `knowledge_*`, and other `biblio_*` tables are excluded. Additional approved tables must be named explicitly with `--tables table_a,table_b`.
+**Allowlist (strict — no `date_*` passthrough):** `person`, `person_names`, `codes_person_name_type`, `nat_raw`, `person_dynasties`, `person_origin`, `office`, `officeholding_raw`, `person_nt`.
+
+**Excluded:** all `biblio_*`, all `date_*`, other `*_raw` tables, `person_biographies`, `person_date_filter`, `person_death_raw`, `person_height`, `place`, `ruler`, `test_*`. Additional approved tables must be named explicitly with `--tables table_a,table_b`.
+
+From this extract the pipeline produces two kinds of public artifact:
+
+1. **Tagging pack** — lean `persons.ndjson` / `offices.ndjson` / `person-wrappers.ndjson` with expanded `searchStrings` from `person_names` (and wrappers from `person_nt`).
+2. **Intake / disambiguation** — full compiled person records (typed names, deduped nationalities, origins, appointments, noble titles) via the same pack files / `exportEntities` path.
 
 Output:
 
 | File | Use |
 |------|-----|
-| `packs/norbert/persons.ndjson` | Tag bomb → `persName` |
+| `packs/norbert/persons.ndjson` | Tag bomb → `persName` (+ intake metadata) |
 | `packs/norbert/offices.ndjson` | Tag bomb → `roleName` |
 | `packs/norbert/appointments.ndjson` | Person-to-office assertions for person disambiguation and entity import |
 | `packs/norbert/person-wrappers.ndjson` | Longest-first, transient person-wrapper combinations from `person_nt` |
 | `packs/norbert/surnames.json` | Person name split (plugin) |
 | `packs/norbert/geo-admin-suffixes.json` | Place+office concatenate pass (plugin, future) |
 | `packs/norbert/manifest.json` | Pack metadata |
+| `norbert_secret/dynasty-labels.json` | Dynasty id → zh/en/years (sidecar from sanitize) |
 
 ## Person concordance
 
@@ -128,4 +152,4 @@ Childhood names (小名 / 小字, types 5–6) are excluded, mirroring CBDB poli
 
 Global string filters reuse [`shared/personStringPolicy.mjs`](../shared/personStringPolicy.mjs).
 
-Implementation: [`personNames.mjs`](./personNames.mjs) emits both `searchStrings[]` and typed `names[]`.
+Implementation: [`personNames.mjs`](./personNames.mjs) emits typed `names[]` for intake (no min-length / tag-bomb filters) and separately filtered `searchStrings[]` for tagging. Family/given stay in `names[]` only for tagging (aligned with CBDB: seeds are expanded full forms, not bare 姓/名).

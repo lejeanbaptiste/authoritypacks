@@ -36,6 +36,14 @@ const sha256File = async (filePath) => {
 await fs.rm(releaseDir, { recursive: true, force: true });
 await fs.mkdir(releaseDir, { recursive: true });
 
+try {
+  execFileSync('node', [path.join(repoRoot, 'scripts/build-reference-bundle.mjs'), '--release', releaseDir], {
+    stdio: 'inherit',
+  });
+} catch (err) {
+  console.warn('Reference person bundle skipped:', err instanceof Error ? err.message : err);
+}
+
 const bundles = [
   {
     name: `authority-packs-chinese-${version}.tar.gz`,

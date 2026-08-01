@@ -13,6 +13,7 @@ import { compileNorbertPersons } from './compileRecords.mjs';
 import { compileGeoAdminSuffixes, compileNorbertOffices } from './compileOffices.mjs';
 import { compileNorbertAppointments } from './compileAppointments.mjs';
 import { loadNorbertTables } from './parseSqlDump.mjs';
+import { extractDynastyLabelsFromSql } from './sanitizeDump.mjs';
 import { NAME_TYPE_EXCLUDE } from './constants.mjs';
 import { compileNorbertSurnamesFromNameRows } from './surnames.mjs';
 import { inferNorbertSourceRelations } from '../shared/officeGraph.mjs';
@@ -20,7 +21,7 @@ import { attachAppointmentsToPersons } from '../shared/appointmentIndex.mjs';
 import { compileNorbertPersonWrappers } from './personWrappers.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const defaultSql = path.resolve(__dirname, '../norbert_secret/norbert_humanum_2026-07-25-1938.sql');
+const defaultSql = path.resolve(__dirname, '../norbert_secret/norbert-authority.sql');
 
 function arg(name, fallback) {
   const i = process.argv.indexOf(name);
@@ -30,32 +31,49 @@ function arg(name, fallback) {
 const sqlPath = arg('--sql', defaultSql);
 const outDir = arg('--out', path.resolve(__dirname, '../packs/norbert'));
 
+/** Public allowlist tables needed for compile (see sanitizeDump DEFAULT_TABLES). */
 const TABLES = [
   'person',
   'person_names',
-  'date_dynasties',
   'nat_raw',
+  'person_dynasties',
   'person_origin',
   'office',
-  'person_offices',
+  'officeholding_raw',
   'person_nt',
 ];
+
+/**
+ * Dynasty labels live in dynasty-labels.json beside the sanitized dump
+ * (date_* tables are not shipped). Fall back to extracting from a private dump.
+ * @param {string} dumpPath
+ */
+function loadDynastyLabels(dumpPath) {
+  const sidecar = path.join(path.dirname(dumpPath), 'dynasty-labels.json');
+  if (fs.existsSync(sidecar)) {
+    const raw = JSON.parse(fs.readFileSync(sidecar, 'utf8'));
+    return raw.dynasties ?? {};
+  }
+  const sql = fs.readFileSync(dumpPath, 'utf8');
+  return extractDynastyLabelsFromSql(sql);
+}
 
 export async function compileNorbertPack(options = {}) {
   const dumpPath = options.sqlPath ?? sqlPath;
   const outputDir = options.outDir ?? outDir;
 
   const tables = await loadNorbertTables(dumpPath, TABLES);
+  const dynastyLabels = options.dynastyLabels ?? loadDynastyLabels(dumpPath);
   const persons = compileNorbertPersons(
     tables.person,
     tables.person_names,
-    tables.date_dynasties,
-    [],
+    dynastyLabels,
+    tables.person_dynasties,
     tables.nat_raw,
     tables.person_origin,
   );
   const offices = compileNorbertOffices(tables.office);
-  const appointments = compileNorbertAppointments(tables.person_offices, offices);
+  const appointments = compileNorbertAppointments(tables.officeholding_raw, offices);
   attachAppointmentsToPersons(persons, appointments);
 
   const peopleById = new Map();
