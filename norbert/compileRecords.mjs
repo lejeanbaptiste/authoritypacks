@@ -1,4 +1,6 @@
 import { norbertPersonClue } from '../shared/clue.mjs';
+import { normalizeSurface } from '../shared/normalize.mjs';
+import { isMissingNameToken } from '../shared/personStringPolicy.mjs';
 import {
   personNameEntriesFromNorbert,
   personSearchStringsFromNorbert,
@@ -157,20 +159,39 @@ export function compileNorbertPersons(
   const out = [];
   for (const row of personRows) {
     const id = row[0];
-    const canName = row[1];
+    const rawCanName = row[1] == null ? '' : String(row[1]);
     const description = row[3];
     const mythical = row[4];
-    if (!canName || !String(canName).trim()) continue;
+    const canNameNorm = normalizeSurface(rawCanName);
+    const canNameUsable = Boolean(canNameNorm) && !isMissingNameToken(canNameNorm);
+    const altRows = namesByPerson.get(id) ?? [];
+    // Skip rows with no usable canonical name and no altname rows at all.
+    if (!canNameUsable && altRows.length === 0) continue;
 
     const personNameInput = {
-      can_name: canName,
-      names: namesByPerson.get(id) ?? [],
+      // Empty can_name when the dump stored the missing-value token "nan".
+      can_name: canNameUsable ? canNameNorm : '',
+      names: altRows,
     };
     // Intake names keep single-character 姓/名 and other typed rows;
     // searchStrings alone apply tag-bomb length / block filters.
-    const nameEntries = personNameEntriesFromNorbert(personNameInput);
-    if (!nameEntries.length) continue;
+    const nameEntriesRaw = personNameEntriesFromNorbert(personNameInput);
+    if (!nameEntriesRaw.length) continue;
     const searchStrings = personSearchStringsFromNorbert(personNameInput);
+    let primaryName =
+      canNameUsable
+        ? canNameNorm
+        : nameEntriesRaw.find((e) => e.type === 'primary')?.text ??
+          nameEntriesRaw[0]?.text;
+    if (!primaryName || isMissingNameToken(primaryName)) continue;
+    // When can_name was the dump token "nan", promote the fallback surface to primary.
+    const nameEntries =
+      canNameUsable || nameEntriesRaw.some((e) => e.type === 'primary' && e.text === primaryName)
+        ? nameEntriesRaw
+        : [
+            { text: primaryName, type: 'primary' },
+            ...nameEntriesRaw.filter((e) => e.text !== primaryName),
+          ];
 
     let dynastyLabel;
     let dynastyEn;
@@ -221,7 +242,7 @@ export function compileNorbertPersons(
       source: SOURCE,
       authorityId: formatNorbertAuthorityValue('person', id),
       kind: 'person',
-      primaryName: canName,
+      primaryName,
       searchStrings,
       names: nameEntries,
       metadata: {
@@ -231,7 +252,7 @@ export function compileNorbertPersons(
         ana: mythical ? 'mythical' : 'historical',
         // Pack disambiguation clue (name + dynasty + Norbert text).
         description: norbertPersonClue({
-          name: canName,
+          name: primaryName,
           dynastyChn: dynastyLabel,
           dynastyEn,
           extra: sourceDescription,

@@ -71,6 +71,20 @@ test('type 4 ALTNAME that already includes 姓 is stripped to bare 字 in names[
   assert.ok(search.includes('安處厚'), 'search still has 姓+字 for tagging');
 });
 
+test('type 4 bare + 姓+字 ALTNAME rows collapse to one courtesy in names[]', () => {
+  const entries = personNameEntriesFromAlts({
+    c_name_chn: '安惇',
+    c_surname_chn: '安',
+    c_mingzi_chn: '惇',
+    alts: [
+      { type: 4, value: '處厚' },
+      { type: 4, value: '安處厚' },
+    ],
+  });
+  const courtesies = entries.filter((e) => e.type === 'courtesy').map((e) => e.text);
+  assert.deepEqual(courtesies, ['處厚']);
+});
+
 test('type 12 + 13 concatenate; Latin type 13 skipped', () => {
   const strings = personSearchStringsFromAlts({
     c_name_chn: '善堅',

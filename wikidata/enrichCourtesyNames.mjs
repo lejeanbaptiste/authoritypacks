@@ -13,6 +13,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runSparql } from './sparqlClient.mjs';
 import { readNdjson, writeNdjson } from '../shared/ndjson.mjs';
+import { collapseTypedNamesAfterZiClean } from '../norbert/personNames.mjs';
+import { normalizeSurface } from '../shared/normalize.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -75,10 +77,22 @@ export async function enrichCourtesyNames(opts) {
     const courtesies = (done.get(person.authorityId) ?? []).filter(Boolean);
     if (courtesies.length === 0) continue;
     withCourtesy++;
-    person.names = [
-      { type: 'primary', text: person.primaryName },
-      ...courtesies.map((text) => ({ type: 'courtesy', text })),
+    const existing = Array.isArray(person.names) ? person.names : [];
+    const primary =
+      existing.find((n) => n.type === 'primary') ??
+      (person.primaryName
+        ? { type: 'primary', text: normalizeSurface(person.primaryName) }
+        : null);
+    const family =
+      existing.find((n) => n.type === 'family') ??
+      null;
+    const merged = [
+      ...(primary ? [primary] : []),
+      ...(family ? [family] : []),
+      ...existing.filter((n) => n.type !== 'primary' && n.type !== 'family'),
+      ...courtesies.map((text) => ({ type: 'courtesy', text: normalizeSurface(text) })),
     ];
+    person.names = collapseTypedNamesAfterZiClean(merged);
   }
   writeNdjson(personsPath, persons);
   fs.rmSync(checkpointFile, { force: true });

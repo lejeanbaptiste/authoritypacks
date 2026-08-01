@@ -4,7 +4,10 @@ import {
   codePointLength,
   isBlockedPersonString,
 } from '../shared/personStringPolicy.mjs';
-import { stripFamilyPrefixFromCourtesyName } from '../norbert/personNames.mjs';
+import {
+  collapseTypedNamesAfterZiClean,
+  stripFamilyPrefixFromCourtesyName,
+} from '../norbert/personNames.mjs';
 import { ALTNAME_EXCLUDE, CBDB_NAME_TYPE_MAP } from './constants.mjs';
 
 /** @deprecated Use isBlockedPersonString from shared/personStringPolicy.mjs */
@@ -162,8 +165,15 @@ export function buildPersonNamesFromAlts(person) {
     }
   }
 
+  // Defense in depth: collapse 姓+字 / bare 字 (and art/dharma) after strip.
+  // Older packs sometimes stored both; intake also runs the same collapse.
+  const names = collapseTypedNamesAfterZiClean(
+    [...nameEntries].map(([text, type]) => ({ text, type })),
+    surname ? [surname] : [],
+  );
+
   return {
-    names: [...nameEntries].map(([text, type]) => ({ text, type })),
+    names,
     searchStrings: [...searchEntries.keys()],
   };
 }

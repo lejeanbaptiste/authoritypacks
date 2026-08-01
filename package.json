@@ -36,6 +36,7 @@
     "compile:dila": "node dila/compile.mjs",
     "compile:cbdb": "node cbdb/compile.mjs",
     "compile:norbert": "node norbert/compile.mjs",
+    "packs:dedupe-zi": "node scripts/dedupeFamilyPrefixedNames.mjs",
     "norbert:sqlite": "node norbert/sqlToSqlite.mjs",
     "cbdb:strip-reference": "node cbdb/stripReferenceDb.mjs",
     "build:reference": "node scripts/build-reference-bundle.mjs",

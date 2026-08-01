@@ -12,9 +12,24 @@ const BIRTH_ORDER_RE = /^[\u4e00-\u9fff]{1,3}(?:[0-9]+|[一二三四五六七八
 /** Alias forms like 子徴 / 子微 — courtesy marker + zi body. */
 const ZI_PREFIX_RE = /^子([\u4e00-\u9fff]{1,2})$/;
 
+/**
+ * Pandas / NumPy / JSON missing-value tokens that sometimes land in name
+ * fields as the literal string "nan". Never a personal name in any language.
+ */
+const MISSING_NAME_TOKEN_RE = /^nan$/i;
+
 /** @param {string} s */
 export function codePointLength(s) {
   return [...normalizeSurface(s)].length;
+}
+
+/**
+ * True for dump placeholders like `"nan"` (not a real name surface).
+ * @param {string} surface
+ */
+export function isMissingNameToken(surface) {
+  const s = normalizeSurface(surface);
+  return !s || MISSING_NAME_TOKEN_RE.test(s);
 }
 
 /**
@@ -25,6 +40,7 @@ export function codePointLength(s) {
 export function isBlockedPersonString(surface, surnameChn) {
   const s = normalizeSurface(surface);
   if (!s) return true;
+  if (isMissingNameToken(s)) return true;
   if (BLOCKED_CHAR_RE.test(s)) return true;
   if (PLACEHOLDER_MOU_RE.test(s)) return true;
   if (BIRTH_ORDER_RE.test(s)) return true;

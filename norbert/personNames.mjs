@@ -3,8 +3,15 @@ import {
   codePointLength,
   inferFamilyNameFromLabel,
   isBlockedPersonString,
+  isMissingNameToken,
 } from '../shared/personStringPolicy.mjs';
 import { NAME_TYPE_EXCLUDE, NORBERT_NAME_TYPE_MAP } from './constants.mjs';
+
+/**
+ * Name types where a leading 姓 is a composite display form, not a distinct name.
+ * Matches leaf-writer `FAMILY_PREFIX_STRIP_TYPES` / `normalizeTypedNamesForIntake`.
+ */
+export const FAMILY_PREFIX_STRIP_TYPES = new Set(['courtesy', 'art', 'dharma']);
 
 /**
  * If a courtesy name begins with a known family name, return the bare 字.
@@ -29,6 +36,45 @@ export function stripFamilyPrefixFromCourtesyName(text, familyNames) {
     }
   }
   return bestPrefix ? normalizedText.slice(bestPrefix.length) : normalizedText;
+}
+
+/**
+ * After 字/號 cleaning: strip family prefixes from courtesy/art/dharma, then
+ * collapse duplicate texts so 安處厚 + 處厚 → one 處厚 entry.
+ * Does not touch searchStrings (phase-1 still wants 姓+字 for tagging).
+ *
+ * @param {{ text: string, type: string, lang?: string }[]} names
+ * @param {string[]} [extraFamilyNames]
+ * @returns {{ text: string, type: string, lang?: string }[]}
+ */
+export function collapseTypedNamesAfterZiClean(names, extraFamilyNames = []) {
+  if (!Array.isArray(names) || names.length === 0) return names ?? [];
+
+  const familyNames = [
+    ...extraFamilyNames,
+    ...names.filter((name) => name.type === 'family').map((name) => name.text),
+  ]
+    .map((name) => normalizeSurface(name))
+    .filter(Boolean);
+
+  /** @type {Map<string, { text: string, type: string, lang?: string }>} */
+  const byText = new Map();
+  for (const name of names) {
+    let text = normalizeSurface(name.text);
+    if (!text) continue;
+    if (FAMILY_PREFIX_STRIP_TYPES.has(name.type)) {
+      text = stripFamilyPrefixFromCourtesyName(text, familyNames);
+      if (!text) continue;
+    }
+    if (!byText.has(text)) {
+      byText.set(text, {
+        text,
+        type: name.type,
+        ...(name.lang ? { lang: name.lang } : {}),
+      });
+    }
+  }
+  return [...byText.values()];
 }
 
 /**
@@ -70,6 +116,8 @@ export function personNameEntriesFromNorbert(person, options = {}) {
     if (!ljbType) return;
     const normalized = normalizeSurface(surface);
     if (!normalized || entries.has(normalized)) return;
+    // "nan" (and empty) is never a name — drop even from intake names[].
+    if (isMissingNameToken(normalized)) return;
     if (forTagging) {
       if (isBlockedPersonString(normalized, surname)) return;
       if (!isValidSearchString(normalized)) return;
@@ -77,7 +125,7 @@ export function personNameEntriesFromNorbert(person, options = {}) {
     entries.set(normalized, ljbType);
   };
 
-  add(primary, 'primary');
+  if (!isMissingNameToken(primary)) add(primary, 'primary');
 
   const longerThanPrimary = (alt) => codePointLength(alt) > primaryLen;
   const atLeastPrimaryLen = (alt) => codePointLength(alt) >= primaryLen;
@@ -122,7 +170,10 @@ export function personNameEntriesFromNorbert(person, options = {}) {
 
   for (const alt of byType.get(8) ?? []) add(alt, NORBERT_NAME_TYPE_MAP.get(8));
 
-  return [...entries].map(([text, type]) => ({ text, type }));
+  return collapseTypedNamesAfterZiClean(
+    [...entries].map(([text, type]) => ({ text, type })),
+    familyNames,
+  );
 }
 
 /**
