@@ -1,4 +1,5 @@
 import { addYomiSearchStrings } from './yomiReadings.mjs';
+import { isChineseNumeralOnly, normalizeSurface } from '../shared/normalize.mjs';
 
 const KANJI_RE = /[一-鿿]/u;
 const LATIN_RE = /[A-Za-z]/u;
@@ -9,8 +10,9 @@ const DIGIT_RE = /\d/u;
  * Excludes modern/informal/foreign entities; keeps traditional Japanese organizations.
  */
 function isUsableOrgName(value) {
-  const name = value?.trim();
+  const name = normalizeSurface(value);
   if (!name) return false;
+  if (isChineseNumeralOnly(name)) return false;
   if (LATIN_RE.test(name) || DIGIT_RE.test(name)) return false;
   if (!KANJI_RE.test(name)) return false;
   return true;
@@ -23,8 +25,8 @@ export function orgSearchStringsFromRaw(raw) {
   const out = [];
   const seen = new Set();
   const add = (s) => {
-    const t = s?.trim();
-    if (!t || seen.has(t)) return;
+    const t = normalizeSurface(s);
+    if (!t || seen.has(t) || isChineseNumeralOnly(t)) return;
     seen.add(t);
     out.push(t);
   };

@@ -46,6 +46,8 @@ export function isValidSearchString(surface, opts = {}) {
  */
 export function addSearchString(set, surface, opts) {
   const s = normalizeSurface(surface);
+  // Place/work/org packs otherwise pick up ordinal enumeration junk (一八, 十二, …).
+  if (isChineseNumeralOnly(s)) return;
   if (isValidSearchString(s, opts)) set.add(s);
 }
 

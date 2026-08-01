@@ -11,7 +11,7 @@ test('parseValueTuples handles strings, NULL, and _binary', () => {
   assert.equal(rows[1][1], '蔡子元');
 });
 
-test('courtesy name is prefixed with surname', () => {
+test('courtesy name is imported one-to-one without surname synthesis', () => {
   const entries = personNameEntriesFromNorbert({
     can_name: '王安石',
     names: [
@@ -22,8 +22,19 @@ test('courtesy name is prefixed with surname', () => {
   });
   const byText = Object.fromEntries(entries.map((e) => [e.text, e.type]));
   assert.equal(byText['王安石'], 'primary');
-  assert.equal(byText['王介甫'], 'courtesy');
-  assert.equal(byText['介甫'], undefined);
+  assert.equal(byText['介甫'], 'courtesy');
+  assert.equal(byText['王介甫'], undefined);
+});
+
+test('compound Norbert name rows are not concatenated', () => {
+  const entries = personNameEntriesFromNorbert({
+    can_name: '成公世德',
+    names: [
+      { type: 11, value: '成公' },
+      { type: 12, value: '世德' },
+    ],
+  });
+  assert.deepEqual(entries.map((entry) => entry.text), ['成公世德', '成公', '世德']);
 });
 
 test('childhood names are excluded', () => {

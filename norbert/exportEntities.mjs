@@ -1,0 +1,144 @@
+#!/usr/bin/env node
+/**
+ * Export the private Norbert dump as a standalone LJB entities.xml.
+ *
+ * This is deliberately an export, not an in-place merge: the generated file
+ * uses deterministic Norbert ids and keeps source ids on every imported value.
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { loadNorbertTables } from './parseSqlDump.mjs';
+import { compileNorbertPersons } from './compileRecords.mjs';
+import { compileNorbertOffices } from './compileOffices.mjs';
+import { compileNorbertPersonWrappers } from './personWrappers.mjs';
+import { officeEntityId } from '../shared/officeGraph.mjs';
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const defaultSql = path.resolve(here, '../../norbert_PRIVATE.sql');
+const defaultOut = path.resolve(here, '../../outputs/norbert/entities.xml');
+
+function arg(name, fallback) {
+  const i = process.argv.indexOf(name);
+  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
+}
+
+const esc = (value) => String(value ?? '')
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+const text = (name, value, attrs = '') => value == null || String(value).trim() === ''
+  ? '' : `<${name}${attrs}>${esc(String(value).trim())}</${name}>`;
+const empty = (name, attrs = '') => `<${name}${attrs}/>`;
+const attr = (name, value) => value == null || String(value).trim() === '' ? '' : ` ${name}="${esc(value)}"`;
+function provenance(origin = 'authority', source = 'NORBERT') {
+  return ` origin="${origin}" source="${esc(source)}"`;
+}
+
+function appointmentRows(rows, offices) {
+  const byName = new Map();
+  for (const office of offices) {
+    const list = byName.get(office.primaryName) ?? [];
+    list.push(office);
+    byName.set(office.primaryName, list);
+  }
+  const byPerson = new Map();
+  for (const row of rows) {
+    const personId = row[7];
+    const officeName = row[5] == null ? '' : String(row[5]).trim();
+    if (personId == null || !officeName) continue;
+    const matches = byName.get(officeName) ?? [];
+    const office = matches.length === 1 ? matches[0] : undefined;
+    const item = {
+      id: String(row[0]),
+      personId: String(personId),
+      officeName,
+      officeId: office?.authorityId,
+      sourceRef: row[38] == null ? undefined : String(row[38]).trim(),
+      appointmentType: row[2] == null ? undefined : String(row[2]).trim(),
+    };
+    const list = byPerson.get(item.personId) ?? [];
+    list.push(item);
+    byPerson.set(item.personId, list);
+  }
+  return byPerson;
+}
+
+function titleRows(rows) {
+  const byPerson = new Map();
+  for (const row of rows) {
+    const personId = row[1];
+    if (personId == null) continue;
+    const title = {
+      id: String(row[0]), dynasty: row[2], fief: row[3], posthumous: row[4],
+      rank: row[6], temple: row[7], placeId: row[9], start: row[10], end: row[11],
+    };
+    if (![title.fief, title.posthumous, title.rank, title.temple].some((v) => v != null && String(v).trim())) continue;
+    const list = byPerson.get(String(personId)) ?? [];
+    list.push(title);
+    byPerson.set(String(personId), list);
+  }
+  return byPerson;
+}
+
+function personXml(person, appointments, titles) {
+  const id = `person-norbert-${person.authorityId}`;
+  const names = (person.names ?? []).filter((name) => name.text !== person.primaryName).map((name) =>
+    text('persName', name.text, ` type="${esc(name.type ?? 'variant')}" xml:lang="zh-Hant"${provenance()}`),
+  ).join('');
+  const nationalities = (person.metadata?.nationality ?? []).map((n) =>
+    text('nationality', n.label, ` ref="${esc(n.canonicalId)}"${provenance('authority', n.sourceIds?.[0] ?? 'NORBERT')}`),
+  ).join('');
+  const origins = (person.metadata?.origin ?? []).map((o) =>
+    text('placeName', o.placeName, `${attr('type', o.originType)}${attr('sourceRef', o.sourceRef)}${provenance('authority', o.source ?? 'NORBERT')}`),
+  ).join('');
+  const description = text('note', person.metadata?.description, ` type="description"${provenance()}`);
+  const affiliationValues = appointments.map((a) =>
+    text('affiliation', a.officeName, `${a.officeId ? ` ref="#office-norbert-${esc(a.officeId)}"` : ''}${attr('sourceRef', a.sourceRef)}${provenance()}`),
+  ).join('');
+  const cache = appointments.length ? text('note', JSON.stringify({ source: 'NORBERT', appointments }), ` type="authority-cache"${provenance()}`) : '';
+  const noble = titles.map((t) => {
+    const attrs = `${attr('dynasty', t.dynasty)} ref="NORBERT:person_nt:${esc(t.id)}"${provenance()}`;
+    return `<nobleTitle${attrs}>${text('placeName', t.fief, provenance())}${text('roleName', t.rank, provenance())}${text('persName', t.posthumous, ` type="posthumous"${provenance()}`)}${text('persName', t.temple, ` type="temple"${provenance()}`)}</nobleTitle>`;
+  }).join('');
+  return `<person xml:id="${id}" type="person">${text('persName', person.primaryName, ` type="primary" xml:lang="zh-Hant"${provenance()}`)}${names}${text('idno', person.authorityId, ` type="NORBERT"${provenance()}`)}${description}${nationalities}${origins}${affiliationValues}${cache}${noble}${text('note', new Date().toISOString(), ' type="ljb-changed"')}</person>`;
+}
+
+function officeXml(office) {
+  const id = `office-norbert-${office.authorityId}`;
+  return `<org xml:id="${id}" type="office">${text('orgName', office.primaryName, ` type="primary" xml:lang="zh-Hant"${provenance()}`)}${text('idno', office.authorityId, ` type="NORBERT"${provenance()}`)}${text('note', office.metadata?.description, ` type="description"${provenance()}`)}${empty('state', ` type="norbert-office" ref="${esc(office.metadata?.entityId ?? office.authorityId)}"`)}${text('note', new Date().toISOString(), ' type="ljb-changed"')}</org>`;
+}
+
+export async function exportNorbertEntities({ sqlPath = defaultSql, outputPath = defaultOut } = {}) {
+  const tables = await loadNorbertTables(sqlPath, [
+    'person', 'person_names', 'date_dynasties', 'nat_raw', 'person_origin',
+    'office', 'officeholding_raw', 'person_nt',
+  ]);
+  const persons = compileNorbertPersons(
+    tables.person, tables.person_names, tables.date_dynasties,
+    tables.person_date_filter, tables.nat_raw, tables.person_origin,
+  );
+  const offices = compileNorbertOffices(tables.office);
+  const appointments = appointmentRows(tables.officeholding_raw, offices);
+  const titles = titleRows(tables.person_nt);
+  const peopleById = new Map(persons.map((p) => [String(p.authorityId), p]));
+  const wrapperCount = compileNorbertPersonWrappers(tables.person_nt, peopleById).length;
+  const personXmls = persons.map((p) => personXml(p, appointments.get(String(p.authorityId)) ?? [], titles.get(String(p.authorityId)) ?? [])).join('');
+  const officeXmls = offices.map(officeXml).join('');
+  const databaseId = 'norbert-private-2026-07-31';
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<TEI xmlns="http://www.tei-c.org/ns/1.0"><teiHeader><fileDesc><titleStmt><title>Norbert entity database</title></titleStmt><publicationStmt><p>Generated from the private Norbert SQL dump.</p><idno type="ljb-entity-database">${databaseId}</idno></publicationStmt><sourceDesc><p>Norbert authority data.</p></sourceDesc></fileDesc></teiHeader><standOff><listPerson>${personXmls}</listPerson><listPlace/><listOrg/><listOrg type="offices">${officeXmls}</listOrg><listBibl/></standOff></TEI>\n`;
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  fs.writeFileSync(outputPath, xml);
+  return {
+    outputPath, persons: persons.length, offices: offices.length,
+    appointments: [...appointments.values()].reduce((n, rows) => n + rows.length, 0),
+    nobleTitles: [...titles.values()].reduce((n, rows) => n + rows.length, 0),
+    wrapperRows: tables.person_nt.length, wrapperCandidates: wrapperCount,
+    nationalities: persons.reduce((n, p) => n + (p.metadata?.nationality?.length ?? 0), 0),
+  };
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  exportNorbertEntities({ sqlPath: arg('--sql', defaultSql), outputPath: arg('--out', defaultOut) })
+    .then((result) => console.log(JSON.stringify(result, null, 2)))
+    .catch((error) => { console.error(error); process.exit(1); });
+}

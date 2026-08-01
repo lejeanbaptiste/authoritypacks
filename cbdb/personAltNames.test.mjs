@@ -42,7 +42,7 @@ test('王安石 — names[] includes bare short forms with types', () => {
   const entries = personNameEntriesFromAlts(WANG_ANSHI);
   const byText = Object.fromEntries(entries.map((e) => [e.text, e.type]));
   assert.equal(byText['王安石'], 'primary');
-  assert.equal(byText['王介甫'], 'courtesy');
+  assert.equal('王介甫' in byText, false, '姓+字 courtesy is search-only');
   assert.equal(byText['介甫'], 'courtesy');
   assert.equal(byText['王'], 'family');
   assert.equal(byText['安石'], 'given');
@@ -112,11 +112,14 @@ test('secular name (12+13) and 別名 (3) map to variant; first-qualifying type 
   assert.equal(entries.filter((e) => e.text === '善堅曾用名').length, 1, 'deduped, not doubled');
 });
 
-test('personSearchStringsFromAlts is a subset of personNameEntriesFromAlts texts', () => {
+test('personSearchStringsFromAlts may include 姓+字 courtesy not stored in names[]', () => {
   const search = personSearchStringsFromAlts(WANG_ANSHI);
   const nameTexts = new Set(personNameEntriesFromAlts(WANG_ANSHI).map((e) => e.text));
+  assert.ok(search.includes('王介甫'));
+  assert.equal(nameTexts.has('王介甫'), false);
+  assert.ok(nameTexts.has('介甫'));
   for (const s of search) {
+    if (s === '王介甫') continue;
     assert.ok(nameTexts.has(s), `search string ${s} missing from names[]`);
   }
-  assert.ok(nameTexts.size > search.length, 'names[] is a strict superset of searchStrings');
 });

@@ -9,8 +9,9 @@ import { NAME_TYPE_EXCLUDE, NORBERT_NAME_TYPE_MAP } from './constants.mjs';
 /**
  * Build typed name entries for one Norbert person.
  *
- * Rules mirror CBDB where the underlying name category matches; see
- * `norbert/README.md`.
+ * Each accepted Norbert name row is emitted as its own surface value. Do not
+ * synthesize a new name by prefixing a surname, appending a given name, or
+ * pairing two separate rows.
  *
  * @param {{
  *   can_name: string;
@@ -26,7 +27,6 @@ export function personNameEntriesFromNorbert(person) {
         person.names.find((n) => n.type === 7)?.value ??
         '',
     ) || inferFamilyNameFromLabel(primary);
-  const given = normalizeSurface(person.names.find((n) => n.type === 1)?.value ?? '');
   const primaryLen = codePointLength(primary);
 
   /** @type {Map<number, string[]>} */
@@ -61,9 +61,7 @@ export function personNameEntriesFromNorbert(person) {
     if (longerThanPrimary(alt)) add(alt, NORBERT_NAME_TYPE_MAP.get(3));
   }
 
-  for (const alt of byType.get(2) ?? []) {
-    add(surname ? surname + alt : alt, NORBERT_NAME_TYPE_MAP.get(2));
-  }
+  for (const alt of byType.get(2) ?? []) add(alt, NORBERT_NAME_TYPE_MAP.get(2));
 
   for (const type of [4, 9]) {
     for (const alt of byType.get(type) ?? []) {
@@ -84,18 +82,8 @@ export function personNameEntriesFromNorbert(person) {
   for (const alt of byType.get(15) ?? []) add(alt, NORBERT_NAME_TYPE_MAP.get(15));
   for (const alt of byType.get(16) ?? []) add(alt, NORBERT_NAME_TYPE_MAP.get(16));
 
-  const secularSurnames = byType.get(11) ?? [];
-  const secularNames = byType.get(12) ?? [];
-  for (const secSur of secularSurnames) {
-    for (const secName of secularNames) {
-      add(secSur + secName, NORBERT_NAME_TYPE_MAP.get(11));
-    }
-  }
-
-  for (const alt of byType.get(7) ?? []) {
-    const combined =
-      given && codePointLength(alt) <= codePointLength(surname) ? alt + given : alt;
-    add(combined, NORBERT_NAME_TYPE_MAP.get(7));
+  for (const type of [7, 11, 12]) {
+    for (const alt of byType.get(type) ?? []) add(alt, NORBERT_NAME_TYPE_MAP.get(type));
   }
 
   for (const alt of byType.get(8) ?? []) add(alt, NORBERT_NAME_TYPE_MAP.get(8));

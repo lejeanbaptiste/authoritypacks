@@ -54,14 +54,12 @@ test('CBDB compile — 王安石 names[] carries LJB type per entry', () => {
     const wang = persons.find((p) => p.authorityId === '1762');
     assert.ok(wang?.names?.length, 'names[] should be populated');
     const nameTexts = new Set(wang.names.map((n) => n.text));
-    for (const s of wang.searchStrings) {
-      assert.ok(nameTexts.has(s), `names[] should include search string ${s}`);
-    }
-    assert.ok(wang.names.length > wang.searchStrings.length, 'names[] superset of searchStrings');
+    assert.ok(wang.searchStrings.includes('王介甫'), '姓+字 stays in searchStrings');
+    assert.equal(nameTexts.has('王介甫'), false, '姓+字 courtesy is search-only, not a typed name');
+    assert.ok(wang.names.length >= wang.searchStrings.length - 1, 'names[] covers non-composite search forms');
     assert.equal(wang.searchStrings.includes('介甫'), false, 'bare 字 still excluded from searchStrings');
     const byText = Object.fromEntries(wang.names.map((n) => [n.text, n.type]));
     assert.equal(byText['王安石'], 'primary');
-    assert.equal(byText['王介甫'], 'courtesy');
     assert.equal(byText['介甫'], 'courtesy');
     assert.equal(byText['王'], 'family');
   } finally {

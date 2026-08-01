@@ -10,7 +10,7 @@ import { nationalityAssertion } from '../shared/nationalityConcordance.mjs';
  * @param {any[][]} personRows
  * @param {any[][]} nameRows
  * @param {any[][]} dynastyRows
- * @param {any[][]} dateFilterRows
+ * @param {any[][]} _dateFilterRows Retained for call-site compatibility; never exported as person dates.
  * @param {any[][]} natRawRows
  * @param {any[][]} originRows
  * @returns {AuthorityCandidate[]}
@@ -23,21 +23,6 @@ export function compileNorbertPersons(
   natRawRows,
   originRows = [],
 ) {
-  /** @type {Map<number, string>} */
-  const dynastyById = new Map();
-  for (const row of dynastyRows) {
-    dynastyById.set(row[0], row[1]);
-  }
-
-  /** @type {Map<number, { birth?: number, death?: number, dynasty?: string, en?: string, start?: number, end?: number }>} */
-  const datesByPerson = new Map();
-  for (const row of dateFilterRows) {
-    datesByPerson.set(row[0], {
-      birth: row[1] ?? undefined,
-      death: row[3] ?? undefined,
-    });
-  }
-
   /** @type {Map<number, number>} courtId -> count */
   /** @type {Map<number, Map<number, number>>} */
   const courtCountsByPerson = new Map();
@@ -111,11 +96,8 @@ export function compileNorbertPersons(
     });
     if (!nameEntries.length) continue;
 
-    const dates = datesByPerson.get(id);
     let dynastyLabel;
     let dynastyEn;
-    let dynastyStart;
-    let dynastyEnd;
     const courtCounts = courtCountsByPerson.get(id);
     if (courtCounts?.size) {
       const courtId = [...courtCounts.entries()].sort((a, b) => b[1] - a[1])[0][0];
@@ -123,19 +105,15 @@ export function compileNorbertPersons(
       if (dynRow) {
         dynastyLabel = dynRow[1] ?? undefined;
         dynastyEn = dynRow[2] ?? undefined;
-        dynastyStart = dynRow[3] ?? undefined;
-        dynastyEnd = dynRow[4] ?? undefined;
       }
     }
 
-    const startYear = dates?.birth ?? dynastyStart;
-    const endYear = dates?.death ?? dynastyEnd;
     const nationality = nationalityFromDynasties(
       [...(nationalityIdsByPerson.get(id) ?? [])].map((dynId) => {
         const d = dynastyRows.find((row) => row[0] === dynId);
         return d ? { label: d[1], startYear: d[3], endYear: d[4] } : null;
       }).filter(Boolean),
-      { startYear: dates?.birth, endYear: dates?.death },
+      {},
     );
 
     out.push({
@@ -149,14 +127,9 @@ export function compileNorbertPersons(
         dynasty: dynastyLabel,
         nationality: nationality.map((label) => nationalityAssertion({ source: 'Norbert', id: `dynasty:${label}`, label })),
         origin: originsByPerson.get(id),
-        dateSource: dates?.birth != null || dates?.death != null ? 'fine' : 'nationality',
-        startYear,
-        endYear,
         ana: mythical ? 'mythical' : 'historical',
         description: norbertPersonClue({
           name: canName,
-          birthYear: dates?.birth,
-          deathYear: dates?.death,
           dynastyChn: dynastyLabel,
           dynastyEn,
           extra: description ? String(description).trim() : undefined,

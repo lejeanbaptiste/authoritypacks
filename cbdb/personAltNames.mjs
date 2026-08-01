@@ -72,11 +72,11 @@ export function buildPersonNamesFromAlts(person) {
    * @param {{ minLength?: number, search?: boolean }} [opts]
    */
   const add = (surface, ljbType, opts = {}) => {
-    const { minLength = 2, search = true } = opts;
+    const { minLength = 2, search = true, names = true } = opts;
     if (isBlockedPersonString(surface, surname)) return;
     const normalized = normalizeSurface(surface);
     if (!isValidSearchString(normalized, { minLength })) return;
-    if (!nameEntries.has(normalized)) nameEntries.set(normalized, ljbType);
+    if (names && !nameEntries.has(normalized)) nameEntries.set(normalized, ljbType);
     if (search && !searchEntries.has(normalized) && isValidSearchString(normalized)) {
       searchEntries.set(normalized, ljbType);
     }
@@ -93,8 +93,9 @@ export function buildPersonNamesFromAlts(person) {
   }
 
   for (const alt of byType.get(4) ?? []) {
-    // Matcher: 姓+字. Bare 字 is names[]-only (below).
-    add(surname ? surname + alt : alt, CBDB_NAME_TYPE_MAP.get(4));
+    // Matcher keeps 姓+字 for phase-1 tagging; typed courtesy names store bare 字 only
+    // (below) so entity intake never has to strip a synthetic composite.
+    add(surname ? surname + alt : alt, CBDB_NAME_TYPE_MAP.get(4), { names: false });
   }
 
   for (const type of [5, 6]) {

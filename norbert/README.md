@@ -11,7 +11,7 @@ Place a mysqldump under `norbert_secret/` (gitignored). The compile reads:
 | `person` | `id`, `can_name`, `description`, `mythical` |
 | `person_names` | typed alternate names |
 | `codes_person_name_type` | mapped in [`constants.mjs`](./constants.mjs) |
-| `person_date_filter` | birth/death years |
+| `person_date_filter` | upstream date rows; not exported as person birth/death dates |
 | `nat_raw` | `court_id` → dynasty via `date_dynasties` |
 | `person_origin` | source-preserving place-of-origin strings and qualifications |
 | `office` | office/role strings for `roleName` tag bomb |
@@ -111,14 +111,15 @@ Childhood names (小名 / 小字, types 5–6) are excluded, mirroring CBDB poli
 | — (`can_name`) | — | `primary` |
 | 0 | 姓 | `family` |
 | 1 | 名 | `given` |
-| 2 | 字 | `courtesy` (prefixed with 姓 when known) |
+| 2 | 字 | `courtesy` (imported one-to-one) |
 | 3 | 賜號 | `variant` (longer than primary) |
 | 4 | 室名 | `art` (longer than primary) |
 | 7 | 本姓 | `variant` |
 | 8 | 本名 | `birth` |
 | 9 | 諡號 | `posthumous` (longer than primary) |
 | 10 | 法號 | `dharma` |
-| 11 + 12 | 俗姓 + 俗名 | `variant` (concatenated pairs) |
+| 11 | 俗姓 | `variant` (imported one-to-one) |
+| 12 | 俗名 | `variant` (imported one-to-one) |
 | 13 | 道號 | `dharma` |
 | 14 | 尊號 | `variant` (length ≥ primary) |
 | 15 | uncategorised | `variant` |
