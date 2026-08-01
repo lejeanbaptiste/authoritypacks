@@ -58,7 +58,13 @@ export async function compileNorbertPack(options = {}) {
   const appointments = compileNorbertAppointments(tables.person_offices, offices);
   attachAppointmentsToPersons(persons, appointments);
 
-  const peopleById = new Map(persons.map((person) => [String(person.authorityId), person]));
+  const peopleById = new Map();
+  for (const person of persons) {
+    // Wrappers look up by raw SQL person_id; also key the namespaced form.
+    const bare = String(person.authorityId).replace(/^person[-:]/i, '');
+    peopleById.set(bare, person);
+    peopleById.set(String(person.authorityId), person);
+  }
   const personWrappers = compileNorbertPersonWrappers(
     tables.person_nt,
     peopleById,

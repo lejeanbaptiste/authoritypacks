@@ -3,6 +3,7 @@ import { personNameEntriesFromNorbert } from './personNames.mjs';
 import { SOURCE } from './constants.mjs';
 import { nationalityFromDynasties } from '../shared/nationality.mjs';
 import { nationalityAssertion } from '../shared/nationalityConcordance.mjs';
+import { formatNorbertAuthorityValue } from './norbertAuthorityId.mjs';
 
 /** @typedef {import('../shared/types.mjs').AuthorityCandidate} AuthorityCandidate */
 
@@ -116,9 +117,11 @@ export function compileNorbertPersons(
       {},
     );
 
+    const sourceDescription = description == null ? undefined : String(description).trim() || undefined;
+
     out.push({
       source: SOURCE,
-      authorityId: String(id),
+      authorityId: formatNorbertAuthorityValue('person', id),
       kind: 'person',
       primaryName: canName,
       searchStrings: nameEntries.map((entry) => entry.text),
@@ -128,12 +131,15 @@ export function compileNorbertPersons(
         nationality: nationality.map((label) => nationalityAssertion({ source: 'Norbert', id: `dynasty:${label}`, label })),
         origin: originsByPerson.get(id),
         ana: mythical ? 'mythical' : 'historical',
+        // Pack disambiguation clue (name + dynasty + Norbert text).
         description: norbertPersonClue({
           name: canName,
           dynastyChn: dynastyLabel,
           dynastyEn,
-          extra: description ? String(description).trim() : undefined,
+          extra: sourceDescription,
         }),
+        // Plain Norbert `person.description` for entity-DB one-line notes.
+        sourceDescription,
       },
     });
   }

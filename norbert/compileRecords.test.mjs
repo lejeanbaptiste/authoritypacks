@@ -37,3 +37,17 @@ test('Norbert person compilation never exports dynasty ranges as person dates', 
   assert.equal(person.metadata.description.includes('960'), false);
   assert.equal(person.metadata.description.includes('1279'), false);
 });
+
+test('Norbert person.description is preserved as sourceDescription for entity one-liners', () => {
+  const [person] = compileNorbertPersons(
+    [[1, '卜顯', null, '疇人', null]],
+    [],
+    [[1, '西晉', 'Western Jin', 265, 316]],
+    [],
+    [[1, null, 1, 1, null, null, 1]],
+  );
+
+  assert.equal(person.metadata.sourceDescription, '疇人');
+  assert.match(person.metadata.description, /疇人/);
+  assert.match(person.metadata.description, /卜顯/);
+});

@@ -1,4 +1,5 @@
 import { SOURCE } from './constants.mjs';
+import { formatNorbertAuthorityValue } from './norbertAuthorityId.mjs';
 
 /**
  * Build transient, wrapper-ready person combinations from Norbert's
@@ -76,7 +77,7 @@ export function compileNorbertPersonWrappers(titleRows, peopleById) {
       names: personalNames.map((text) => ({ text, type: 'wrapper-person' })),
       metadata: {
         wrapper: {
-          personId: String(parts.personId),
+          personId: formatNorbertAuthorityValue('person', parts.personId),
           titleRowId: String(parts.titleRowId),
           components: {
             ...(parts.dynasty ? { nationality: parts.dynasty } : {}),

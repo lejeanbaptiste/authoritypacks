@@ -2,6 +2,7 @@ import { norbertOfficeClue } from '../shared/clue.mjs';
 import { SOURCE } from './constants.mjs';
 import { OFFICE_COL, bitFlag } from './officeColumns.mjs';
 import { officeEntityId } from '../shared/officeGraph.mjs';
+import { formatNorbertAuthorityValue } from './norbertAuthorityId.mjs';
 
 /** @typedef {import('../shared/types.mjs').AuthorityCandidate} AuthorityCandidate */
 
@@ -97,7 +98,7 @@ export function officeRowToCandidate(row) {
 
   return {
     source: SOURCE,
-    authorityId: String(row[OFFICE_COL.id]),
+    authorityId: formatNorbertAuthorityValue('office', row[OFFICE_COL.id]),
     kind: 'office',
     primaryName,
     searchStrings: [primaryName],

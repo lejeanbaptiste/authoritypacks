@@ -1,4 +1,5 @@
 import { SOURCE } from './constants.mjs';
+import { formatNorbertAuthorityValue } from './norbertAuthorityId.mjs';
 
 /** `person_offices` columns in the Norbert MySQL dump. */
 const COL = {
@@ -37,7 +38,7 @@ export function compileNorbertAppointments(rows, offices) {
     return [{
       source: SOURCE,
       authorityId: String(row[COL.id] ?? `person_offices:${index}`),
-      person: { source: SOURCE, authorityId: String(personId) },
+      person: { source: SOURCE, authorityId: formatNorbertAuthorityValue('person', personId) },
       office: {
         source: SOURCE,
         ...(office ? {

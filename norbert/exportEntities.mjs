@@ -19,6 +19,7 @@ import {
   uniqueConcordanceRows,
 } from './concordance.mjs';
 import { readNdjson, writeNdjson } from '../shared/ndjson.mjs';
+import { formatNorbertAuthorityValue } from './norbertAuthorityId.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
@@ -112,7 +113,7 @@ function personXml(person, appointments, titles, extraIdnos = {}) {
   const origins = (person.metadata?.origin ?? []).map((o) =>
     text('placeName', o.placeName, `${attr('type', o.originType)}${attr('sourceRef', o.sourceRef)}${provenance('authority', o.source ?? 'NORBERT')}`),
   ).join('');
-  const description = text('note', person.metadata?.description, ` type="description"${provenance()}`);
+  const description = text('note', person.metadata?.sourceDescription, ` type="description"${provenance()}`);
   const affiliationValues = appointments.map((a) =>
     text('affiliation', a.officeName, `${a.officeId ? ` ref="#office-norbert-${esc(a.officeId)}"` : ''}${attr('sourceRef', a.sourceRef)}${provenance()}`),
   ).join('');
@@ -121,12 +122,14 @@ function personXml(person, appointments, titles, extraIdnos = {}) {
     const attrs = `${attr('dynasty', t.dynasty)} ref="NORBERT:person_nt:${esc(t.id)}"${provenance()}`;
     return `<nobleTitle${attrs}>${text('placeName', t.fief, provenance())}${text('roleName', t.rank, provenance())}${text('persName', t.posthumous, ` type="posthumous"${provenance()}`)}${text('persName', t.temple, ` type="temple"${provenance()}`)}</nobleTitle>`;
   }).join('');
-  return `<person xml:id="${id}" type="person">${text('persName', person.primaryName, ` type="primary" xml:lang="zh-Hant"${provenance()}`)}${names}${text('idno', person.authorityId, ` type="NORBERT"${provenance()}`)}${externalIdnosXml(extraIdnos)}${description}${nationalities}${origins}${affiliationValues}${cache}${noble}${text('note', new Date().toISOString(), ' type="ljb-changed"')}</person>`;
+  // Namespace the numeric Norbert person id so it cannot collide with office ids
+  // that reuse the same integers (`person-12` / `office-12`).
+  return `<person xml:id="${id}" type="person">${text('persName', person.primaryName, ` type="primary" xml:lang="zh-Hant"${provenance()}`)}${names}${text('idno', formatNorbertAuthorityValue('person', person.authorityId), ` type="NORBERT"${provenance()}`)}${externalIdnosXml(extraIdnos)}${description}${nationalities}${origins}${affiliationValues}${cache}${noble}${text('note', new Date().toISOString(), ' type="ljb-changed"')}</person>`;
 }
 
 function officeXml(office) {
   const id = `office-norbert-${office.authorityId}`;
-  return `<org xml:id="${id}" type="office">${text('orgName', office.primaryName, ` type="primary" xml:lang="zh-Hant"${provenance()}`)}${text('idno', office.authorityId, ` type="NORBERT"${provenance()}`)}${text('note', office.metadata?.description, ` type="description"${provenance()}`)}${empty('state', ` type="norbert-office" ref="${esc(office.metadata?.entityId ?? office.authorityId)}"`)}${text('note', new Date().toISOString(), ' type="ljb-changed"')}</org>`;
+  return `<org xml:id="${id}" type="office">${text('orgName', office.primaryName, ` type="primary" xml:lang="zh-Hant"${provenance()}`)}${text('idno', formatNorbertAuthorityValue('office', office.authorityId), ` type="NORBERT"${provenance()}`)}${text('note', office.metadata?.description, ` type="description"${provenance()}`)}${empty('state', ` type="norbert-office" ref="${esc(office.metadata?.entityId ?? office.authorityId)}"`)}${text('note', new Date().toISOString(), ' type="ljb-changed"')}</org>`;
 }
 
 function loadConcordanceSources(packsRoot) {

@@ -28,7 +28,7 @@ test('officeRowToCandidate maps full_string to roleName office candidate', () =>
   assert.equal(candidate?.primaryName, '侍中');
   assert.deepEqual(candidate?.searchStrings, ['侍中']);
   assert.equal(candidate?.metadata?.teiTag, 'roleName');
-  assert.equal(candidate?.authorityId, '42');
+  assert.equal(candidate?.authorityId, 'office-42');
 });
 
 test('geo-admin suffix 令 gets placeCat and geoAdminSuffix flags', () => {
@@ -147,8 +147,8 @@ test('Norbert person_offices compile links person and unique office rows', () =>
   assert.deepEqual(appointments, [{
     source: 'Norbert',
     authorityId: '99',
-    person: { source: 'Norbert', authorityId: '123' },
-    office: { source: 'Norbert', authorityId: '7', name: '侍中' },
+    person: { source: 'Norbert', authorityId: 'person-123' },
+    office: { source: 'Norbert', authorityId: 'office-7', name: '侍中' },
     sourceRef: '史書',
   }]);
 });

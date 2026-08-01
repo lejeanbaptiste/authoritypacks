@@ -23,6 +23,7 @@ test('person wrapper compiler preserves separate noble-title components', () => 
     persName: '範',
   });
   assert.equal(wrapper.metadata.wrapper.fiefPlaceId, 'place-4');
+  assert.equal(wrapper.metadata.wrapper.personId, 'person-7');
 });
 
 test('wrapper compiler skips titles without a person', () => {

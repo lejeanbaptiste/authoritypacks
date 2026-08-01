@@ -22,7 +22,8 @@
 
 /** @param {string} source @param {string | number} id */
 export function officeEntityId(source, id) {
-  return `${String(source).trim().toLowerCase()}:office:${id}`;
+  const bare = String(id).trim().replace(/^(person|office|place)[-:]/i, '');
+  return `${String(source).trim().toLowerCase()}:office:${bare}`;
 }
 
 /** @param {string | number} id */
@@ -57,28 +58,30 @@ export function inferNorbertSourceRelations(offices) {
     );
     if (matches.length !== 1) continue;
     const parent = matches[0];
+    const parentBare = String(parent.authorityId).replace(/^(person|office|place)[-:]/i, '');
+    const childBare = String(child.authorityId).replace(/^(person|office|place)[-:]/i, '');
     child.metadata.parentOffice = {
       source: parent.source,
       authorityId: parent.authorityId,
       entityId:
         parent.metadata?.canonicalEntityId
         ?? parent.metadata?.entityId
-        ?? officeEntityId('norbert', parent.authorityId),
+        ?? officeEntityId('norbert', parentBare),
       name: parent.primaryName,
     };
     relations.push({
-      id: `norbert:parent:${parent.authorityId}:${child.authorityId}`,
+      id: `norbert:parent:${parentBare}:${childBare}`,
       type: 'parentOf',
       subject: parent.metadata?.canonicalEntityId ?? parent.metadata?.entityId
-        ?? officeEntityId('norbert', parent.authorityId),
+        ?? officeEntityId('norbert', parentBare),
       object: child.metadata?.canonicalEntityId ?? child.metadata?.entityId
-        ?? officeEntityId('norbert', child.authorityId),
+        ?? officeEntityId('norbert', childBare),
       source: 'Norbert',
       confidence: 'inferred',
       evidence: {
         rule: 'explicit-parent-string',
         table: 'office',
-        sourceIds: [parent.authorityId, child.authorityId],
+        sourceIds: [parentBare, childBare],
         labels: [parent.primaryName, child.primaryName],
       },
     });
