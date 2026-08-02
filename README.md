@@ -1,6 +1,6 @@
 # Authority extraction
 
-Offline **build pipelines** that turn public authority sources (CBDB, DILA, Wikidata, NDL, GeoNames, …) into **tag-string packs** for [LEAF/LJB](https://gitlab.com/calincs/cwrc/leaf-writer/leaf-writer) auto-tagging.
+Offline **build pipelines** that turn public authority sources (CBDB, DILA, Wikidata, NDL, CHGIS, …) into **tag-string packs** for [LEAF/LJB](https://gitlab.com/calincs/cwrc/leaf-writer/leaf-writer) auto-tagging. **GeoNames packs are out of scope** (no Track G work).
 
 This repo holds **extract → compile → publish** tooling. The **matcher, review UI, and tag bomb** live in leaf-writer.
 
@@ -30,6 +30,69 @@ authority extraction/
   packs/                  # compiled NDJSON (gitignored)
   reports/                # ambiguity CSVs
 ```
+
+## TODO — VIAF ↔ Wikidata concordance (ship with packs)
+
+LJB disambiguation merges live Wikidata + VIAF hits using a **precompiled**
+P214 table at `authority-packs/wikidata/viaf-wikidata-concordance.ndjson`
+(pack id `wikidata-viaf-concordance`). Regex scraping of LINCS descriptions
+remains only as a fallback.
+
+**Prerequisite:** compiled Wikidata packs must carry `metadata.crosswalk.viaf`.
+Current zh/ja **person** raw extracts often lack identifier claims — re-extract
+those slices with the current extractor (P214 enabled via
+`wikidata/identifierProperties.json`) before expecting person coverage. Place
+packs that already have VIAF in crosswalk (e.g. `place-ja`) can ship a useful
+concordance today.
+
+### Steps
+
+1. **Ensure raw extracts include crosswalk** (re-extract if `persons.raw.ndjson`
+   rows have no `crosswalk` field — only `qid` / labels / years):
+
+   ```bash
+   cd "/Users/daniel/Code/leJeanBaptiste/authority extraction"
+   # example: re-extract a dynasty slice with the current dump tooling
+   npm run wikidata:extract -- --dump /path/to/latest-all.json.bz2 ...
+   ```
+
+2. **Recompile** so `metadata.crosswalk.viaf` appears on NDJSON rows:
+
+   ```bash
+   npm run wikidata:compile -- --raw packs/wikidata/raw-…/persons.raw.ndjson --out packs/wikidata/person-…
+   # or place/org/work:
+   npm run wikidata:compile-places-ja   # etc.
+   ```
+
+3. **Build the concordance sidecar** from every compiled Wikidata pack that
+   already has VIAF links:
+
+   ```bash
+   npm run wikidata:viaf-concordance
+   # → packs/wikidata/viaf-wikidata-concordance.ndjson
+   # each line: {"wikidata":"Q31","viaf":"144248059"}
+   ```
+
+   Or pass explicit inputs:
+
+   ```bash
+   node wikidata/buildViafConcordance.mjs \
+     --in packs/wikidata/place-ja/places.ndjson \
+     --in packs/wikidata/person-bo/persons.ndjson \
+     --out packs/wikidata/viaf-wikidata-concordance.ndjson
+   ```
+
+4. **Publish / install** the file next to other Wikidata packs under the user’s
+   entity-db `authority-packs/wikidata/` folder (same bundle path LJB already
+   uses for `wikidata/person-…`). No extra Settings checkbox — LJB loads
+   `wikidata-viaf-concordance` automatically when the file is present.
+
+5. **Sanity-check:** open disambiguation on a string that returns both Wikidata
+   and VIAF via LINCS for an id pair in the concordance; the two rows should
+   collapse into one candidate.
+
+See also `wikidata/README.md` § Authority concordance and leaf-writer
+`docs/authority-databases-phases.md`.
 
 ## Quick start
 

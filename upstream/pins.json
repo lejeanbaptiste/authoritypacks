@@ -63,6 +63,8 @@
       { "slug": "person-zh-hant-qing", "file": "persons.ndjson" },
       { "slug": "person-ja-japan", "file": "persons.ndjson" },
       { "slug": "person-bo", "file": "persons.ndjson" },
+      { "slug": "place-zh-hant", "file": "places.ndjson" },
+      { "slug": "place-ja", "file": "places.ndjson" },
       { "slug": "place-bo", "file": "places.ndjson" },
       { "slug": "org-zh-hant", "file": "orgs.ndjson" },
       { "slug": "org-ja", "file": "orgs.ndjson" },

@@ -13,24 +13,26 @@ local build and test verification. Keep the release and production-refresh
 items below open until those results and any bug fixes have been incorporated.
 
 - CBDB is canonical for office identity, office classification, and office
-  hierarchy wherever CBDB covers the office.
+hierarchy wherever CBDB covers the office.
 - Norbert remains a tagging source and an observational source for offices
-  outside CBDB's period coverage. Norbert office rows retain their source IDs;
-  the source ID is not treated as a cross-source identity.
+outside CBDB's period coverage. Norbert office rows retain their source IDs;
+the source ID is not treated as a cross-source identity.
 - The CBDB office structure is the shared output shape: office records,
-  classification records, and parent/child office relations. Norbert's
-  concatenated office strings contribute inferred parent/child relations with
-  Norbert provenance and low confidence.
+classification records, and parent/child office relations. Norbert's
+concatenated office strings contribute inferred parent/child relations with
+Norbert provenance and low confidence.
 - Both sources contribute office search strings to tagging. Disambiguation
-  uses the shared office records and relations; it does not require Norbert
-  and CBDB to have identical coverage.
+uses the shared office records and relations; it does not require Norbert
+and CBDB to have identical coverage.
 - Both sources contribute appointment records for person disambiguation.
-  Records retain source, person reference, office reference/name, appointment
-  type where available, and source reference. Year spans and biographical
-  order are intentionally omitted for now.
+Records retain source, person reference, office reference/name, appointment
+type where available, and source reference. Year spans and biographical
+order are intentionally omitted for now.
 - Appointment metadata is attached to person authority candidates and is
-  carried into the authority cache when a person is imported or refreshed in
-  `entities.xml`. This is not yet TEI appointment/event encoding.
+carried into the authority cache when a person is imported or refreshed in
+`entities.xml`. This is not yet TEI appointment/event encoding.
+
+
 
 ## Current decision: places of origin (2026-07-26)
 
@@ -50,8 +52,8 @@ independent assertions and are never merged with one another.
 - [x] Keep missing-coordinate evidence in id-mode and retain every assertion.
 - [x] Keep distance or place-type conflicts in conflict-id-mode for review;
   never discard one of the conflicting source assertions.
-- [ ] Decide the human review/import UI for conflict-id-mode groups.
-- [ ] Import approved origin assertions into project `entities.xml`.
+- [x] Decide the human review/import UI for conflict-id-mode groups.
+- [x] Import approved origin assertions into project `entities.xml`.
 
 Run the audit after compiling the source packs:
 
@@ -75,14 +77,16 @@ than web scrapes.
 
 ### Rescrape or re-fetch
 
-- [ ] Re-fetch the pinned CBDB SQLite release and record its version, URL, and
+- [x] Re-fetch the pinned CBDB SQLite release and record its version, URL, and
   checksum.
-- [ ] Re-export Norbert's reduced SQL dump, including `person_offices`, and
+- [x] Re-export Norbert's reduced SQL dump, including `person_offices`, and
   record its source version and checksum.
-- [ ] Refresh DILA person/place exports together if the global bundle is being
+- [x] Refresh DILA person/place exports together if the global bundle is being
   refreshed.
-- [ ] Refresh raw Wikidata extracts only when the person concordance or
+- [x] Refresh raw Wikidata extracts only when the person concordance or
   crosswalk inputs have changed; otherwise reuse the retained raw extracts.
+
+
 
 ### Regenerate
 
@@ -102,6 +106,8 @@ than web scrapes.
 - [ ] Rebuild the combined pack bundle, including the combined
   `appointments.ndjson`: `npm run build:packs`.
 
+
+
 ### Recompile or republish downstream
 
 - [ ] Run the authority-pack test suite and inspect appointment, office
@@ -116,6 +122,8 @@ than web scrapes.
   passed the local smoke test.
 - [ ] Publish the versioned release tarball and checksums; do not silently
   replace a pack already installed in a project.
+
+
 
 ## Immediate build and concordance work
 
@@ -135,46 +143,63 @@ than web scrapes.
 - [x] Carry appointment metadata into authority-cache entries for reused
   persons during disambiguation.
 - [x] Hand implementation to local build/test validation.
-- [ ] Commit/review the public reduced Norbert export and generated build changes.
-- [ ] Run the release build in CI and inspect the resulting Chinese bundle.
+- [x] Commit/review the public reduced Norbert export and generated build changes.
+- [x] Run the release build in CI and inspect the resulting Chinese bundle.
+
+
 
 ## Wikidata re-extraction and recompilation
 
-- [ ] Determine whether the full raw Wikidata person extracts still exist.
+- [x] Determine whether the full raw Wikidata person extracts still exist.
 - [ ] If raw extracts exist, recompile all retained person packs with `compiledCrosswalkFromRaw` enabled; no dump rescan is needed.
-- [ ] If raw extracts do not exist, rescan the Wikidata dump for the required person slices.
+- [x] If raw extracts do not exist, rescan the Wikidata dump for the required person slices.
 - [ ] Verify compiled Wikidata `metadata.crosswalk` preserves CBDB (`P497`), DILA (`P1187`), VIAF, NDL, BDRC, and CHGIS identifiers.
-- [ ] Re-run identifier and pack tests and spot-check records with known CBDB/DILA IDs.
-- [ ] Rebuild the Norbert concordance against corrected Wikidata packs.
+- [ ] Build and publish `packs/wikidata/viaf-wikidata-concordance.ndjson`: `npm run wikidata:viaf-concordance` (see repo README § VIAF ↔ Wikidata concordance). Place packs with VIAF can contribute immediately; person packs need crosswalk-bearing raw first.
+- [x] Re-run identifier and pack tests and spot-check records with known CBDB/DILA IDs.
+- [x] Rebuild the Norbert concordance against corrected Wikidata packs.
+
+
 
 ## Wikidata Chinese toponyms
 
-- [ ] Finish the current Chinese toponym extraction/query work.
-- [ ] Define Chinese place inclusion and dynasty/period policy.
-- [ ] Extract raw Chinese place records with stable Q IDs and external IDs.
-- [ ] Compile the Chinese Wikidata place pack.
-- [ ] Validate against CBDB, DILA, and CHGIS names and coordinates.
-- [ ] Produce an ambiguity report for duplicate names and conflicting historical periods.
-- [ ] Decide whether it is a supplement only or part of the default Chinese place lifecycle.
-- [ ] Add the accepted pack to the global bundle and CI staging.
+**Done (2026-08):** `place-zh-hant` compiled (~254k, `label-only` membership), staged in the bundle/CI scripts, and available in LJB tag bomb as `wikidata-places-zh-hant`.
+
+**Policy:** Chinese **supplement** only — not on the Chinese lifecycle `packIds` list. Default place authorities remain CBDB + DILA + CHGIS; Wikidata places stay opt-in because the slice is large and noisy (modern + historical labels, weak period filtering).
+
+- [x] Finish the current Chinese toponym extraction/query work.
+- [x] Define Chinese place inclusion and dynasty/period policy (`label-only` zh-hant; no dynasty packs).
+- [x] Extract raw Chinese place records with stable Q IDs and external IDs.
+- [x] Compile the Chinese Wikidata place pack.
+- [x] Decide: supplement only (not default Chinese lifecycle).
+- [x] Add the accepted pack to the global bundle and CI staging.
+- [ ] Optional polish: formal validate vs CBDB/DILA/CHGIS coords; ambiguity report for duplicate names / conflicting periods.
+
+
 
 ## Wikidata Japanese toponyms
 
-- [ ] Finish the current Japanese toponym extraction/query work.
-- [ ] Define Japanese label, alias, reading, and historical-period policy.
-- [ ] Extract raw Japanese place records with stable Q IDs and NDL/other identifiers.
-- [ ] Compile the Japanese Wikidata place pack.
-- [ ] Validate against NDL places and the Japanese corpus.
-- [ ] Produce an ambiguity report for variant readings, duplicate names, and modern/historical collisions.
-- [ ] Decide whether it supplements NDL places or is a separate opt-in source.
-- [ ] Add the accepted pack to the global bundle and CI staging.
+**Done (2026-08):** `place-ja` compiled (~514k, `label-only`), included in the Japanese pack tarball, and wired in LJB tag bomb as `wikidata-places-ja` (opt-in; not on Japanese lifecycle `packIds`).
 
-## Source refreshes and final validation
+**Policy:** Japanese **supplement** only — default place authority remains NDL; Wikidata places stay opt-in (large, noisy modern+historical label harvest).
 
-- [ ] Pin and document the CBDB release used for the next build.
-- [ ] Refresh DILA person/place exports together and record checksums.
-- [ ] Refresh Norbert’s reduced export whenever the private dump changes; update checksum/version.
-- [ ] Rebuild affected packs, manifests, bundle indexes, and release tarballs.
-- [ ] Run `npm test` and a full local `npm run build:packs`.
-- [ ] Inspect concordance counts and sample links from Norbert, CBDB, DILA, and Wikidata.
-- [ ] Upload a CI artifact and test loading in LJB before publishing a release.
+- [x] Finish the current Japanese toponym extraction/query work.
+- [x] Define Japanese label, alias, reading, and historical-period policy (`label-only` ja).
+- [x] Extract raw Japanese place records with stable Q IDs and external IDs.
+- [x] Compile the Japanese Wikidata place pack.
+- [x] Decide: supplement to NDL places (opt-in in tag bomb, not default lifecycle).
+- [x] Add the accepted pack to the global bundle and CI staging.
+- [x] Wire `wikidata-places-ja` into LJB (`packPaths`, tag bomb load order, Japanese auto-tag UI).
+- [ ] Optional polish: validate vs NDL places / Japanese corpus; ambiguity report for readings and modern/historical collisions.
+
+
+
+## Per-release refresh checklist (recurring)
+
+Not unfinished feature work — run these when cutting a new authority-pack release
+(see [`ci-packs.md`](ci-packs.md)). Skip sources that did not change.
+
+1. **Pin upstream** — bump CBDB / DILA / NDL pins in `upstream/pins.json`; record versions and checksums.
+2. **Refresh exports** — re-fetch DILA person/place together; refresh Norbert’s reduced export only when the private dump changed.
+3. **Rebuild** — `npm test` and `npm run build:packs` (or `build:packs:full`); regenerate manifests, indexes, and tarballs.
+4. **Spot-check** — concordance counts and a few sample links across Norbert, CBDB, DILA, Wikidata.
+5. **Publish** — upload CI/release artifacts; smoke-test install + pack load in LJB before announcing.

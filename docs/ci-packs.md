@@ -54,18 +54,18 @@ For release-time enforcement, run the bundle with `--require-ndl`. That makes th
 
 Wikidata person packs are **compiled locally** from the Wikidata JSON dump (see [`wikidata/README.md`](../wikidata/README.md)). They are not fetched by `fetch-upstream.mjs`.
 
-`build-pack-bundle.mjs` includes Wikidata when these compiled directories already exist (Tang, Ming, Qing — the packs wired into LJB’s Chinese profile):
+`build-pack-bundle.mjs` includes Wikidata when these compiled directories already exist (pre-Ming / Ming / Qing — the person packs wired into LJB’s Chinese profile; Tang is optional):
 
-- `.upstream/wikidata/person-zh-hant-tang/persons.ndjson`
+- `.upstream/wikidata/person-zh-hant-pre-ming/persons.ndjson`
 - `.upstream/wikidata/person-zh-hant-ming/persons.ndjson`
 - `.upstream/wikidata/person-zh-hant-qing/persons.ndjson`
 
 Fallbacks for local dev:
 
-- `packs/wikidata/person-zh-hant-tang/persons.ndjson`
 - `packs/wikidata/person-zh-hant-pre-ming/persons.ndjson`
 - `packs/wikidata/person-zh-hant-ming/persons.ndjson`
 - `packs/wikidata/person-zh-hant-qing/persons.ndjson`
+- `packs/wikidata/person-zh-hant-tang/persons.ndjson` (optional)
 
 Optional extract metadata (bundle version suffix):
 
@@ -79,13 +79,17 @@ If those directories are absent, the bundle still builds with CBDB + DILA only.
 Local compile + bundle:
 
 ```bash
+# Prefer pre-Ming raw for Song/Yuan coverage; priority-1 alone is Tang-heavy
+npm run wikidata:compile-pre-ming
 npm run wikidata:compile-all -- --raw packs/wikidata/raw-zh-hant-priority1/persons.raw.ndjson
 npm run build:packs
 ```
 
-Tarball layout: `authority-packs/wikidata/person-zh-hant-{tang,pre-ming,ming,qing}/persons.ndjson` plus per-pack and bundle `manifest.json` files. LJB maps these to pack IDs `wikidata-persons-tang`, `wikidata-persons-pre-ming`, `wikidata-persons-ming`, `wikidata-persons-qing` (Chinese lifecycle profile only).
+Tarball layout: `authority-packs/wikidata/person-zh-hant-{pre-ming,ming,qing}/persons.ndjson` (plus optional `tang`) and per-pack / bundle `manifest.json` files. LJB’s Chinese lifecycle maps to `wikidata-persons-pre-ming`, `wikidata-persons-ming`, `wikidata-persons-qing`.
 
-The **pre-Ming** pack uses date/P2348 membership (see [`wikidata/README.md`](../wikidata/README.md)); compile it from `raw-zh-hant-pre-ming` after a `--membership pre-ming` extract, or temporarily from priority-1 raw (Tang-heavy until the pre-Ming extract finishes).
+**Song / Yuan:** included in **pre-Ming** (`--membership pre-ming`, death/birth ≤ 1367 or pre-Ming period claims). Separate `person-zh-hant-song` / `person-zh-hant-yuan` directories are obsolete `P27`-only leftovers — do not stage them in the bundle.
+
+The **pre-Ming** pack uses date/P2348 membership (see [`wikidata/README.md`](../wikidata/README.md)); compile it from `raw-zh-hant-pre-ming` after a `--membership pre-ming` extract. Compiling pre-Ming from priority-1 raw alone is Tang-heavy and under-represents Song/Yuan.
 
 ## Tests in CI
 

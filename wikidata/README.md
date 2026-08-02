@@ -43,7 +43,21 @@ Expect **3** persons in `packs/wikidata/person-zh-hant-tang/persons.ndjson` (李
 
 ### 3. Extract from the full dump (one scan, many dynasties)
 
-**Recommended:** extract all **priority-1** Chinese dynasties in **one pass** (唐/宋/元/明/清), then compile each pack separately.
+**Shipped Chinese person packs (what LJB installs):**
+
+| Pack | Role |
+|------|------|
+| `person-zh-hant-pre-ming` | **Song, Yuan, and earlier** (date / P2348 / pre-Ming P27 — see below) |
+| `person-zh-hant-ming` | Ming (`P27`) |
+| `person-zh-hant-qing` | Qing (`P27`) |
+| `person-zh-hant-tang` | Optional Tang-only (`P27`) slice for Tang-focused work |
+
+**Do not ship or rely on** `person-zh-hant-song` / `person-zh-hant-yuan`. Wikidata often omits Song/Yuan on `P27`, so those dynasty-only compiles stay nearly empty. Song/Yuan people belong in **pre-Ming**.
+
+**Recommended dump passes:**
+
+1. **`--membership pre-ming`** — primary extract for everything through 1367 (includes Song/Yuan).  
+2. **`--priority 1`** (唐/宋/元/明/清 on `P27`) — still useful for **Tang / Ming / Qing** `P27` packs; Song/Yuan lines from this path are incomplete.
 
 This scans the entire dump once. **Expect several hours** and high CPU; RAM stays modest (streaming writes + checkpoints).
 
@@ -93,11 +107,11 @@ npm run wikidata:extract -- \
 | `…/extract-meta.json` | Final stats when complete (`entitiesScanned`, `personsMatched`, `dynastyIds`) |
 | `…/extract.checkpoint.json` | Milepost while running or after interrupt (removed when complete) |
 
-**Sanity check (Tang-only):** ~**37k** persons with `--dynasty tang`. Priority-1 master raw should be **much larger** (Song/Ming/Qing each add tens of thousands).
+**Sanity check (Tang-only):** ~**37k** persons with `--dynasty tang`. Priority-1 master raw is larger (Ming/Qing/`P27` Song/Yuan stubs); **full Song/Yuan coverage comes from the pre-Ming extract**, not from `P27` Song/Yuan compiles.
 
 ### 4. Compile tag packs from master raw
 
-One dynasty:
+One dynasty (`P27` filter — Tang / Ming / Qing):
 
 ```bash
 npm run wikidata:compile -- \
@@ -116,11 +130,11 @@ npm run wikidata:compile-all -- \
   --language zh-hant
 ```
 
-Writes `packs/wikidata/person-zh-hant-{tang,song,yuan,ming,qing}/persons.ndjson` — compile filters by `p27` per dynasty.
+Writes `packs/wikidata/person-zh-hant-{tang,song,yuan,ming,qing}/persons.ndjson` filtered by `P27`. **Treat `song` / `yuan` outputs as obsolete leftovers** (usually empty or tiny); delete or ignore them. For Song/Yuan use **§ Pre-Ming pack** below.
 
-### Pre-Ming pack (Song, Yuan, and earlier)
+### Pre-Ming pack (Song, Yuan, and earlier) — **canonical for Song/Yuan**
 
-Wikidata often omits `P27` for Song/Yuan persons. Use **`--membership pre-ming`** to extract a broader raw file, then compile the pre-Ming slice:
+Wikidata often omits `P27` for Song/Yuan persons. Use **`--membership pre-ming`** to extract a broader raw file, then compile the pre-Ming slice. That pack is what LJB’s Chinese lifecycle ships as `wikidata-persons-pre-ming`.
 
 ```bash
 # Full dump — one pass (several hours); resume with --resume
@@ -139,7 +153,7 @@ npm run wikidata:compile-pre-ming -- \
 
 **Membership rules:** include `zh-hant` humans when any of: pre-Ming dynasty on `P27` or `P2348`; or death year ≤ **1367**; or birth year ≤ 1367 when death is missing. At compile time, undated Ming/Qing-only rows are dropped.
 
-You can also compile pre-Ming from an existing priority-1 raw (mostly Tang overlap) while waiting for a pre-Ming extract:
+You can also compile pre-Ming from an existing priority-1 raw while waiting for a dedicated pre-Ming extract — coverage will be **Tang-heavy** and weak on Song/Yuan until the pre-Ming dump pass finishes:
 
 ```bash
 npm run wikidata:compile-pre-ming -- \
@@ -246,6 +260,20 @@ Every Wikidata extract copies listed **external-id properties** from the dump in
 
 Re-extract + recompile packs to populate concordance fields on existing slices.
 
+#### TODO — ship VIAF ↔ Wikidata concordance pack
+
+LJB expects `packs/wikidata/viaf-wikidata-concordance.ndjson` (installed as
+`authority-packs/wikidata/viaf-wikidata-concordance.ndjson`). Build it after
+packs have `metadata.crosswalk.viaf`:
+
+```bash
+# From this repo root — scans all compiled packs under packs/wikidata
+npm run wikidata:viaf-concordance
+```
+
+Full checklist (re-extract → compile → concordance → install): see the
+**TODO — VIAF ↔ Wikidata concordance** section in the [repo README](../README.md).
+
 ---
 
 ## Phase W0 (reference tables) — done
@@ -290,7 +318,7 @@ npm run wikidata:sparql -- ambiguous --dynasty tang --language zh-hant
 # CBDB-aligned name filter stats on a WDQS sample (字/某/行第 dropped)
 npm run wikidata:sparql -- filtered-stats --dynasty tang --language zh-hant
 
-# Count matrix for priority-1 dynasties (Tang, Song, Ming, Qing, …)
+# Count matrix for priority-1 dynasties (Tang / Ming / Qing useful; Song/Yuan P27 thin — use pre-Ming)
 npm run wikidata:sparql -- matrix --language zh-hant
 
 # Place supplement (no dynasty filter yet)

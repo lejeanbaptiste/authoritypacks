@@ -78,7 +78,7 @@ Build strict, reviewable links from Norbert to compiled CBDB, DILA, and/or Wikid
 
 ```bash
 node norbert/concordance.mjs --norbert packs/norbert \
-  --cbdb packs/cbdb --dila packs/dila --wikidata packs/wikidata/person-zh-hant-song \
+  --cbdb packs/cbdb --dila packs/dila --wikidata packs/wikidata/person-zh-hant-pre-ming \
   --out packs/norbert/norbert-concordance.ndjson
 ```
 

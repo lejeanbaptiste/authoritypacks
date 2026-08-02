@@ -50,7 +50,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === import.meta.filename) {
   const root = arg('--root', '.');
   const concordancePath = arg('--concordance', path.join(root, 'packs/norbert/norbert-concordance.ndjson'));
   const norbertPath = path.join(root, 'packs/norbert/persons.ndjson');
-  const sourceDirs = { cbdb: 'packs/cbdb', dila: 'packs/dila', wikidata: 'packs/wikidata/person-zh-hant-song' };
+  const sourceDirs = { cbdb: 'packs/cbdb', dila: 'packs/dila', wikidata: 'packs/wikidata/person-zh-hant-pre-ming' };
   const concordance = readNdjson(concordancePath);
   const norbert = readNdjson(norbertPath);
   const sources = {};

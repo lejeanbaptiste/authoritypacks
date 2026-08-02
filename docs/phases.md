@@ -17,7 +17,7 @@ What each **TEI tag × language** needs, what exists today, and the primary sour
 | Tag | Chinese (zh-Hant) | Japanese (ja) | Tibetan (bo) |
 |-----|-------------------|---------------|--------------|
 | **persName** | **Done** — CBDB + DILA + Wikidata (Tang, Ming, Qing, pre-Ming) | **Done** — NDL persons (~1M); 👤 validate mention forms | **Not started** — Wikidata `bo` (T0) or THL |
-| **placeName** | **Done** — CBDB + DILA + CHGIS (local install); Wikidata supplement optional | **Built** — `ndl-places-ja` SPARQL (~7.8k); 👤 harvest + validate | **Not started** — Wikidata `bo` (T0) or THL |
+| **placeName** | **Done** — CBDB + DILA + CHGIS (local install); Wikidata `place-zh-hant` supplement (opt-in) | **Done** — `ndl-places-ja`; Wikidata `place-ja` supplement (opt-in in LJB) | **Not started** — Wikidata `bo` (T0) or THL |
 | **roleName** (官名) | **Done** — CBDB offices | — | — |
 | **title** (book / work) | **Not built** — Wikidata `work` zh-hant slice | **Partial** — NDL works batch (~900 著作典拠); wired in LJB | **Not started** — Wikidata if count > 0 |
 | **orgName** | **Not built** — Wikidata `org` zh-hant (CBDB 官名 ≠ org) | **Built** — `ndl-orgs-ja` SPARQL (~242k); 👤 harvest + validate | **Not started** — Wikidata if count > 0 |
@@ -33,11 +33,11 @@ Ordered by value for “finish and plug in tagging packs” ([leaf-writer todo](
 | Priority | Pack | Track | Notes |
 |----------|------|-------|-------|
 | 👤 | Validate + GitLab Release | C3, D3, N4, W5 | Bundle when ready — artifacts expire in 30 days |
-| 👤 | Pre-Ming full extract | W2 | `--membership pre-ming` on dump — Song/Yuan via dates (priority-1 raw is Tang-heavy) |
+| 👤 | Pre-Ming extract (done locally) | W2 | Song/Yuan **live in** `person-zh-hant-pre-ming` (date/P2348 membership). Do **not** use empty `person-zh-hant-song` / `-yuan` packs. |
 | 1 | **`ndl-places-ja`** | N | **Built** — run harvest + validate on Japanese corpus |
 | 2 | **`ndl-orgs-ja`** | N | **Built** — run harvest (~242k) + validate on Japanese corpus |
 | 3 | **Wikidata works** | W | **`title`** — `zh-hant` classical titles first, then `ja`; see `kind-queries.json` work allowlist |
-| 4 | **Wikidata places** | W | **Chinese supplement** only (CBDB/DILA/CHGIS lead); expect noise |
+| 4 | **Wikidata places** | W | **Supplement** only — zh-hant + ja wired in LJB tag bomb; CBDB/DILA/CHGIS and NDL lead; expect noise |
 | 5 | **Wikidata orgs** | W | **`orgName`** — zh-hant (NDL ja orgs now built separately) |
 | 6 | **`wikidata-person-ja`** | W | **Supplement** to NDL persons — not a replacement (see [NDL vs Wikidata ja](#ndl-vs-wikidata-ja-persons)) |
 | 7 | **Tibetan persName / placeName** | T | SPARQL count first (`language=bo`); THL outreach if Wikidata too sparse |
@@ -103,7 +103,7 @@ the backend `norbert/` pack compiled from the reduced SQL export.
 | **D**          | D1 compile | **done**                                                      | `packs/dila/` — 49,060 persons, 59,277 places                  |
 | **D**          | D2 overlap | **policy locked** — crosswalk-only auto-merge                 | LJB `authorityOverlap.ts`                                      |
 | **D**          | D3 publish | **CI pipeline ready** — bundled with C3                       | same as C3                                                     |
-| **W** Wikidata | W0–W2      | **done** (persons zh-hant)                                    | Tang/Ming/Qing/pre-Ming packs; places/orgs/works/**ja** not built |
+| **W** Wikidata | W0–W2      | **done** (persons zh-hant)                                    | Shipped persons: **pre-Ming** (incl. Song/Yuan), Ming, Qing (+ optional Tang `P27`); places/orgs/works/ja built locally |
 | **W**          | W3 report  | **built** (Tang)                                              | `reports/w3-ambiguity.csv` — 👤 review                         |
 | **W**          | W5 publish | **wired in bundle script** — Release when ready               | staged under `packs/wikidata/` or `.upstream/wikidata/`        |
 | **N** NDL      | N1         | **done** (persons + works)                                    | ~1M persons, ~900 works — 👤 validate; **places not built**    |
@@ -162,7 +162,6 @@ flowchart LR
     D[DILA compile]
     W[Wikidata extract]
     N[NDL extract]
-    G[GeoNames extract]
   end
   subgraph ljb ["leaf-writer"]
     A[A2–A4 compile + UI]
@@ -173,7 +172,6 @@ flowchart LR
   D --> A
   W --> A
   N --> A
-  G --> A
   A --> M --> R
 ```
 
@@ -186,10 +184,10 @@ flowchart LR
 | **D** | DILA          | Chinese persons, places, crosswalk | D0–D3           | A2–A5                  |
 | **W** | Wikidata      | Long tail, ja/bo/en, works         | W0–W5           | L1–L2                  |
 | **N** | NDL           | Japanese persons/places            | N0–N4           | L3                     |
-| **G** | GeoNames      | Global modern places               | G0–G3           | L4                     |
+| **G** | GeoNames      | ~~Global modern places~~           | **cancelled**   | **won't do**           |
 | **H** | CHGIS         | Historical China places            | H0–H3           | Settings install UI    |
 | **T** | THL / Tibetan | Himalayan places                   | T0–T2           | deferred               |
-| **L** | —             | Install packs, panel UI, tag bomb  | —               | A2–A5, L1–L4           |
+| **L** | —             | Install packs, panel UI, tag bomb  | —               | A2–A5, L1–L3           |
 
 
 ---
@@ -550,11 +548,13 @@ Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 
 
 
-## Track G — GeoNames
+## Track G — GeoNames — **cancelled (2026-08-02)**
 
-Only includes CJKT names as alternates, coverage uneven.
+**Won't do:** no GeoNames dump extract, compile, publish, or LJB pack gating.
+Live GeoNames lookup via LINCS in leaf-writer is unrelated and stays.
 
-
+(Research note only: dump coverage for CJKT alternates is uneven; not a reason
+to revisit unless product priorities change.)
 
 ---
 
@@ -674,7 +674,7 @@ Not implemented in this repo. Phases live in [authority-databases-phases.md](../
 | **L1** Install Wikidata packs      | **wired**   | Chinese lifecycle + auto-tagging checkboxes                                    |
 | **L2** Wikidata in authority panel | **wired**   | Tang / pre-Ming / Ming / Qing off by default                                   |
 | **L3** Japanese / NDL gating       | **wired**   | ja project → NDL persons + works only                                          |
-| **L4** GeoNames gating             | Not started | —                                                                              |
+| **L4** GeoNames gating             | **cancelled** | No GeoNames packs (2026-08-02)                                               |
 
 
 ---
