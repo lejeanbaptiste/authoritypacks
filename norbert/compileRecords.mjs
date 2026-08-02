@@ -108,6 +108,7 @@ function nobleTitleFromRow(row, displayName) {
   const clean = (value) => value == null ? undefined : String(value).trim() || undefined;
   const fief = clean(row[3]);
   const rawPosthumous = clean(row[4]);
+  const posthumousNameAbbr = clean(row[5]);
   let roleName = clean(row[6]);
   let posthumousName = rawPosthumous;
   const label = clean(displayName);
@@ -120,7 +121,12 @@ function nobleTitleFromRow(row, displayName) {
     }
   }
   if (![fief, roleName, posthumousName].some(Boolean)) return null;
-  return { fief, roleName, posthumousName };
+  return {
+    fief,
+    roleName,
+    posthumousName,
+    ...(posthumousNameAbbr ? { posthumousNameAbbr } : {}),
+  };
 }
 
 /**

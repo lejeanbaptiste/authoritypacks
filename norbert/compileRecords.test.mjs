@@ -119,3 +119,19 @@ test('Norbert keeps a princess title out of primary persName while retaining its
     posthumousName: undefined,
   }]);
 });
+
+test('Norbert preserves an approved posthumous abbreviation without inventing one', () => {
+  const [withAbbreviation] = compileNorbertPersons(
+    [[2, '司馬曜', null, null, null]],
+    [], [], [], [], [],
+    [[806, 2, '晉', '晉', '孝武', '武', '帝']],
+  );
+  const [withoutAbbreviation] = compileNorbertPersons(
+    [[3, '劉駿', null, null, null]],
+    [], [], [], [], [],
+    [[695, 3, '宋', '宋', '孝武', null, '帝']],
+  );
+
+  assert.equal(withAbbreviation.metadata.nobleTitles[0].posthumousNameAbbr, '武');
+  assert.equal(withoutAbbreviation.metadata.nobleTitles[0].posthumousNameAbbr, undefined);
+});

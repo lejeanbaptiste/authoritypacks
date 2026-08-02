@@ -33,3 +33,17 @@ test('wrapper compiler skips titles without a person', () => {
   );
   assert.deepEqual(wrappers, []);
 });
+
+test('wrapper compiler emits the approved abbreviated title only when pn_abr is present', () => {
+  const people = new Map([
+    ['2', { primaryName: '司馬曜', names: [{ text: '司馬曜', type: 'primary' }] }],
+  ]);
+  const [wrapper] = compileNorbertPersonWrappers(
+    [[806, 2, '晉', '晉', '孝武', '武', '帝', null, null, null, null, null, 53]],
+    people,
+  );
+
+  assert.ok(wrapper.searchStrings.includes('晉孝武帝司馬曜'));
+  assert.ok(wrapper.searchStrings.includes('晉武帝司馬曜'));
+  assert.ok(wrapper.metadata.wrapper.components.posthumousNameAbbr === '武');
+});

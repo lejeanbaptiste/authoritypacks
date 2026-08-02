@@ -32,6 +32,12 @@ import {
 import { readNdjson, writeNdjson } from '../shared/ndjson.mjs';
 import { writeDateChunks } from '../shared/dateChunks.mjs';
 import { attachAppointmentsToPersons } from '../shared/appointmentIndex.mjs';
+import {
+  applyApprovedNobleTitleFilter,
+  indexApprovedNobleTitleRules,
+  loadApprovedNobleTitleRules,
+  nobleTitleCandidatesFromApprovedMatches,
+} from '../shared/nobleTitleFilter.mjs';
 
 /** Compiled Wikidata packs (optional — staged locally like NDL). `file` is the
  * NDJSON basename compile.mjs writes for that kind (persons/places/orgs/works). */
@@ -388,6 +394,52 @@ console.log(
   `  ${officeConcordance.length} office matches; ${integratedOffices.applied} links applied`,
 );
 
+// The curated noble-title include is applied only after source compilation and
+// concordance integration, so every shipped authority pack follows one review
+// decision. It replaces exact approved person/office name surfaces with a
+// separate structural-title pack; primary/display labels remain untouched.
+console.log('Applying reviewed noble-title filter…');
+const nobleTitleIncludePath = path.join(repoRoot, 'noble-titles/approved-include.ndjson');
+const nobleTitleRules = indexApprovedNobleTitleRules(loadApprovedNobleTitleRules(nobleTitleIncludePath));
+const filteredTitleMatches = [];
+const filterPackNames = async (dir) => {
+  for (const entry of await fsp.readdir(dir, { withFileTypes: true })) {
+    const target = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      await filterPackNames(target);
+      continue;
+    }
+    if (!entry.isFile() || !entry.name.endsWith('.ndjson')) continue;
+    if (/concordance|appointments|office-relations|person-wrappers|wiki-nt-links/.test(entry.name)) continue;
+    const rows = readNdjson(target);
+    if (!rows.length || !rows.every((row) => row.source && row.authorityId && row.searchStrings)) continue;
+    const applied = applyApprovedNobleTitleFilter(rows, nobleTitleRules);
+    filteredTitleMatches.push(...applied.matches);
+    writeNdjson(target, applied.candidates);
+  }
+};
+await filterPackNames(packsDir);
+const derivedNobleTitles = nobleTitleCandidatesFromApprovedMatches(filteredTitleMatches);
+const nobleTitlePackDir = path.join(packsDir, 'noble-title-filter');
+await fsp.mkdir(nobleTitlePackDir, { recursive: true });
+writeNdjson(path.join(nobleTitlePackDir, 'noble-titles.ndjson'), derivedNobleTitles);
+await fsp.copyFile(nobleTitleIncludePath, path.join(nobleTitlePackDir, 'approved-include.ndjson'));
+await fsp.writeFile(
+  path.join(nobleTitlePackDir, 'manifest.json'),
+  `${JSON.stringify({
+    id: 'noble-title-filter',
+    source: 'LJB curated noble-title filter',
+    buildToolVersion: '0.1.0',
+    compiledAt: new Date().toISOString(),
+    files: {
+      'noble-titles.ndjson': { entityCount: derivedNobleTitles.length, stringCount: derivedNobleTitles.length },
+      'approved-include.ndjson': { reviewedRuleCount: nobleTitleRules.size },
+    },
+    policy: { mode: 'exact-reviewed-include', sourceNameFields: ['persName', 'roleName'] },
+  }, null, 2)}\n`,
+);
+console.log(`  ${nobleTitleRules.size} approved rules; ${filteredTitleMatches.length} source matches; ${derivedNobleTitles.length} title candidates`);
+
 const patchManifest = async (sourceId, extras) => {
   const manifestPath = path.join(packsDir, sourceId, 'manifest.json');
   const manifest = JSON.parse(await fsp.readFile(manifestPath, 'utf8'));
@@ -519,7 +571,7 @@ const writeLargePackDateChunks = async (dir) => {
 await writeLargePackDateChunks(packsDir);
 
 const packFiles = [];
-const bundleSourceIds = ['cbdb', 'dila', 'norbert'];
+const bundleSourceIds = ['cbdb', 'dila', 'norbert', 'noble-title-filter'];
 if (includeChgis) bundleSourceIds.push('chgis');
 if (includeWikidata) bundleSourceIds.push('wikidata');
 if (includeNdl) bundleSourceIds.push('ndl');

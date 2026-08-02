@@ -30,6 +30,7 @@ function titleParts(row) {
     dynasty: clean(row[2]),
     fief: clean(row[3]),
     posthumous: clean(row[4]),
+    posthumousAbbr: clean(row[5]),
     rank: clean(row[6]),
     temple: clean(row[7]),
     placeId: clean(row[9]),
@@ -63,12 +64,17 @@ export function compileNorbertPersonWrappers(titleRows, peopleById) {
     if (parts.personId == null || !personalName) continue;
 
     const title = [parts.posthumous, parts.rank].filter(Boolean).join('');
+    const abbreviatedTitle = [parts.posthumousAbbr, parts.rank].filter(Boolean).join('');
     const strings = [];
     for (const name of personalNames) {
       // Norbert's useful title/person forms, from longest to shorter forms.
       const dynastyAndFief = parts.dynasty === parts.fief ? [parts.dynasty] : [parts.dynasty, parts.fief];
       add(strings, [...dynastyAndFief, title, name].filter(Boolean).join(''));
       add(strings, [parts.fief, title, name].filter(Boolean).join(''));
+      if (abbreviatedTitle) {
+        add(strings, [...dynastyAndFief, abbreviatedTitle, name].filter(Boolean).join(''));
+        add(strings, [parts.fief, abbreviatedTitle, name].filter(Boolean).join(''));
+      }
       add(strings, [...dynastyAndFief, parts.rank, name].filter(Boolean).join(''));
       add(strings, [parts.fief, parts.rank, name].filter(Boolean).join(''));
     }
@@ -90,6 +96,7 @@ export function compileNorbertPersonWrappers(titleRows, peopleById) {
             ...(parts.fief ? { fief: parts.fief } : {}),
             ...(parts.rank ? { roleName: parts.rank } : {}),
             ...(parts.posthumous ? { posthumousName: parts.posthumous } : {}),
+            ...(parts.posthumousAbbr ? { posthumousNameAbbr: parts.posthumousAbbr } : {}),
             ...(parts.temple ? { templeName: parts.temple } : {}),
             persName: personalName,
           },

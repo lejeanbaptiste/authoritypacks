@@ -124,12 +124,13 @@ export function lookupNorbertPerson(db, personId) {
   });
 
   const nobleTitles = db.prepare(`
-    SELECT ind, dyn, fief, pn, nt, tn, dyn_id
+    SELECT ind, dyn, fief, pn, pn_abr, nt, tn, dyn_id
     FROM person_nt WHERE person_id = ?
   `).all(id).flatMap((t) => {
     const fief = t.fief == null ? '' : String(t.fief).trim();
     const rank = t.nt == null ? '' : String(t.nt).trim();
     const posthumous = t.pn == null ? '' : String(t.pn).trim();
+    const posthumousNameAbbr = t.pn_abr == null ? '' : String(t.pn_abr).trim();
     const temple = t.tn == null ? '' : String(t.tn).trim();
     if (![fief, rank, posthumous, temple].some(Boolean)) return [];
     return [{
@@ -138,6 +139,7 @@ export function lookupNorbertPerson(db, personId) {
       fief: fief || undefined,
       rank: rank || undefined,
       posthumous: posthumous || undefined,
+      posthumousNameAbbr: posthumousNameAbbr || undefined,
       temple: temple || undefined,
     }];
   });
