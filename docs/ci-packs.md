@@ -7,7 +7,7 @@ Pipeline stages: **test** → **build-packs**.
 | Artifact | Description |
 |----------|-------------|
 | `dist/packs-index.json` | Bundle version, policy, upstream pins, per-file sha256, tarball hash |
-| `dist/authority-packs-{version}.tar.gz` | `authority-packs/cbdb/` + `authority-packs/dila/` and, when staged, `authority-packs/wikidata/` + `authority-packs/ndl/` ready for LJB |
+| `dist/authority-packs-{version}.tar.gz` | `authority-packs/cbdb/` + `authority-packs/dila/` and, when staged, `authority-packs/wikidata/` + `authority-packs/ndl/`, plus the curated `authority-packs/noble-title-filter/` policy pack, ready for LJB |
 | `release/authority-reference-person-*.zip` | Sibling of tagging tarballs: `norbert.sqlite3` + `cbdb-person.sqlite3` + `manifest.json` (A6) |
 | `release/reference-index.json` | Version + sha256 for LJB reference download |
 
@@ -25,10 +25,11 @@ CBDB and DILA are fetched automatically. NDL is different: the person harvest is
 
 `build-pack-bundle.mjs` includes the public reduced Norbert authority export, compiles the Norbert pack, and builds/integrates `norbert/concordance.ndjson` before packaging. The reduced SQL source is pinned in `upstream/pins.json` and stored at `norbert_public/norbert-authority.sql`; the full Norbert dump remains private and is never required by CI.
 
-The Wikipedia-reviewed noble-title asset used by the Norbert plugin is not part
-of this CI tarball. It is bundled inside `plugin-norbert` as
-`data/wiki-nt-links.ndjson`, where it supports runtime person-wrapper /
-noble-title disambiguation without adding hypothetical rows to `entities.xml`.
+The curated noble-title filter is part of this tarball at
+`authority-packs/noble-title-filter/`. It is generated from the reviewed table
+at `noble-titles/reports/noble-title-authority-review.csv`; only accepted rows
+are emitted. The separate Wikipedia-reviewed `wiki-nt-links.ndjson` asset
+remains bundled inside `plugin-norbert` for person-wrapper disambiguation.
 
 `build-pack-bundle.mjs` now includes NDL when these raw files already exist:
 

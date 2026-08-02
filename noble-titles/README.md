@@ -8,14 +8,34 @@ reviewed boundary between source data and LJB's structural noble-title model.
 ## Review workflow
 
 1. Run `npm run audit:noble-titles` from `authority extraction` after compiling
-   or staging packs.  It writes `reports/noble-title-authority-review.csv`.
-2. Review the rows.  The detector is intentionally generous; a row in the CSV
-   is **not** a decision.
-3. For each safe decision, add a record to `approved-include.ndjson` (one JSON
-   object per line).  A decision must name an exact surface and complete enough
-   components to generate legal TEI.
-4. Run the audit again, then build packs.  The build removes the approved
-   surface from person/office name matching and emits a title candidate instead.
+   or staging packs.  It writes the review table at
+   `reports/noble-title-authority-review.csv`.
+2. Review the rows.  `status` is the decision (`accepted`, `deferred`, or
+   `rejected`); `suggestedAction` records the accepted structural interpretation.
+3. For accepted rows, the compiler converts the table into
+   `approved-include.ndjson` (one exact source/surface rule per row). Deferred
+   and rejected rows are retained in the CSV but never enter the filter.
+4. Build packs. The build removes accepted surfaces from person/office name
+   matching and emits a title candidate instead.
+
+The current validated table records three explicit policy decisions:
+
+- accepted wrapper-shaped rows with no actual trailing person name are changed
+  to `nobleTitle`;
+- accepted rows whose action names a trailing given/full name are normalized to
+  `personWrapper`, since the person name must remain outside the title;
+- simple role-only titles use `nobleTitle, role-only`, with the complete surface
+  retained as the role component (for example `太子`, `皇后`, or `公主`);
+- `special` and `husbandPN` parses are `deferred` until their components can be
+  modeled without guessing.
+
+The table is the review authority; this README documents how its decisions are
+compiled, rather than duplicating the decision list.
+
+The current release compiles 2,500 source-scoped accepted rules (1,773 distinct
+surfaces) into `dist/authority-packs/noble-title-filter/`. The bundle contains
+`noble-titles.ndjson` for runtime replacement, `approved-include.ndjson` for
+provenance/rebuilds, and a manifest describing the exact-match policy.
 
 The include is an allow-list, never a regular-expression blacklist.  Do not
 approve bare ranks such as `王`, `后`, or `帝`; they remain legitimate role

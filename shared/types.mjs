@@ -60,7 +60,7 @@
  * @property {string} [sourceRef]
  * @property {string} [sourcePages]
  * @property {string} [note]
- * @property {{ fief?: string, roleName?: string, posthumousName?: string, posthumousNameAbbr?: string }[]} [nobleTitles]
+ * @property {{ dynasty?: string, fief?: string, familyName?: string, roleName?: string, posthumousName?: string, posthumousNameAbbr?: string }[]} [nobleTitles]
  * @property {AppointmentRecord[]} [appointments] Person appointment assertions
  *   retained for disambiguation and entity import. Deliberately omits dates
  *   and biographical order for now.

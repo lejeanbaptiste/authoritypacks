@@ -47,6 +47,7 @@ export function loadApprovedNobleTitleRules(filePath) {
       components: {
         ...(clean(components.dynasty) ? { dynasty: clean(components.dynasty) } : {}),
         ...(clean(components.fief) ? { fief: clean(components.fief) } : {}),
+        ...(clean(components.familyName) ? { familyName: clean(components.familyName) } : {}),
         roleName,
         ...(clean(components.posthumousName) ? { posthumousName: clean(components.posthumousName) } : {}),
         ...(clean(components.posthumousNameAbbr) ? { posthumousNameAbbr: clean(components.posthumousNameAbbr) } : {}),
@@ -61,8 +62,9 @@ export function loadApprovedNobleTitleRules(filePath) {
 export function indexApprovedNobleTitleRules(rules) {
   const index = new Map();
   for (const rule of rules) {
-    if (index.has(rule.surface)) throw new Error(`Duplicate noble-title include surface: ${rule.surface}`);
-    index.set(rule.surface, rule);
+    const list = index.get(rule.surface) ?? [];
+    list.push(rule);
+    index.set(rule.surface, list);
   }
   return index;
 }
@@ -73,8 +75,8 @@ function ruleApplies(rule, candidate) {
 
 /** Return the exact reviewed rule for this source/surface, if any. */
 export function approvedNobleTitleRule(index, candidate, surface) {
-  const rule = index.get(clean(surface));
-  return rule && ruleApplies(rule, candidate) ? rule : undefined;
+  const rules = index.get(clean(surface)) ?? [];
+  return rules.find((rule) => ruleApplies(rule, candidate));
 }
 
 /**
@@ -116,6 +118,7 @@ export function nobleTitleCandidatesFromApprovedMatches(matches) {
       dynasty: title.dynasty,
       nobleTitle: {
         ...(title.fief ? { fief: title.fief } : {}),
+        ...(title.familyName ? { familyName: title.familyName } : {}),
         roleName: title.roleName,
         ...(title.posthumousName ? { posthumousName: title.posthumousName } : {}),
         ...(title.posthumousNameAbbr ? { posthumousNameAbbr: title.posthumousNameAbbr } : {}),
@@ -129,6 +132,7 @@ export function nobleTitleCandidatesFromApprovedMatches(matches) {
         components: {
           ...(title.dynasty ? { nationality: title.dynasty } : {}),
           ...(title.fief ? { fief: title.fief } : {}),
+          ...(title.familyName ? { familyName: title.familyName } : {}),
           ...(title.posthumousName ? { posthumousName: title.posthumousName } : {}),
           ...(title.posthumousNameAbbr ? { posthumousNameAbbr: title.posthumousNameAbbr } : {}),
           roleName: title.roleName,

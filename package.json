@@ -42,6 +42,7 @@
     "build:reference": "node scripts/build-reference-bundle.mjs",
     "audit:origins": "node scripts/audit-origins.mjs",
     "audit:noble-titles": "node scripts/audit-noble-titles.mjs",
+    "compile:noble-title-include": "node scripts/compile-noble-title-include.mjs",
     "concordance:offices": "node norbert/officeConcordance.mjs",
     "compile:chgis": "node chgis/compile.mjs",
     "extract:chgis-places": "node chgis/extractPlacesTsv.mjs",
