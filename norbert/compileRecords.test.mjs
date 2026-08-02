@@ -69,3 +69,53 @@ test('Norbert nationalities union person_dynasties with extra nat_raw court_id p
   const han = person.metadata.nationality.find((n) => n.label === '漢');
   assert.equal(han.evidence, '漢人');
 });
+
+test('Norbert keeps an empress headword out of personal-name parsing and preserves its full title', () => {
+  const [person] = compileNorbertPersons(
+    [[9547, '孝元皇后', null, null, null]],
+    [[7073, 9547, '孝元皇后', 15]],
+    [], [], [], [],
+    [[1830, 9547, null, null, null, null, '后']],
+  );
+
+  assert.equal(person.primaryName, '孝元皇后');
+  assert.equal(person.displayName, '孝元皇后');
+  assert.deepEqual(person.names, []);
+  assert.deepEqual(person.metadata.nobleTitles, [{
+    fief: undefined,
+    roleName: '皇后',
+    posthumousName: '孝元',
+  }]);
+});
+
+test('Norbert accepts can_name as a primary persName only when 姓 and 名 reconstruct it', () => {
+  const [person] = compileNorbertPersons(
+    [[1, '王安石', null, null, null]],
+    [[1, 1, '王', 0], [2, 1, '安石', 1]],
+    [], [], [], [], [],
+  );
+  assert.deepEqual(person.names, [
+    { text: '王安石', type: 'primary' },
+    { text: '王', type: 'family' },
+    { text: '安石', type: 'given' },
+  ]);
+});
+
+test('Norbert keeps a princess title out of primary persName while retaining its supplied surname and title', () => {
+  const [person] = compileNorbertPersons(
+    [[13450, '海鹽公主', null, null, null]],
+    [[30739, 13450, '蕭', 0]],
+    [], [], [], [],
+    [[1946, 13450, '梁', '海鹽', null, null, '公主']],
+  );
+
+  assert.equal(person.primaryName, '海鹽公主');
+  assert.equal(person.displayName, '海鹽公主');
+  assert.deepEqual(person.names, [{ text: '蕭', type: 'family' }]);
+  assert.equal(person.names.some((name) => name.type === 'primary'), false);
+  assert.deepEqual(person.metadata.nobleTitles, [{
+    fief: '海鹽',
+    roleName: '公主',
+    posthumousName: undefined,
+  }]);
+});

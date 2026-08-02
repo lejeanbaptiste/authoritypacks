@@ -6,7 +6,7 @@ test('person wrapper compiler preserves separate noble-title components', () => 
   const people = new Map([
     ['7', {
       primaryName: '範',
-      names: [{ text: '范', type: 'variant' }],
+      names: [{ text: '范', type: 'primary' }],
     }],
   ]);
   const [wrapper] = compileNorbertPersonWrappers(
@@ -15,12 +15,12 @@ test('person wrapper compiler preserves separate noble-title components', () => 
   );
 
   assert.equal(wrapper.authorityId, 'noble-title:19');
-  assert.deepEqual(wrapper.searchStrings, ['梁鄱陽王範', '鄱陽王範', '梁鄱陽王范', '鄱陽王范']);
+  assert.deepEqual(wrapper.searchStrings, ['梁鄱陽王范', '鄱陽王范']);
   assert.deepEqual(wrapper.metadata.wrapper.components, {
     nationality: '梁',
     fief: '鄱陽',
     roleName: '王',
-    persName: '範',
+    persName: '范',
   });
   assert.equal(wrapper.metadata.wrapper.fiefPlaceId, 'place-4');
   assert.equal(wrapper.metadata.wrapper.personId, 'person-7');

@@ -60,6 +60,7 @@
  * @property {string} [sourceRef]
  * @property {string} [sourcePages]
  * @property {string} [note]
+ * @property {{ fief?: string, roleName?: string, posthumousName?: string }[]} [nobleTitles]
  * @property {AppointmentRecord[]} [appointments] Person appointment assertions
  *   retained for disambiguation and entity import. Deliberately omits dates
  *   and biographical order for now.
@@ -110,7 +111,9 @@
  * @property {string} source
  * @property {string} authorityId
  * @property {EntityKind} kind
- * @property {string} primaryName
+ * @property {string} primaryName Stable authority headword / database title.
+ * @property {string} [displayName] Surface shown when LJB creates or labels an
+ * entity. Sources without a distinction use `primaryName` as the fallback.
  * @property {string[]} searchStrings
  * @property {NameEntry[]} [names] Typed names, when the source preserves name
  *   categories (currently CBDB only — see `cbdb/constants.mjs`

@@ -71,6 +71,7 @@ export async function compileNorbertPack(options = {}) {
     tables.person_dynasties,
     tables.nat_raw,
     tables.person_origin,
+    tables.person_nt,
   );
   const offices = compileNorbertOffices(tables.office);
   const appointments = compileNorbertAppointments(tables.officeholding_raw, offices);

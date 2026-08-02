@@ -99,6 +99,31 @@ function collectNationalityPairs(personDynastyRows, natRawRows) {
 }
 
 /**
+ * Norbert sometimes records an empress's rank as the bare `后` while the
+ * person headword carries the complete posthumous title (e.g. 孝元皇后).
+ * Preserve the whole title structurally instead of treating the headword as a
+ * personal name.
+ */
+function nobleTitleFromRow(row, displayName) {
+  const clean = (value) => value == null ? undefined : String(value).trim() || undefined;
+  const fief = clean(row[3]);
+  const rawPosthumous = clean(row[4]);
+  let roleName = clean(row[6]);
+  let posthumousName = rawPosthumous;
+  const label = clean(displayName);
+  if (!fief && !posthumousName && label && roleName) {
+    // `后` is the abbreviated database rank; 皇后 is the title actually
+    // carried by the canonical display/headword.
+    if (roleName === '后' && label.endsWith('皇后')) roleName = '皇后';
+    if (label.endsWith(roleName) && label.length > roleName.length) {
+      posthumousName = label.slice(0, -roleName.length) || undefined;
+    }
+  }
+  if (![fief, roleName, posthumousName].some(Boolean)) return null;
+  return { fief, roleName, posthumousName };
+}
+
+/**
  * @param {any[][]} personRows
  * @param {any[][]} nameRows
  * @param {any[][] | Record<string, { zh: string, en?: string, startYear?: number, endYear?: number }>} dynastyLabelsOrRows
@@ -114,6 +139,7 @@ export function compileNorbertPersons(
   personDynastyRows,
   natRawRows,
   originRows = [],
+  titleRows = [],
 ) {
   const dynasties = dynastyLookup(dynastyLabelsOrRows);
   const { pairsByPerson, courtCountsByPerson } = collectNationalityPairs(
@@ -155,6 +181,15 @@ export function compileNorbertPersons(
     list.push({ type, value: name });
   }
 
+  const titlesByPerson = new Map();
+  for (const row of titleRows) {
+    const personId = row[1];
+    if (personId == null) continue;
+    const list = titlesByPerson.get(personId) ?? [];
+    list.push(row);
+    titlesByPerson.set(personId, list);
+  }
+
   /** @type {AuthorityCandidate[]} */
   const out = [];
   for (const row of personRows) {
@@ -168,15 +203,25 @@ export function compileNorbertPersons(
     // Skip rows with no usable canonical name and no altname rows at all.
     if (!canNameUsable && altRows.length === 0) continue;
 
+    const familyName = altRows.find((entry) => entry.type === 0)?.value;
+    const givenName = altRows.find((entry) => entry.type === 1)?.value;
+    const structuredPersonalName = normalizeSurface(`${familyName ?? ''}${givenName ?? ''}`);
+    // `can_name` is a persName only when Norbert's separate 姓 and 名 fields
+    // reconstruct it exactly.  Otherwise it is retained as the record's
+    // display/headword (often a title) but never injected into names[].
+    const canNameIsPersonalName =
+      canNameUsable && Boolean(familyName && givenName) && structuredPersonalName === canNameNorm;
     const personNameInput = {
-      // Empty can_name when the dump stored the missing-value token "nan".
-      can_name: canNameUsable ? canNameNorm : '',
+      can_name: canNameIsPersonalName ? canNameNorm : '',
       names: altRows,
     };
     // Intake names keep single-character 姓/名 and other typed rows;
     // searchStrings alone apply tag-bomb length / block filters.
-    const nameEntriesRaw = personNameEntriesFromNorbert(personNameInput);
-    if (!nameEntriesRaw.length) continue;
+    const nameEntriesRaw = personNameEntriesFromNorbert(personNameInput).filter(
+      // An unstructured row duplicating a title headword is not evidence that
+      // the title is a persName.  `displayName` retains it for the UI.
+      (entry) => canNameIsPersonalName || entry.text !== canNameNorm,
+    );
     const searchStrings = personSearchStringsFromNorbert(personNameInput);
     let primaryName =
       canNameUsable
@@ -237,13 +282,21 @@ export function compileNorbertPersons(
     });
 
     const sourceDescription = description == null ? undefined : String(description).trim() || undefined;
+    const nobleTitles = (titlesByPerson.get(id) ?? [])
+      .map((titleRow) => nobleTitleFromRow(titleRow, primaryName))
+      .filter(Boolean);
 
     out.push({
       source: SOURCE,
       authorityId: formatNorbertAuthorityValue('person', id),
       kind: 'person',
       primaryName,
-      searchStrings,
+      // Norbert's can_name is the source's chosen display surface. It may be
+      // a noble title, so it is deliberately separate from typed persName.
+      displayName: primaryName,
+      // A title headword remains searchable, but is intentionally absent
+      // from names[] unless typed 姓 + 名 proved it is a personal name.
+      searchStrings: searchStrings.length ? searchStrings : [primaryName],
       names: nameEntries,
       metadata: {
         dynasty: dynastyLabel,
@@ -259,6 +312,7 @@ export function compileNorbertPersons(
         }),
         // Plain Norbert `person.description` for entity-DB one-line notes.
         sourceDescription,
+        ...(nobleTitles.length ? { nobleTitles } : {}),
       },
     });
   }

@@ -151,6 +151,7 @@ export function lookupNorbertPerson(db, personId) {
     authorityId: formatNorbertAuthorityValue('person', id),
     kind: 'person',
     primaryName: row.can_name,
+    displayName: row.can_name,
     searchStrings: names.map((n) => n.text),
     names,
     metadata: {

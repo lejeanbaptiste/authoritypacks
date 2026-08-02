@@ -49,10 +49,16 @@ export function compileNorbertPersonWrappers(titleRows, peopleById) {
   for (const row of titleRows) {
     const parts = titleParts(row);
     const person = peopleById.get(parts.personId) ?? peopleById.get(String(parts.personId));
-    const personalNames = [...new Set([
-      person?.primaryName,
-      ...(person?.names ?? []).map((name) => name.text),
-    ].filter(Boolean).map(clean))];
+    // A wrapper's final component must be an asserted persName.  In
+    // particular, do not append `person.primaryName`: Norbert's headword can
+    // be an empress title rather than a name.
+    const personalNames = [...new Set(
+      (person?.names ?? [])
+        .filter((name) => name.type === 'primary' || name.type === 'wrapper-person')
+        .map((name) => name.text)
+        .filter(Boolean)
+        .map(clean),
+    )];
     const personalName = personalNames[0];
     if (parts.personId == null || !personalName) continue;
 
