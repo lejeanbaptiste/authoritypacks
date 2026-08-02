@@ -4,6 +4,7 @@
 
 import {
   claimEntityIds,
+  entityHasPackLabel,
   labelsForPackLanguage,
   rawPersonFromEntity,
   timeClaimYear,
@@ -41,10 +42,16 @@ function baseRawFields(entity, labelLangOrLangs) {
 export function rawEntityFromKind(entity, kindId, labelLangOrLangs) {
   const labelLangs = Array.isArray(labelLangOrLangs) ? labelLangOrLangs : [labelLangOrLangs];
   if (kindId === 'person') {
-    const primary = labelLangs.find((lang) => entity?.labels?.[lang]?.value);
-    if (!primary) return null;
-    const raw = rawPersonFromEntity(entity, primary);
-    if (raw) raw.nationality = claimEntityIds(entity, 'P27').map((qid) => ({ qid, id: qid, label: qid }));
+    const labels = labelsForPackLanguage(entity, labelLangs);
+    if (!labels || !entityHasPackLabel(entity, labelLangs)) return null;
+    const raw = rawPersonFromEntity(entity, labels.labelLang);
+    if (raw) {
+      raw.nationality = claimEntityIds(entity, 'P27').map((qid) => ({
+        qid,
+        id: qid,
+        label: qid,
+      }));
+    }
     return raw;
   }
 

@@ -47,11 +47,63 @@ export function stringClaimValue(entity, propertyId) {
 }
 
 /**
+ * Wikidata sitelink site for a pack/API label language.
+ * Chinese variants share zhwiki (titles are often traditional).
+ * @param {string} labelLang
+ * @returns {string | null}
+ */
+export function wikipediaSiteForLabelLang(labelLang) {
+  const key = String(labelLang ?? '')
+    .trim()
+    .toLowerCase();
+  if (!key) return null;
+  if (key === 'ja') return 'jawiki';
+  if (key === 'ko') return 'kowiki';
+  if (key === 'bo') return 'bowiki';
+  if (key === 'en') return 'enwiki';
+  if (key === 'zh' || key.startsWith('zh-') || key === 'lzh') return 'zhwiki';
+  return null;
+}
+
+/**
+ * Strip Wikipedia disambiguation suffixes: `崔諲 (十六國到劉宋)` → `崔諲`.
+ * @param {string} title
+ */
+export function cleanWikipediaSitelinkTitle(title) {
+  return String(title ?? '')
+    .normalize('NFC')
+    .trim()
+    .replace(/_?\([^)]*\)\s*$/u, '')
+    .replace(/_?（[^）]*）\s*$/u, '')
+    .trim();
+}
+
+/**
+ * Article title from sitelinks when Wikidata has no label in `labelLang`.
+ * Many historical Chinese people only have an English label + zhwiki sitelink
+ * (e.g. Q45421892 → 崔諲).
+ * @param {unknown} entity
+ * @param {string} labelLang
+ * @returns {string | null}
+ */
+export function wikipediaTitleFromSitelinks(entity, labelLang) {
+  const site = wikipediaSiteForLabelLang(labelLang);
+  if (!site) return null;
+  const rawTitle = entity?.sitelinks?.[site]?.title;
+  if (typeof rawTitle !== 'string' || !rawTitle.trim()) return null;
+  const cleaned = cleanWikipediaSitelinkTitle(rawTitle);
+  return cleaned || null;
+}
+
+/**
  * @param {unknown} entity
  * @param {string} labelLang
  */
 export function labelsForLanguage(entity, labelLang) {
-  const primaryLabel = entity?.labels?.[labelLang]?.value;
+  let primaryLabel = entity?.labels?.[labelLang]?.value;
+  if (!primaryLabel) {
+    primaryLabel = wikipediaTitleFromSitelinks(entity, labelLang) ?? undefined;
+  }
   if (!primaryLabel) return null;
 
   /** @type {string[]} */
@@ -62,6 +114,16 @@ export function labelsForLanguage(entity, labelLang) {
 
   const native = stringClaimValue(entity, 'P1705');
   if (native && native !== primaryLabel) aliases.push(native);
+
+  // When the primary came from a sitelink, keep any real Wikidata label in another
+  // Chinese variant as an alias if present.
+  if (!entity?.labels?.[labelLang]?.value) {
+    for (const lang of ['zh-hant', 'zh-tw', 'zh-hk', 'zh-hans', 'zh']) {
+      if (lang === labelLang) continue;
+      const alt = entity?.labels?.[lang]?.value;
+      if (alt && alt !== primaryLabel) aliases.push(alt);
+    }
+  }
 
   return {
     primaryLabel,
@@ -84,7 +146,10 @@ export function labelsForPackLanguage(entity, labelLangs) {
 
 /** @param {unknown} entity @param {string[]} labelLangs */
 export function entityHasPackLabel(entity, labelLangs) {
-  return labelLangs.some((lang) => Boolean(entity?.labels?.[lang]?.value));
+  return labelLangs.some(
+    (lang) =>
+      Boolean(entity?.labels?.[lang]?.value) || Boolean(wikipediaTitleFromSitelinks(entity, lang)),
+  );
 }
 
 /**
@@ -106,7 +171,7 @@ export function entityMatchesPersonSlice(entity, opts) {
   if (opts.requireHuman !== false && !p31.includes('Q5')) return false;
   if (p31.includes('Q4167410')) return false;
 
-  if (!entity?.labels?.[opts.labelLang]?.value) return false;
+  if (!entityHasPackLabel(entity, [opts.labelLang])) return false;
 
   if (opts.membership === 'country-p27') {
     const p27 = claimEntityIds(entity, 'P27');

@@ -30,6 +30,7 @@ import {
   integrateOfficeConcordance,
 } from '../norbert/officeConcordance.mjs';
 import { readNdjson, writeNdjson } from '../shared/ndjson.mjs';
+import { writeDateChunks } from '../shared/dateChunks.mjs';
 import { attachAppointmentsToPersons } from '../shared/appointmentIndex.mjs';
 
 /** Compiled Wikidata packs (optional — staged locally like NDL). `file` is the
@@ -485,6 +486,37 @@ if (includeWikidata) {
     },
   });
 }
+
+// Partition every large, candidate-shaped pack after all concordance work has
+// finished. The runtime remains compatible with single-file packs; this only
+// adds a manifest-described date layout where it will buy us memory/IPC time.
+const DATE_CHUNK_THRESHOLD_BYTES = 10 * 1024 * 1024;
+const writeLargePackDateChunks = async (dir) => {
+  for (const entry of await fsp.readdir(dir, { withFileTypes: true })) {
+    const target = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      await writeLargePackDateChunks(target);
+      continue;
+    }
+    if (!entry.isFile() || entry.name !== 'manifest.json') continue;
+    const manifest = JSON.parse(await fsp.readFile(target, 'utf8'));
+    let changed = false;
+    for (const [name, info] of Object.entries(manifest.files ?? {})) {
+      const packPath = path.join(dir, name);
+      if (!name.endsWith('.ndjson') || !fs.existsSync(packPath)) continue;
+      if ((await fsp.stat(packPath)).size < DATE_CHUNK_THRESHOLD_BYTES) continue;
+      const rows = readNdjson(packPath);
+      if (!rows.length || !rows.every((row) => row.source && row.authorityId && row.searchStrings)) continue;
+      info.dateChunks = writeDateChunks(dir, name, rows, {
+        includeUndatedForLimit: /places?\.ndjson$/i.test(name),
+      });
+      changed = true;
+    }
+    if (changed) await fsp.writeFile(target, `${JSON.stringify(manifest, null, 2)}\n`);
+  }
+};
+
+await writeLargePackDateChunks(packsDir);
 
 const packFiles = [];
 const bundleSourceIds = ['cbdb', 'dila', 'norbert'];

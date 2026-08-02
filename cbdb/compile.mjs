@@ -10,6 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 import { writePackFile } from '../shared/ndjson.mjs';
+import { writeDateChunks } from '../shared/dateChunks.mjs';
 import { compileCbdb } from './compileRecords.mjs';
 import { ALTNAME_EXCLUDE } from './constants.mjs';
 import { attachAppointmentsToPersons } from '../shared/appointmentIndex.mjs';
@@ -44,6 +45,7 @@ export function compileCbdbPack(options = {}) {
 
     fs.mkdirSync(outputDir, { recursive: true });
     const personOut = writePackFile(outputDir, 'persons.ndjson', persons);
+    const personDateChunks = writeDateChunks(outputDir, 'persons.ndjson', persons);
     const placeOut = writePackFile(outputDir, 'places.ndjson', places);
     const officeOut = writePackFile(outputDir, 'offices.ndjson', offices);
     const appointmentOut = writePackFile(outputDir, 'appointments.ndjson', appointments);
@@ -74,6 +76,7 @@ export function compileCbdbPack(options = {}) {
         'persons.ndjson': {
           entityCount: personOut.count,
           stringCount: stringCount(persons),
+          dateChunks: personDateChunks,
           originAssertionCount: persons.reduce((n, p) => n + (p.metadata?.origin?.length ?? 0), 0),
         },
         'places.ndjson': { entityCount: placeOut.count, stringCount: stringCount(places) },

@@ -11,6 +11,7 @@ This repo holds **extract → compile → publish** tooling. The **matcher, revi
 | [**docs/phases.md**](docs/phases.md) | Master roadmap — all sources, human checkpoints |
 | [**wikidata/README.md**](wikidata/README.md) | Wikidata config tables + validator (W0 done) |
 | [**docs/extraction-todo.md**](docs/extraction-todo.md) | Current extraction, re-extraction, concordance, and toponym checklist |
+| [**CHANGELOG.md**](CHANGELOG.md) | Shipped compiler and pack-format changes |
 
 Leaf-writer companions (integration, not extraction):
 
@@ -83,7 +84,7 @@ See [**docs/phases.md**](docs/phases.md) for progress and **👤 decisions**.
 
 ## Output format
 
-All tracks compile to the same **LJB `AuthorityCandidate` NDJSON** shape (see leaf-writer `autoTagging/authority.ts`). Each pack ships a `manifest.json` (id, version, sha256, license, upstream).
+All tracks compile to the same **LJB `AuthorityCandidate` NDJSON** shape (see leaf-writer `autoTagging/authority.ts`). Each pack ships a `manifest.json` (id, version, sha256, license, upstream). Large packs may additionally advertise date chunks, while small and legacy packs remain single-file NDJSON.
 
 ## License
 

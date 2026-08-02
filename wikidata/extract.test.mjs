@@ -52,6 +52,41 @@ test('raw person rows preserve names without synthesizing components', () => {
   assert.deepEqual(raw?.aliases, ['甲子']);
 });
 
+test('zhwiki sitelink title fills missing Chinese label (崔諲)', () => {
+  const entity = {
+    type: 'item',
+    id: 'Q45421892',
+    labels: { en: { language: 'en', value: 'Cui Yin' } },
+    sitelinks: {
+      zhwiki: { site: 'zhwiki', title: '崔諲 (十六國到劉宋)' },
+    },
+    claims: {
+      P31: [
+        {
+          mainsnak: {
+            snaktype: 'value',
+            datavalue: { type: 'wikibase-entityid', value: { id: 'Q5' } },
+          },
+        },
+      ],
+      P27: [
+        {
+          mainsnak: {
+            snaktype: 'value',
+            datavalue: { type: 'wikibase-entityid', value: { id: 'Q9683' } },
+          },
+        },
+      ],
+    },
+  };
+  assert.equal(
+    entityMatchesPersonSlice(entity, { dynastyQid: 'Q9683', labelLang: 'zh-hant' }),
+    true,
+  );
+  const raw = rawPersonFromEntity(entity, 'zh-hant');
+  assert.equal(raw?.primaryLabel, '崔諲');
+});
+
 test('entityMatchesPersonSlice requires zh-hant label and Tang P27', () => {
   const lines = fs.readFileSync(fixture, 'utf8').trim().split('\n');
   const libai = JSON.parse(lines[0]);
