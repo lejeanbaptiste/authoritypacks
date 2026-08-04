@@ -57,3 +57,33 @@ test('李晟 — keeps full aliases and excludes components', () => {
   assert.equal(strings.includes('李良器'), false);
   assert.equal(strings.includes('良器'), false);
 });
+
+test('ja — drops bare surname, yomi, spaces, and joke aliases', () => {
+  assert.deepEqual(
+    personSearchStringsFromWikidata({
+      primaryLabel: '田中',
+      familyName: '田中',
+      language: 'ja',
+    }),
+    [],
+  );
+
+  const strings = personSearchStringsFromWikidata({
+    primaryLabel: '庵野秀明',
+    familyName: '庵野',
+    givenName: '秀明',
+    language: 'ja',
+    aliases: ['空母そそそそ', 'あんの ひであき', '庵野 秀明'],
+  });
+  assert.deepEqual(strings, ['庵野秀明']);
+});
+
+test('ja — keeps dharma mononym', () => {
+  const strings = personSearchStringsFromWikidata({
+    primaryLabel: '日蓮',
+    language: 'ja',
+    aliases: ['にちれん'],
+  });
+  assert.ok(strings.includes('日蓮'));
+  assert.equal(strings.includes('にちれん'), false);
+});

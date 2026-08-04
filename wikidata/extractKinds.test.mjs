@@ -33,6 +33,56 @@ test('entityMatchesKind label-only bo — requires bo label and P31', () => {
   assert.equal(entityMatchesKind(JSON.parse(lines[3]), 'work', kinds, slice), true);
 });
 
+test('entityMatchesKind place country membership uses P17', () => {
+  const kinds = loadJson('wikidata/kind-queries.json').kinds;
+  const tokyo = {
+    type: 'item',
+    id: 'Q1490',
+    labels: { ja: { language: 'ja', value: '東京都' } },
+    claims: {
+      P31: [
+        {
+          mainsnak: {
+            snaktype: 'value',
+            datavalue: { type: 'wikibase-entityid', value: { id: 'Q515' } },
+          },
+        },
+      ],
+      P17: [
+        {
+          mainsnak: {
+            snaktype: 'value',
+            datavalue: { type: 'wikibase-entityid', value: { id: 'Q17' } },
+          },
+        },
+      ],
+    },
+  };
+  const paris = {
+    ...tokyo,
+    id: 'Q90',
+    labels: { ja: { language: 'ja', value: 'パリ' } },
+    claims: {
+      ...tokyo.claims,
+      P17: [
+        {
+          mainsnak: {
+            snaktype: 'value',
+            datavalue: { type: 'wikibase-entityid', value: { id: 'Q142' } },
+          },
+        },
+      ],
+    },
+  };
+  const opts = {
+    labelLangs: ['ja'],
+    membership: 'country-p27',
+    countryQids: ['Q17'],
+  };
+  assert.equal(entityMatchesKind(tokyo, 'place', kinds, opts), true);
+  assert.equal(entityMatchesKind(paris, 'place', kinds, opts), false);
+});
+
 test('extractKinds fixture → compile bo packs', async () => {
   const tmp = fs.mkdtempSync(path.join(path.dirname(fixture), 'tmp-bo-'));
   const rawDir = path.join(tmp, 'raw');

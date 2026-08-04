@@ -42,11 +42,16 @@ function dynastyById(dynasties, id) {
 export function personCandidateFromRaw(raw, ctx) {
   if (!raw?.qid || !raw.primaryLabel) return null;
 
+  const language =
+    ctx.languageId ??
+    (ctx.country?.id === 'japan' || ctx.country?.packSlug?.startsWith('ja') ? 'ja' : undefined);
+
   const searchStrings = personSearchStringsFromWikidata({
     primaryLabel: raw.primaryLabel,
     aliases: raw.aliases,
     familyName: raw.familyName,
     givenName: raw.givenName,
+    language,
   });
   if (searchStrings.length === 0) return null;
 
@@ -160,7 +165,7 @@ export function compileWikidataCountryPersonPack(opts) {
   const candidates = [];
   for (const raw of rawRows) {
     if (!rawPersonMatchesCountry(raw, country.qid)) continue;
-    const c = personCandidateFromRaw(raw, { country });
+    const c = personCandidateFromRaw(raw, { country, languageId: opts.languageId });
     if (c) candidates.push(c);
   }
 

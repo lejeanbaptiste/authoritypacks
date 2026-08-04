@@ -59,5 +59,11 @@ export function entityMatchesKind(entity, kindId, kindsDoc, opts) {
     });
   }
 
+  // Places: --membership country means P17 (country), mirroring person P27.
+  if (kindId === 'place' && opts.membership === 'country-p27' && opts.countryQids?.length) {
+    const p17 = claimEntityIds(entity, 'P17');
+    if (!opts.countryQids.some((qid) => p17.includes(qid))) return false;
+  }
+
   return true;
 }

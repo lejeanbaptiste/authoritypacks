@@ -11,6 +11,7 @@ This repo holds **extract → compile → publish** tooling. The **matcher, revi
 | [**docs/phases.md**](docs/phases.md) | Master roadmap — all sources, human checkpoints |
 | [**wikidata/README.md**](wikidata/README.md) | Wikidata config tables + validator (W0 done) |
 | [**docs/extraction-todo.md**](docs/extraction-todo.md) | Current extraction, re-extraction, concordance, and toponym checklist |
+| [**docs/person-concordance-plan.md**](docs/person-concordance-plan.md) | Planned multi-tier Norbert↔CBDB/DILA/Wikidata person linking |
 | [**CHANGELOG.md**](CHANGELOG.md) | Shipped compiler and pack-format changes |
 
 Leaf-writer companions (integration, not extraction):

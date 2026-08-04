@@ -114,6 +114,7 @@ test('Norbert keeps a princess title out of primary persName while retaining its
   assert.deepEqual(person.names, [{ text: '蕭', type: 'family' }]);
   assert.equal(person.names.some((name) => name.type === 'primary'), false);
   assert.deepEqual(person.metadata.nobleTitles, [{
+    dynasty: '梁',
     fief: '海鹽',
     roleName: '公主',
     posthumousName: undefined,
@@ -133,5 +134,24 @@ test('Norbert preserves an approved posthumous abbreviation without inventing on
   );
 
   assert.equal(withAbbreviation.metadata.nobleTitles[0].posthumousNameAbbr, '武');
+  assert.equal(withAbbreviation.metadata.nobleTitles[0].dynasty, '晉');
   assert.equal(withoutAbbreviation.metadata.nobleTitles[0].posthumousNameAbbr, undefined);
+});
+
+test('Norbert emits dynasties[] for all person_dynasties while keeping preferred dynasty', () => {
+  const [person] = compileNorbertPersons(
+    [[1, '某人', null, null, null]],
+    [],
+    {
+      7: { zh: '宋', en: 'Song', startYear: 960, endYear: 1279 },
+      46: { zh: '漢', en: 'Han', startYear: -202, endYear: 220 },
+    },
+    [[1, 1, 7], [2, 1, 46]],
+    [],
+  );
+  assert.equal(person.metadata.dynasty, '宋');
+  assert.deepEqual(
+    person.metadata.dynasties.map((d) => d.label).sort(),
+    ['宋', '漢'],
+  );
 });

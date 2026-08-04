@@ -1,0 +1,3 @@
+npm warn Unknown env config "devdir". This will error in a future major version of npm. See `npm help npmrc` for supported config options.
+npm notice run authority-extraction@0.1.0 wikidata:extract-crosswalk
+npm notice run node wikidata/extractCrosswalkConcordance.mjs --dump /home/d/Data/latest-all.json.bz2 --out-dir packs/wikidata --keys viaf,cbdb,ndl

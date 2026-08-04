@@ -106,10 +106,12 @@ function collectNationalityPairs(personDynastyRows, natRawRows) {
  */
 function nobleTitleFromRow(row, displayName) {
   const clean = (value) => value == null ? undefined : String(value).trim() || undefined;
+  const dynasty = clean(row[2]);
   const fief = clean(row[3]);
   const rawPosthumous = clean(row[4]);
   const posthumousNameAbbr = clean(row[5]);
   let roleName = clean(row[6]);
+  const temple = clean(row[7]);
   let posthumousName = rawPosthumous;
   const label = clean(displayName);
   if (!fief && !posthumousName && label && roleName) {
@@ -120,12 +122,14 @@ function nobleTitleFromRow(row, displayName) {
       posthumousName = label.slice(0, -roleName.length) || undefined;
     }
   }
-  if (![fief, roleName, posthumousName].some(Boolean)) return null;
+  if (![fief, roleName, posthumousName, temple].some(Boolean)) return null;
   return {
+    ...(dynasty ? { dynasty } : {}),
     fief,
     roleName,
     posthumousName,
     ...(posthumousNameAbbr ? { posthumousNameAbbr } : {}),
+    ...(temple ? { temple } : {}),
   };
 }
 
@@ -287,6 +291,19 @@ export function compileNorbertPersons(
       return evidence ? { ...assertion, evidence } : assertion;
     });
 
+    /** Full dynasty list for concordance (preferred single label stays in `dynasty`). */
+    const dynastiesList = [...pairMeta.keys()].flatMap((dynId) => {
+      const d = dynasties.get(Number(dynId));
+      if (!d?.zh) return [];
+      return [{
+        id: `dynasty:${dynId}`,
+        label: d.zh,
+        ...(d.en ? { en: d.en } : {}),
+        ...(d.startYear != null ? { startYear: d.startYear } : {}),
+        ...(d.endYear != null ? { endYear: d.endYear } : {}),
+      }];
+    });
+
     const sourceDescription = description == null ? undefined : String(description).trim() || undefined;
     const nobleTitles = (titlesByPerson.get(id) ?? [])
       .map((titleRow) => nobleTitleFromRow(titleRow, primaryName))
@@ -306,6 +323,7 @@ export function compileNorbertPersons(
       names: nameEntries,
       metadata: {
         dynasty: dynastyLabel,
+        ...(dynastiesList.length ? { dynasties: dynastiesList } : {}),
         nationality,
         origin: originsByPerson.get(id),
         ana: mythical ? 'mythical' : 'historical',

@@ -132,6 +132,11 @@ than web scrapes.
 - [x] Exclude Norbert biographies, `person_date_filter`, death, height, residence, `test_*`, `knowledge_*`, and unrelated `biblio_*` tables.
 - [x] Compile Norbert, CBDB, and DILA person/place packs locally.
 - [x] Build the strict Norbert concordance: primary name + style name + dynasty.
+- [ ] Replace/extend person concordance per
+  [person-concordance-plan.md](./person-concordance-plan.md) (multi-dynasty,
+  pre-Tang 姓+名+字 set, ruler noble-title keys).
+  First implementation landed in `norbert/concordance.mjs`
+  (`npm run concordance:persons`); iterate on review CSV / gold-set precision.
 - [x] Integrate bidirectional Norbert crosswalks into compiled authority records.
 - [x] Add Norbert compilation/concordance to the global bundle build.
 - [x] Add the public reduced Norbert export and checksum to the build inputs.
@@ -178,14 +183,13 @@ than web scrapes.
 
 ## Wikidata Japanese toponyms
 
-**Done (2026-08):** `place-ja` compiled (~514k, `label-only`), included in the Japanese pack tarball, and wired in LJB tag bomb as `wikidata-places-ja` (opt-in; not on Japanese lifecycle `packIds`).
+**Done (2026-08):** `place-ja` compiled; included in the Japanese pack tarball, and wired in LJB tag bomb as `wikidata-places-ja` (opt-in; not on Japanese lifecycle `packIds`). **Membership is moving from `label-only` → Japan `P17`** (`npm run wikidata:extract-places-ja` / `compile-places-ja`). Until the P17 re-extract finishes, the on-disk pack may still be the older world harvest with foreign-admin search-string filters applied.
 
-**Policy:** Japanese **supplement** only — default place authority remains NDL; Wikidata places stay opt-in (large, noisy modern+historical label harvest).
+**Policy:** Japanese **supplement** only — default place authority remains NDL; Wikidata places stay opt-in (Japan-scoped once re-extracted).
 
 - [x] Finish the current Japanese toponym extraction/query work.
-- [x] Define Japanese label, alias, reading, and historical-period policy (`label-only` ja).
-- [x] Extract raw Japanese place records with stable Q IDs and external IDs.
-- [x] Compile the Japanese Wikidata place pack.
+- [x] Define Japanese label, alias, reading, and historical-period policy (Japan `P17`; not world `label-only`).
+- [ ] Re-extract / recompile `place-ja` with `--membership country --country japan` (in progress).
 - [x] Decide: supplement to NDL places (opt-in in tag bomb, not default lifecycle).
 - [x] Add the accepted pack to the global bundle and CI staging.
 - [x] Wire `wikidata-places-ja` into LJB (`packPaths`, tag bomb load order, Japanese auto-tag UI).

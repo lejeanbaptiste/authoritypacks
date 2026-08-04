@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { kindSearchStringsFromWikidata, workSearchStringsFromWikidata } from './kindSearchStrings.mjs';
 import { compiledFileNameForKind } from './rawFromEntity.mjs';
 import { compiledCrosswalkFromRaw } from './identifierClaims.mjs';
+import { rawPlaceMatchesCountry } from './entityParse.mjs';
 import { readNdjson, writePackFile } from '../shared/ndjson.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -23,7 +24,7 @@ export function kindCandidateFromRaw(raw, kind, ctx) {
   const searchStrings =
     kind === 'work'
       ? workSearchStringsFromWikidata(raw)
-      : kindSearchStringsFromWikidata(raw, { script: ctx.script });
+      : kindSearchStringsFromWikidata(raw, { script: ctx.script, kind });
 
   if (searchStrings.length === 0) return null;
 
@@ -57,6 +58,8 @@ export function kindCandidateFromRaw(raw, kind, ctx) {
  *   packId?: string;
  *   script?: string;
  *   disableCrosswalkKeys?: string[];
+ *   countryId?: string;
+ *   countryQid?: string;
  * }} opts
  */
 export function compileWikidataKindPack(opts) {
@@ -64,6 +67,9 @@ export function compileWikidataKindPack(opts) {
   /** @type {import('../shared/types.mjs').AuthorityCandidate[]} */
   const candidates = [];
   for (const raw of rawRows) {
+    if (opts.kind === 'place' && opts.countryQid) {
+      if (!rawPlaceMatchesCountry(raw, opts.countryQid)) continue;
+    }
     const c = kindCandidateFromRaw(raw, opts.kind, {
       languageId: opts.languageId,
       script: opts.script,
@@ -72,11 +78,16 @@ export function compileWikidataKindPack(opts) {
     if (c) candidates.push(c);
   }
 
-  const packId = opts.packId ?? `wikidata-${opts.kind}-${opts.languageId}`;
+  const packId =
+    opts.packId ??
+    (opts.countryId
+      ? `wikidata-${opts.kind}-${opts.languageId}-${opts.countryId}`
+      : `wikidata-${opts.kind}-${opts.languageId}`);
   fs.mkdirSync(opts.outDir, { recursive: true });
   const outName = compiledFileNameForKind(opts.kind);
   const fileOut = writePackFile(opts.outDir, outName, candidates);
 
+  const membership = opts.countryQid ? 'country-p17' : 'label-only';
   const manifest = {
     id: packId,
     source: 'Wikidata',
@@ -87,7 +98,8 @@ export function compileWikidataKindPack(opts) {
     attribution: 'Data from Wikidata (CC0).',
     kind: opts.kind,
     language: opts.languageId,
-    membership: 'label-only',
+    membership,
+    ...(opts.countryId ? { country: opts.countryId } : {}),
     disabledCrosswalkKeys: opts.disableCrosswalkKeys ?? [],
     files: {
       [outName]: { entityCount: fileOut.count },
@@ -113,10 +125,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const languageId = arg('--language', 'zh-hant');
   const outDir = arg('--out', '');
   const disableCrosswalkArg = arg('--disable-crosswalk', '');
+  const countryId = arg('--country', '');
 
   if (!rawPath || !['place', 'org', 'work'].includes(kind)) {
     console.error(
-      'Usage: node wikidata/compileKind.mjs --raw PATH --kind work|place|org --language LANG [--out DIR] [--disable-crosswalk key1,key2]',
+      'Usage: node wikidata/compileKind.mjs --raw PATH --kind work|place|org --language LANG [--out DIR] [--country japan] [--disable-crosswalk key1,key2]',
     );
     process.exit(1);
   }
@@ -125,13 +138,29 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const packLang = languages.packLanguages.find((x) => x.id === languageId);
   const script = packLang?.script;
 
-  const defaultOut = path.join(ROOT, `packs/wikidata/${kind}-${languageId}`);
+  let countryQid;
+  if (countryId) {
+    const countries = loadJson('wikidata/countries.json').countries;
+    const country = countries.find((c) => c.id === countryId);
+    if (!country) {
+      console.error(`Unknown country "${countryId}" — see wikidata/countries.json`);
+      process.exit(1);
+    }
+    countryQid = country.qid;
+  }
+
+  const defaultOut = path.join(
+    ROOT,
+    countryId ? `packs/wikidata/${kind}-${languageId}` : `packs/wikidata/${kind}-${languageId}`,
+  );
   const result = compileWikidataKindPack({
     rawPath: path.resolve(rawPath),
     kind: /** @type {'place' | 'org' | 'work'} */ (kind),
     languageId,
     outDir: path.resolve(outDir || defaultOut),
     script,
+    countryId: countryId || undefined,
+    countryQid,
     disableCrosswalkKeys: disableCrosswalkArg
       ? disableCrosswalkArg.split(',').map((s) => s.trim()).filter(Boolean)
       : undefined,

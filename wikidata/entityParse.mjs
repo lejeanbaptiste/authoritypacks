@@ -212,6 +212,11 @@ export function rawPersonMatchesCountry(raw, countryQid) {
   return (raw.p27 ?? []).includes(countryQid);
 }
 
+/** @param {{ p17?: string[] }} raw @param {string} countryQid */
+export function rawPlaceMatchesCountry(raw, countryQid) {
+  return (raw.p17 ?? []).includes(countryQid);
+}
+
 /**
  * @param {unknown} entity
  * @param {string} labelLang

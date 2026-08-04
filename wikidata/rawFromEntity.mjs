@@ -65,6 +65,7 @@ export function rawEntityFromKind(entity, kindId, labelLangOrLangs) {
 
   if (kindId === 'place') {
     raw.chgisId = claimEntityIds(entity, 'P4711')[0];
+    raw.p17 = claimEntityIds(entity, 'P17');
   }
 
   if (kindId === 'org') {

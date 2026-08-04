@@ -343,16 +343,27 @@ if (includeWikidata) {
 console.log('Building Norbert concordance…');
 const norbertDir = path.join(packsDir, 'norbert');
 const concordanceSources = {
-  CBDB: readNdjson(path.join(packsDir, 'cbdb/persons.ndjson')),
-  DILA: readNdjson(path.join(packsDir, 'dila/persons.ndjson')),
+  cbdb: readNdjson(path.join(packsDir, 'cbdb/persons.ndjson')),
+  dila: readNdjson(path.join(packsDir, 'dila/persons.ndjson')),
 };
 for (const pack of stagedWikidataPacks.filter((p) => p.file === 'persons.ndjson')) {
   const records = readNdjson(path.join(packsDir, 'wikidata', pack.slug, pack.file));
-  concordanceSources.Wikidata = [...(concordanceSources.Wikidata ?? []), ...records];
+  concordanceSources.wikidata = [...(concordanceSources.wikidata ?? []), ...records];
 }
+const wrappersPath = path.join(norbertDir, 'person-wrappers.ndjson');
+const surnamesPath = path.join(norbertDir, 'surnames.json');
+const cbdbWdPath = path.join(packsDir, 'wikidata/cbdb-wikidata-concordance.ndjson');
 const concordance = buildNorbertConcordance(
   readNdjson(path.join(norbertDir, 'persons.ndjson')),
   concordanceSources,
+  {
+    wrappers: fs.existsSync(wrappersPath) ? readNdjson(wrappersPath) : [],
+    surnames: fs.existsSync(surnamesPath)
+      ? (JSON.parse(fs.readFileSync(surnamesPath, 'utf8')).surnames ?? [])
+      : [],
+    cbdbWikidata: fs.existsSync(cbdbWdPath) ? readNdjson(cbdbWdPath) : [],
+    includeTier2Review: false,
+  },
 );
 writeNdjson(path.join(norbertDir, 'concordance.ndjson'), concordance);
 const integrated = integrateConcordance(
@@ -370,7 +381,7 @@ for (const records of Object.values(integrated.sources)) {
 writeNdjson(path.join(norbertDir, 'appointments.ndjson'), allAppointments);
 writeNdjson(path.join(norbertDir, 'persons.ndjson'), integrated.norbert);
 for (const [source, records] of Object.entries(integrated.sources)) {
-  const sourceDir = source === 'CBDB' ? 'cbdb' : source === 'DILA' ? 'dila' : null;
+  const sourceDir = source === 'cbdb' ? 'cbdb' : source === 'dila' ? 'dila' : null;
   if (sourceDir) writeNdjson(path.join(packsDir, sourceDir, 'persons.ndjson'), records);
 }
 console.log(`  ${concordance.length} Norbert concordance matches; ${integrated.applied} links applied`);

@@ -74,15 +74,22 @@ Output:
 
 ## Person concordance
 
-Build strict, reviewable links from Norbert to compiled CBDB, DILA, and/or Wikidata person packs:
+Build tiered Norbert→CBDB/DILA/Wikidata links (see
+[`docs/person-concordance-plan.md`](../docs/person-concordance-plan.md)):
 
 ```bash
+npm run concordance:persons
+# or
 node norbert/concordance.mjs --norbert packs/norbert \
-  --cbdb packs/cbdb --dila packs/dila --wikidata packs/wikidata/person-zh-hant-pre-ming \
-  --out packs/norbert/norbert-concordance.ndjson
+  --cbdb packs/cbdb --dila packs/dila --wikidata packs/wikidata \
+  --out packs/norbert/norbert-concordance.ndjson \
+  --review-csv reports/norbert-person-concordance-review.csv
 ```
 
-Rows are emitted only when primary name, structured style name (字), and dynasty all match exactly after surface normalization. Sources lacking structured style or dynasty metadata are skipped; each row retains the matched source ID and evidence.
+Auto-accepted rows use Tier 0 (ID bridges) and Tier 1A–1C (字+dynasty,
+pre-Tang 姓+名+字, ruler temple/posthumous). Ambiguous and Tier 2
+near-misses go to the review CSV only. Person-wrappers supply noble-title
+fields when the persons pack lacks `metadata.nobleTitles`.
 
 ## Office entities and structure
 

@@ -49,6 +49,36 @@ test('personSearchStringsFromRaw — rejects Latin-only and dated names', () => 
   assert.equal(isUsableJapanesePersonName('夏目漱石 1867-1916'), false);
 });
 
+test('personSearchStringsFromRaw — rejects bare surnames and occupation stubs', () => {
+  assert.deepEqual(
+    personSearchStringsFromRaw({
+      authorityId: 'x',
+      authUri: 'http://example',
+      name: '田中',
+      heading: '田中, 漫画家',
+    }),
+    [],
+  );
+  assert.deepEqual(
+    personSearchStringsFromRaw({
+      authorityId: 'y',
+      authUri: 'http://example',
+      name: '佐藤',
+      heading: '佐藤',
+    }),
+    [],
+  );
+  assert.deepEqual(
+    personSearchStringsFromRaw({
+      authorityId: 'z',
+      authUri: 'http://example',
+      name: '日蓮',
+      heading: '日蓮, 1222-1282',
+    }),
+    ['日蓮'],
+  );
+});
+
 test('personCandidateFromRaw — birth/death metadata', () => {
   const c = personCandidateFromRaw({
     authorityId: '00054222',
