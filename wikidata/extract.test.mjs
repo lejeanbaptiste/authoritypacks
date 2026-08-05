@@ -144,6 +144,10 @@ test('extract fixture → compile Tang pack', async () => {
   });
   assert.equal(ficCand?.metadata?.ana, 'fictional');
   assert.ok(ficCand?.searchStrings.includes('虬髯客'));
+  // Undated fictional Tang figure: dynasty years stay on nationality, not birth–death.
+  assert.equal(ficCand?.metadata?.dateSource, 'nationality');
+  assert.equal(ficCand?.metadata?.startYear, undefined);
+  assert.equal(ficCand?.metadata?.endYear, undefined);
   assert.equal(ficCand?.metadata?.yomi, undefined);
   assert.equal(ficCand?.metadata?.yomiHiragana, undefined);
 

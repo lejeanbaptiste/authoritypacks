@@ -262,17 +262,21 @@ Re-extract + recompile packs to populate concordance fields on existing slices.
 
 #### TODO — ship VIAF ↔ Wikidata concordance pack
 
-LJB expects `packs/wikidata/viaf-wikidata-concordance.ndjson` (installed as
-`authority-packs/wikidata/viaf-wikidata-concordance.ndjson`). Build it after
-packs have `metadata.crosswalk.viaf`:
+LJB expects `packs/wikidata/viaf-wikidata-concordance.filtered.ndjson`
+(installed as `authority-packs/wikidata/viaf-wikidata-concordance.filtered.ndjson`,
+pack id `wikidata-viaf-concordance`), plus optional chunks under
+`viaf-wikidata-concordance/`. Build from the dump-scale sidecar by filtering
+to QIDs in shipped packs:
 
 ```bash
-# From this repo root — scans all compiled packs under packs/wikidata
-npm run wikidata:viaf-concordance
+# From this repo root
+npm run wikidata:viaf-filter
+# → viaf-wikidata-concordance.filtered.ndjson (~pack QIDs only)
+# → viaf-wikidata-concordance/{00..99}.ndjson + manifest.json
 ```
 
-Full checklist (re-extract → compile → concordance → install): see the
-**TODO — VIAF ↔ Wikidata concordance** section in the [repo README](../README.md).
+Do **not** ship the full dump-scale `viaf-wikidata-concordance.ndjson` (~200MB+)
+in the user tarball. Keep it as a local extract artifact.
 
 ---
 

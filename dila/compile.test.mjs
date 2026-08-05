@@ -26,6 +26,9 @@ test('DILA compile fixture — persons and places', async () => {
   assert.equal(jin.primaryName, '金總持');
   assert.ok(jin.searchStrings.includes('寶輪大師'));
   assert.equal(jin.metadata?.dynasty, '北宋');
+  assert.equal(jin.metadata?.dateSource, 'nationality');
+  assert.equal(jin.metadata?.startYear, undefined);
+  assert.equal(jin.metadata?.endYear, undefined);
   assert.deepEqual(jin.metadata?.origin, [{
     source: 'DILA',
     originType: 'placeOfOrigin',
@@ -37,6 +40,7 @@ test('DILA compile fixture — persons and places', async () => {
 
   const kalayashas = persons.find((p) => p.authorityId === 'A000004');
   assert.ok(kalayashas);
+  assert.equal(kalayashas.metadata?.dateSource, 'fine');
   assert.equal(kalayashas.metadata?.startYear, 383);
   assert.equal(kalayashas.metadata?.endYear, 442);
   assert.equal(kalayashas.metadata?.dynasty, '劉宋');

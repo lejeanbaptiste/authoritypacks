@@ -1,0 +1,4 @@
+npm warn Unknown env config "devdir". This will error in a future major version of npm. See `npm help npmrc` for supported config options.
+npm notice run authority-extraction@0.1.0 wikidata:compile-places-ja
+npm notice run node wikidata/compileKind.mjs --raw packs/wikidata/raw-ja-places/places.raw.ndjson --kind place --language ja --country japan --out packs/wikidata/place-ja
+Compiled 214157 place → /home/d/Python/ljb/authoritypacks/packs/wikidata/place-ja/places.ndjson

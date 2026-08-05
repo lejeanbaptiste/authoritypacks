@@ -6,6 +6,7 @@ import { buildPersonNamesFromAlts } from './personAltNames.mjs';
 import { loadCbdbDynastyMap, resolveDynastyByCode } from '../shared/dynastyMap.mjs';
 import { nationalityFromDynasties } from '../shared/nationality.mjs';
 import { nationalityAssertion } from '../shared/nationalityConcordance.mjs';
+import { personDateMetadata } from '../shared/personDates.mjs';
 import { SOURCE } from './constants.mjs';
 import { cbdbPersonClue } from '../shared/clue.mjs';
 
@@ -55,8 +56,13 @@ export function lookupCbdbPerson(db, personId) {
 
   const dynastyMap = loadCbdbDynastyMap();
   const dynasty = resolveDynastyByCode(row.c_dy, dynastyMap);
-  const startYear = row.c_birthyear ?? row.c_fl_earliest_year ?? row.c_start ?? dynasty?.startYear;
-  const endYear = row.c_deathyear ?? row.c_fl_latest_year ?? row.c_end ?? dynasty?.endYear;
+  const dates = personDateMetadata({
+    birthYear: row.c_birthyear,
+    deathYear: row.c_deathyear,
+    flEarliest: row.c_fl_earliest_year,
+    flLatest: row.c_fl_latest_year,
+    indexYear: row.c_index_year,
+  });
   const nationality = nationalityFromDynasties(
     dynasty ? [dynasty] : [],
     { startYear: row.c_birthyear ?? row.c_fl_earliest_year, endYear: row.c_deathyear ?? row.c_fl_latest_year },
@@ -77,9 +83,7 @@ export function lookupCbdbPerson(db, personId) {
       nationality,
       origin: origin.length ? origin : undefined,
       appointments: appointments.length ? appointments : undefined,
-      dateSource: row.c_birthyear != null || row.c_deathyear != null || row.c_fl_earliest_year != null || row.c_fl_latest_year != null ? 'fine' : 'nationality',
-      startYear: startYear ?? undefined,
-      endYear: endYear ?? undefined,
+      ...dates,
       pinyin: row.c_name || undefined,
       description: cbdbPersonClue({
         name: row.c_name_chn,

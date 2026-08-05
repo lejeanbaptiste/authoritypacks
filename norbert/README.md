@@ -91,6 +91,18 @@ pre-Tang 姓+名+字, ruler temple/posthumous). Ambiguous and Tier 2
 near-misses go to the review CSV only. Person-wrappers supply noble-title
 fields when the persons pack lacks `metadata.nobleTitles`.
 
+After you fill the CSV `action` column (`link` / `ignore` / `distinguish`),
+merge accepted links and write bidirectional `metadata.crosswalk` into the
+person packs:
+
+```bash
+npm run concordance:merge-review   # appends action=link rows (idempotent)
+npm run concordance:integrate      # Norbert ↔ CBDB/DILA/Wikidata crosswalks
+```
+
+Leave `ignore` and `distinguish` rows out of the NDJSON; the CSV remains the
+record of those decisions.
+
 ## Office entities and structure
 
 Every Norbert `office` row retains its source id and compiles to `kind: office`

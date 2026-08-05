@@ -12,11 +12,14 @@
 /**
  * @typedef {Object} CandidateMetadata
  * @property {string} [dynasty]
- * @property {'fine'|'nationality'} [dateSource]
+ * @property {'fine'|'floruit'|'index'|'nationality'} [dateSource]
  * @property {{ id: string, canonicalId: string, label: string, sourceIds?: string[], startYear?: number, endYear?: number }[]} [nationality]
  * @property {OriginAssertion[]} [origin]
  * @property {number} [startYear]
  * @property {number} [endYear]
+ * @property {number} [indexYear] CBDB-style filter anchor when dateSource is index.
+ * @property {number} [flStart]
+ * @property {number} [flEnd]
  * @property {string} [subtype]
  * @property {string} [description]
  * @property {string} [teiTag]

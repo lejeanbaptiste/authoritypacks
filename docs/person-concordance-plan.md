@@ -11,8 +11,16 @@ This revises the earlier diagnosis with three Norbert-specific constraints:
 3. **Emperors and empresses** should be selected from noble-title rows, then
    matched on ruler-specific keys (not 字).
 
-Status: **implemented** (tiered matcher in `norbert/concordance.mjs`; review CSV via
-`--review-csv` / `npm run concordance:persons`).
+Status: **implemented and review-merged** (2026-08-04).
+
+- Tiered matcher: `norbert/concordance.mjs` (`npm run concordance:persons`).
+- Review CSV: `reports/norbert-person-concordance-review.csv`.
+- Accepted Tier 0 / 1A–1C plus reviewed Tier 2 `link` rows live in
+  `packs/norbert/norbert-concordance.ndjson` (**4,802** rows after merge;
+  was 977 auto-accept only). Apply pack crosswalks with
+  `npm run concordance:merge-review` then `npm run concordance:integrate`.
+- Remaining concordance work (optional polish, purge-order UI, release) is
+  tracked in [`docs/extraction-todo.md`](./extraction-todo.md).
 
 ---
 

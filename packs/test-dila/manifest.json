@@ -2,11 +2,11 @@
   "id": "dila",
   "source": "DILA",
   "buildToolVersion": "0.2.0",
-  "compiledAt": "2026-08-02T18:04:54.344Z",
+  "compiledAt": "2026-08-04T23:29:02.899Z",
   "upstream": {
-    "persons": "/Users/daniel/Code/leJeanBaptiste/authority extraction/dila/fixtures/sample-persons.xml",
-    "places": "/Users/daniel/Code/leJeanBaptiste/authority extraction/dila/fixtures/sample-places.xml",
-    "districts": "/Users/daniel/Code/leJeanBaptiste/authority extraction/dila/fixtures/sample-places.xml"
+    "persons": "/home/d/Python/ljb/authoritypacks/dila/fixtures/sample-persons.xml",
+    "places": "/home/d/Python/ljb/authoritypacks/dila/fixtures/sample-places.xml",
+    "districts": "/home/d/Python/ljb/authoritypacks/dila/fixtures/sample-places.xml"
   },
   "license": "CC-BY-SA-3.0",
   "attribution": "Dharma Drum Institute of Liberal Arts (DILA) Authority Databases.",

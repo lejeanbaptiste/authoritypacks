@@ -41,6 +41,11 @@ test('CBDB compile — 王安石 (person 1762)', () => {
     assert.equal(wang.searchStrings.includes('介甫'), false, 'bare 字 excluded');
     assert.ok(wang.metadata?.description?.includes('王安石'));
     assert.ok(wang.metadata?.dynasty?.includes('宋') || wang.metadata?.description?.includes('Song'));
+    // Vital dates only — never the Song dynasty span 960–1279.
+    if (wang.metadata?.dateSource === 'fine') {
+      assert.notEqual(wang.metadata.startYear, 960);
+      assert.notEqual(wang.metadata.endYear, 1279);
+    }
   } finally {
     db.close();
   }

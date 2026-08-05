@@ -1,0 +1,12 @@
+npm warn Unknown env config "devdir". This will error in a future major version of npm. See `npm help npmrc` for supported config options.
+npm notice run authority-extraction@0.1.0 wikidata:attach-crosswalk
+npm notice run node wikidata/attachAuthorityCrosswalk.mjs --wikidata-root packs/wikidata --also-pairs
+Indexed 311 129 / 481 983 person QIDs from packs/wikidata/wikidata-authority-crosswalk.ndjson
+  person-bo: 19 975 rows; 1 685 sidecar hits; 19 975 with crosswalk (cbdb=106, ndl=340, viaf=1671, wikidata=19975)
+  person-ja-japan: 228 200 rows; 80 707 sidecar hits; 228 200 with crosswalk (cbdb=5, ndl=72028, viaf=79836, wikidata=228200)
+  person-zh-hant-ming: 121 010 rows; 120 874 sidecar hits; 121 010 with crosswalk (cbdb=120839, ndl=106, norbert=1, viaf=824, wikidata=121010)
+  person-zh-hant-pre-ming: 57 113 rows; 52 683 sidecar hits; 57 113 with crosswalk (cbdb=49629, ndl=692, norbert=1590, viaf=4312, wikidata=57113)
+  person-zh-hant-qing: 56 706 rows; 56 023 sidecar hits; 56 706 with crosswalk (cbdb=55719, ndl=395, viaf=1983, wikidata=56706)
+  person-zh-hant-song: 0 rows; 0 sidecar hits; 0 with crosswalk
+  person-zh-hant-tang: 34 821 rows; 34 721 sidecar hits; 34 821 with crosswalk (cbdb=34694, ndl=93, norbert=1390, viaf=387, wikidata=34821)
+  person-zh-hant-yuan: 0 rows; 0 sidecar hits; 0 with crosswalk

@@ -1,0 +1,463 @@
+{
+  "id": "wikidata-viaf-concordance",
+  "kind": "viaf-wikidata-concordance",
+  "filtered": true,
+  "allowlistQids": 1581962,
+  "pairCount": 259987,
+  "sourcePairs": 4678793,
+  "chunkDigits": 2,
+  "chunks": [
+    {
+      "path": "10.ndjson",
+      "viafPrefix": "10",
+      "entityCount": 6133
+    },
+    {
+      "path": "11.ndjson",
+      "viafPrefix": "11",
+      "entityCount": 6545
+    },
+    {
+      "path": "12.ndjson",
+      "viafPrefix": "12",
+      "entityCount": 20268
+    },
+    {
+      "path": "13.ndjson",
+      "viafPrefix": "13",
+      "entityCount": 26004
+    },
+    {
+      "path": "14.ndjson",
+      "viafPrefix": "14",
+      "entityCount": 24021
+    },
+    {
+      "path": "15.ndjson",
+      "viafPrefix": "15",
+      "entityCount": 24335
+    },
+    {
+      "path": "16.ndjson",
+      "viafPrefix": "16",
+      "entityCount": 4750
+    },
+    {
+      "path": "17.ndjson",
+      "viafPrefix": "17",
+      "entityCount": 4184
+    },
+    {
+      "path": "18.ndjson",
+      "viafPrefix": "18",
+      "entityCount": 3095
+    },
+    {
+      "path": "19.ndjson",
+      "viafPrefix": "19",
+      "entityCount": 1552
+    },
+    {
+      "path": "20.ndjson",
+      "viafPrefix": "20",
+      "entityCount": 1431
+    },
+    {
+      "path": "21.ndjson",
+      "viafPrefix": "21",
+      "entityCount": 1860
+    },
+    {
+      "path": "22.ndjson",
+      "viafPrefix": "22",
+      "entityCount": 1461
+    },
+    {
+      "path": "23.ndjson",
+      "viafPrefix": "23",
+      "entityCount": 10596
+    },
+    {
+      "path": "24.ndjson",
+      "viafPrefix": "24",
+      "entityCount": 14054
+    },
+    {
+      "path": "25.ndjson",
+      "viafPrefix": "25",
+      "entityCount": 40713
+    },
+    {
+      "path": "26.ndjson",
+      "viafPrefix": "26",
+      "entityCount": 9359
+    },
+    {
+      "path": "27.ndjson",
+      "viafPrefix": "27",
+      "entityCount": 1088
+    },
+    {
+      "path": "28.ndjson",
+      "viafPrefix": "28",
+      "entityCount": 1209
+    },
+    {
+      "path": "29.ndjson",
+      "viafPrefix": "29",
+      "entityCount": 3531
+    },
+    {
+      "path": "30.ndjson",
+      "viafPrefix": "30",
+      "entityCount": 6439
+    },
+    {
+      "path": "31.ndjson",
+      "viafPrefix": "31",
+      "entityCount": 13609
+    },
+    {
+      "path": "32.ndjson",
+      "viafPrefix": "32",
+      "entityCount": 547
+    },
+    {
+      "path": "33.ndjson",
+      "viafPrefix": "33",
+      "entityCount": 738
+    },
+    {
+      "path": "34.ndjson",
+      "viafPrefix": "34",
+      "entityCount": 714
+    },
+    {
+      "path": "35.ndjson",
+      "viafPrefix": "35",
+      "entityCount": 682
+    },
+    {
+      "path": "36.ndjson",
+      "viafPrefix": "36",
+      "entityCount": 669
+    },
+    {
+      "path": "37.ndjson",
+      "viafPrefix": "37",
+      "entityCount": 508
+    },
+    {
+      "path": "38.ndjson",
+      "viafPrefix": "38",
+      "entityCount": 808
+    },
+    {
+      "path": "39.ndjson",
+      "viafPrefix": "39",
+      "entityCount": 729
+    },
+    {
+      "path": "40.ndjson",
+      "viafPrefix": "40",
+      "entityCount": 829
+    },
+    {
+      "path": "41.ndjson",
+      "viafPrefix": "41",
+      "entityCount": 787
+    },
+    {
+      "path": "42.ndjson",
+      "viafPrefix": "42",
+      "entityCount": 410
+    },
+    {
+      "path": "43.ndjson",
+      "viafPrefix": "43",
+      "entityCount": 713
+    },
+    {
+      "path": "44.ndjson",
+      "viafPrefix": "44",
+      "entityCount": 622
+    },
+    {
+      "path": "45.ndjson",
+      "viafPrefix": "45",
+      "entityCount": 674
+    },
+    {
+      "path": "46.ndjson",
+      "viafPrefix": "46",
+      "entityCount": 622
+    },
+    {
+      "path": "47.ndjson",
+      "viafPrefix": "47",
+      "entityCount": 450
+    },
+    {
+      "path": "48.ndjson",
+      "viafPrefix": "48",
+      "entityCount": 809
+    },
+    {
+      "path": "49.ndjson",
+      "viafPrefix": "49",
+      "entityCount": 538
+    },
+    {
+      "path": "50.ndjson",
+      "viafPrefix": "50",
+      "entityCount": 628
+    },
+    {
+      "path": "51.ndjson",
+      "viafPrefix": "51",
+      "entityCount": 728
+    },
+    {
+      "path": "52.ndjson",
+      "viafPrefix": "52",
+      "entityCount": 368
+    },
+    {
+      "path": "53.ndjson",
+      "viafPrefix": "53",
+      "entityCount": 647
+    },
+    {
+      "path": "54.ndjson",
+      "viafPrefix": "54",
+      "entityCount": 520
+    },
+    {
+      "path": "55.ndjson",
+      "viafPrefix": "55",
+      "entityCount": 580
+    },
+    {
+      "path": "56.ndjson",
+      "viafPrefix": "56",
+      "entityCount": 564
+    },
+    {
+      "path": "57.ndjson",
+      "viafPrefix": "57",
+      "entityCount": 504
+    },
+    {
+      "path": "58.ndjson",
+      "viafPrefix": "58",
+      "entityCount": 608
+    },
+    {
+      "path": "59.ndjson",
+      "viafPrefix": "59",
+      "entityCount": 368
+    },
+    {
+      "path": "60.ndjson",
+      "viafPrefix": "60",
+      "entityCount": 629
+    },
+    {
+      "path": "61.ndjson",
+      "viafPrefix": "61",
+      "entityCount": 638
+    },
+    {
+      "path": "62.ndjson",
+      "viafPrefix": "62",
+      "entityCount": 679
+    },
+    {
+      "path": "63.ndjson",
+      "viafPrefix": "63",
+      "entityCount": 667
+    },
+    {
+      "path": "64.ndjson",
+      "viafPrefix": "64",
+      "entityCount": 407
+    },
+    {
+      "path": "65.ndjson",
+      "viafPrefix": "65",
+      "entityCount": 581
+    },
+    {
+      "path": "66.ndjson",
+      "viafPrefix": "66",
+      "entityCount": 560
+    },
+    {
+      "path": "67.ndjson",
+      "viafPrefix": "67",
+      "entityCount": 548
+    },
+    {
+      "path": "68.ndjson",
+      "viafPrefix": "68",
+      "entityCount": 558
+    },
+    {
+      "path": "69.ndjson",
+      "viafPrefix": "69",
+      "entityCount": 293
+    },
+    {
+      "path": "70.ndjson",
+      "viafPrefix": "70",
+      "entityCount": 615
+    },
+    {
+      "path": "71.ndjson",
+      "viafPrefix": "71",
+      "entityCount": 651
+    },
+    {
+      "path": "72.ndjson",
+      "viafPrefix": "72",
+      "entityCount": 665
+    },
+    {
+      "path": "73.ndjson",
+      "viafPrefix": "73",
+      "entityCount": 551
+    },
+    {
+      "path": "74.ndjson",
+      "viafPrefix": "74",
+      "entityCount": 313
+    },
+    {
+      "path": "75.ndjson",
+      "viafPrefix": "75",
+      "entityCount": 623
+    },
+    {
+      "path": "76.ndjson",
+      "viafPrefix": "76",
+      "entityCount": 497
+    },
+    {
+      "path": "77.ndjson",
+      "viafPrefix": "77",
+      "entityCount": 602
+    },
+    {
+      "path": "78.ndjson",
+      "viafPrefix": "78",
+      "entityCount": 464
+    },
+    {
+      "path": "79.ndjson",
+      "viafPrefix": "79",
+      "entityCount": 303
+    },
+    {
+      "path": "80.ndjson",
+      "viafPrefix": "80",
+      "entityCount": 234
+    },
+    {
+      "path": "81.ndjson",
+      "viafPrefix": "81",
+      "entityCount": 423
+    },
+    {
+      "path": "82.ndjson",
+      "viafPrefix": "82",
+      "entityCount": 159
+    },
+    {
+      "path": "83.ndjson",
+      "viafPrefix": "83",
+      "entityCount": 195
+    },
+    {
+      "path": "84.ndjson",
+      "viafPrefix": "84",
+      "entityCount": 242
+    },
+    {
+      "path": "85.ndjson",
+      "viafPrefix": "85",
+      "entityCount": 223
+    },
+    {
+      "path": "86.ndjson",
+      "viafPrefix": "86",
+      "entityCount": 288
+    },
+    {
+      "path": "87.ndjson",
+      "viafPrefix": "87",
+      "entityCount": 332
+    },
+    {
+      "path": "88.ndjson",
+      "viafPrefix": "88",
+      "entityCount": 301
+    },
+    {
+      "path": "89.ndjson",
+      "viafPrefix": "89",
+      "entityCount": 254
+    },
+    {
+      "path": "90.ndjson",
+      "viafPrefix": "90",
+      "entityCount": 243
+    },
+    {
+      "path": "91.ndjson",
+      "viafPrefix": "91",
+      "entityCount": 414
+    },
+    {
+      "path": "92.ndjson",
+      "viafPrefix": "92",
+      "entityCount": 205
+    },
+    {
+      "path": "93.ndjson",
+      "viafPrefix": "93",
+      "entityCount": 248
+    },
+    {
+      "path": "94.ndjson",
+      "viafPrefix": "94",
+      "entityCount": 278
+    },
+    {
+      "path": "95.ndjson",
+      "viafPrefix": "95",
+      "entityCount": 303
+    },
+    {
+      "path": "96.ndjson",
+      "viafPrefix": "96",
+      "entityCount": 462
+    },
+    {
+      "path": "97.ndjson",
+      "viafPrefix": "97",
+      "entityCount": 296
+    },
+    {
+      "path": "98.ndjson",
+      "viafPrefix": "98",
+      "entityCount": 294
+    },
+    {
+      "path": "99.ndjson",
+      "viafPrefix": "99",
+      "entityCount": 148
+    }
+  ],
+  "undatedPath": null,
+  "singleFile": "viaf-wikidata-concordance.filtered.ndjson"
+}

@@ -4,6 +4,7 @@ import { resolveDynastyByLabel } from '../shared/dynastyMap.mjs';
 import { asArray, hantNames, notesOfType, untypedNotes, textContent, teiId } from '../shared/teiParse.mjs';
 import { nationalityFromDynasties } from '../shared/nationality.mjs';
 import { nationalityAssertion } from '../shared/nationalityConcordance.mjs';
+import { personDateMetadata } from '../shared/personDates.mjs';
 
 /** @typedef {import('../shared/types.mjs').AuthorityCandidate} AuthorityCandidate */
 
@@ -36,6 +37,8 @@ export function personFromRecord(person, ctx) {
 
   const disambiguation = notesOfType(person, 'disambiguation')[0];
 
+  const dates = personDateMetadata({ birthYear, deathYear });
+
   /** @type {AuthorityCandidate} */
   const candidate = {
     source: 'DILA',
@@ -49,9 +52,7 @@ export function personFromRecord(person, ctx) {
         dynastyRange ? [dynastyRange] : [],
         { startYear: birthYear, endYear: deathYear },
       ).map((label) => nationalityAssertion({ source: 'DILA', id: `dynasty:${label}`, label })),
-      dateSource: birthYear != null || deathYear != null ? 'fine' : 'nationality',
-      startYear: birthYear ?? dynastyRange?.startYear,
-      endYear: deathYear ?? dynastyRange?.endYear,
+      ...dates,
       description: dilaPersonClue({
         name: names[0],
         birthYear,

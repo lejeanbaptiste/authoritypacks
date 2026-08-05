@@ -8,10 +8,11 @@ This repo holds **extract → compile → publish** tooling. The **matcher, revi
 
 | Doc | What it covers |
 |-----|----------------|
+| [**docs/extraction-todo.md**](docs/extraction-todo.md) | **Living todo list** — open work snapshot + full checklists |
 | [**docs/phases.md**](docs/phases.md) | Master roadmap — all sources, human checkpoints |
 | [**wikidata/README.md**](wikidata/README.md) | Wikidata config tables + validator (W0 done) |
-| [**docs/extraction-todo.md**](docs/extraction-todo.md) | Current extraction, re-extraction, concordance, and toponym checklist |
-| [**docs/person-concordance-plan.md**](docs/person-concordance-plan.md) | Planned multi-tier Norbert↔CBDB/DILA/Wikidata person linking |
+| [**docs/person-concordance-plan.md**](docs/person-concordance-plan.md) | Tiered Norbert↔CBDB/DILA/Wikidata person linking (implemented + review merge) |
+| [**docs/purge-orders.md**](docs/purge-orders.md) | Developer pack change notices → user review docket |
 | [**CHANGELOG.md**](CHANGELOG.md) | Shipped compiler and pack-format changes |
 
 Leaf-writer companions (integration, not extraction):
@@ -24,6 +25,7 @@ Leaf-writer companions (integration, not extraction):
 ```
 authority extraction/
   docs/phases.md          # roadmap + progress dashboard
+  docs/extraction-todo.md # living TODO checklist (start here for “what’s left”)
   shared/                 # normalize, clue, ndjson, teiParse, dynastyMap
   cbdb/                   # compile + report (C1–C2 done)
   dila/                   # compile (D1 done)
@@ -32,68 +34,36 @@ authority extraction/
   reports/                # ambiguity CSVs
 ```
 
-## TODO — VIAF ↔ Wikidata concordance (ship with packs)
+## VIAF ↔ Wikidata concordance (status)
 
-LJB disambiguation merges live Wikidata + VIAF hits using a **precompiled**
-P214 table at `authority-packs/wikidata/viaf-wikidata-concordance.ndjson`
-(pack id `wikidata-viaf-concordance`). Regex scraping of LINCS descriptions
-remains only as a fallback.
+LJB disambiguation merges live Wikidata + VIAF hits using a precompiled P214
+table (pack id `wikidata-viaf-concordance`). Runtime wiring is **done** on LJB
+GitHub `main` (`viafWikidataConcordance.ts`).
 
-**Prerequisite:** compiled Wikidata packs must carry `metadata.crosswalk.viaf`.
-Current zh/ja **person** raw extracts often lack identifier claims — re-extract
-those slices with the current extractor (P214 enabled via
-`wikidata/identifierProperties.json`) before expecting person coverage. Place
-packs that already have VIAF in crosswalk (e.g. `place-ja`) can ship a useful
-concordance today.
+**Locally built (not yet in a public release tarball):**
 
-### Steps
+- `packs/wikidata/viaf-wikidata-concordance.filtered.ndjson` (~11 MB)
+- `packs/wikidata/viaf-wikidata-concordance/` prefix chunks + `manifest.json`
 
-1. **Ensure raw extracts include crosswalk** (re-extract if `persons.raw.ndjson`
-   rows have no `crosswalk` field — only `qid` / labels / years):
+**Still open** (see [docs/extraction-todo.md](docs/extraction-todo.md)):
 
-   ```bash
-   cd "/Users/daniel/Code/leJeanBaptiste/authority extraction"
-   # example: re-extract a dynasty slice with the current dump tooling
-   npm run wikidata:extract -- --dump /path/to/latest-all.json.bz2 ...
-   ```
+1. Optional: expand the crosswalk extract with DILA/BDRC keys (dump pass) if
+   those person-row ids are needed; viaf/cbdb/ndl are already on person packs.
+2. Sanity-check: a string that returns both Wikidata and VIAF via LINCS for a
+   known pair should collapse to one candidate.
 
-2. **Recompile** so `metadata.crosswalk.viaf` appears on NDJSON rows:
+**Done locally:** person-row attach (`npm run wikidata:attach-crosswalk`) and
+filtered VIAF concordance in the rebuild tarball.
 
-   ```bash
-   npm run wikidata:compile -- --raw packs/wikidata/raw-…/persons.raw.ndjson --out packs/wikidata/person-…
-   # or place/org/work:
-   npm run wikidata:compile-places-ja   # etc.
-   ```
+Rebuild / refresh commands:
 
-3. **Build the concordance sidecar** from every compiled Wikidata pack that
-   already has VIAF links:
+```bash
+npm run wikidata:attach-crosswalk   # join sidecar ids onto person packs
+npm run wikidata:viaf-concordance   # full table from pack crosswalks
+npm run wikidata:viaf-filter        # filter + chunk to shipped QIDs
+```
 
-   ```bash
-   npm run wikidata:viaf-concordance
-   # → packs/wikidata/viaf-wikidata-concordance.ndjson
-   # each line: {"wikidata":"Q31","viaf":"144248059"}
-   ```
-
-   Or pass explicit inputs:
-
-   ```bash
-   node wikidata/buildViafConcordance.mjs \
-     --in packs/wikidata/place-ja/places.ndjson \
-     --in packs/wikidata/person-bo/persons.ndjson \
-     --out packs/wikidata/viaf-wikidata-concordance.ndjson
-   ```
-
-4. **Publish / install** the file next to other Wikidata packs under the user’s
-   entity-db `authority-packs/wikidata/` folder (same bundle path LJB already
-   uses for `wikidata/person-…`). No extra Settings checkbox — LJB loads
-   `wikidata-viaf-concordance` automatically when the file is present.
-
-5. **Sanity-check:** open disambiguation on a string that returns both Wikidata
-   and VIAF via LINCS for an id pair in the concordance; the two rows should
-   collapse into one candidate.
-
-See also `wikidata/README.md` § Authority concordance and leaf-writer
-`docs/authority-databases-phases.md`.
+See also `wikidata/README.md` § Authority concordance.
 
 ## Quick start
 

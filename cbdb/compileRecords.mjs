@@ -6,6 +6,7 @@ import { loadAdminSuffixMap, suffixedNameVariant } from './adminVocabulary.mjs';
 import { SOURCE } from './constants.mjs';
 import { nationalityFromDynasties } from '../shared/nationality.mjs';
 import { nationalityAssertion } from '../shared/nationalityConcordance.mjs';
+import { personDateMetadata } from '../shared/personDates.mjs';
 import { officeEntityId } from '../shared/officeGraph.mjs';
 import { loadCbdbPersonConcordance } from './personConcordance.mjs';
 
@@ -62,9 +63,13 @@ export function compileCbdbPersons(db, dynastyMap) {
     if (!names.length) continue;
 
     const dynasty = resolveDynastyByCode(row.c_dy, dynastyMap);
-    const startYear =
-      row.c_birthyear ?? row.c_fl_earliest_year ?? row.c_start ?? dynasty?.startYear;
-    const endYear = row.c_deathyear ?? row.c_fl_latest_year ?? row.c_end ?? dynasty?.endYear;
+    const dates = personDateMetadata({
+      birthYear: row.c_birthyear,
+      deathYear: row.c_deathyear,
+      flEarliest: row.c_fl_earliest_year,
+      flLatest: row.c_fl_latest_year,
+      indexYear: row.c_index_year,
+    });
     const nationality = nationalityFromDynasties(
       dynasty ? [dynasty] : [],
       { startYear: row.c_birthyear ?? row.c_fl_earliest_year, endYear: row.c_deathyear ?? row.c_fl_latest_year },
@@ -85,9 +90,7 @@ export function compileCbdbPersons(db, dynastyMap) {
         dynasty: row.c_dynasty_chn || dynasty?.label,
         nationality: nationality.map((label) => nationalityAssertion({ source: 'CBDB', id: `dynasty:${row.c_dy}`, label })),
         origin: originsByPerson.get(row.c_personid),
-        dateSource: row.c_birthyear != null || row.c_deathyear != null || row.c_fl_earliest_year != null || row.c_fl_latest_year != null ? 'fine' : 'nationality',
-        startYear: startYear ?? undefined,
-        endYear: endYear ?? undefined,
+        ...dates,
         pinyin: row.c_name || undefined,
         description: cbdbPersonClue({
           name: row.c_name_chn,

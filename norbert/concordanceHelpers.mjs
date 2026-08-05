@@ -1,7 +1,7 @@
 /** Shared helpers for tiered Norbert person concordance. */
 import { normalizeSurface } from '../shared/normalize.mjs';
 import { STATIC_DYNASTY_ALIASES, normalizeDynastyLabel } from '../shared/dynastyMap.mjs';
-import { formatNorbertAuthorityValue } from './norbertAuthorityId.mjs';
+import { formatNorbertAuthorityValue, bareNorbertAuthorityValue } from './norbertAuthorityId.mjs';
 import { sortSurnamesLongestFirst } from './surnames.mjs';
 
 export const TANG_START_YEAR = 618;
@@ -384,11 +384,12 @@ export function concordanceRow(norbertId, source, matchedId, match, evidence, no
 }
 
 /**
- * Bare Norbert person id from pack authorityId.
+ * Bare Norbert person id from pack authorityId (`person-12`, `NORBERT:person:12`, or `12`).
  * @param {string | number} authorityId
  */
 export function barePersonId(authorityId) {
-  return String(authorityId).replace(/^NORBERT:person:/i, '');
+  const stripped = String(authorityId).replace(/^NORBERT:person:/i, '');
+  return bareNorbertAuthorityValue(stripped);
 }
 
 /**

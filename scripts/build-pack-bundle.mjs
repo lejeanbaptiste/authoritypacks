@@ -38,6 +38,7 @@ import {
   loadApprovedNobleTitleRules,
   nobleTitleCandidatesFromApprovedMatches,
 } from '../shared/nobleTitleFilter.mjs';
+import { mergeReviewLinks, parseCsv } from '../norbert/mergeReviewCsv.mjs';
 
 /** Compiled Wikidata packs (optional — staged locally like NDL). `file` is the
  * NDJSON basename compile.mjs writes for that kind (persons/places/orgs/works). */
@@ -323,6 +324,25 @@ if (includeWikidata) {
     }
     console.log(`  ${pack.slug}`);
   }
+  // Concordance sidecars (not pack dirs) — Tier 0 bridges + VIAF filter input.
+  for (const name of [
+    'cbdb-wikidata-concordance.ndjson',
+    'viaf-wikidata-concordance.ndjson',
+    'ndl-wikidata-concordance.ndjson',
+  ]) {
+    const src = path.join(localPacksRoot, 'wikidata', name);
+    if (await isUsableFile(src)) {
+      await fsp.copyFile(src, path.join(packsDir, 'wikidata', name));
+      console.log(`  ${name}`);
+    }
+  }
+  // Prefer the place-ja / latest extract meta when the old priority1 meta is absent.
+  const placeJaMeta = path.join(localPacksRoot, 'wikidata/raw-ja-places/extract-meta.json');
+  if (!(await isUsableFile(wikidataMetaPath)) && (await isUsableFile(placeJaMeta))) {
+    await fsp.copyFile(placeJaMeta, path.join(packsDir, 'wikidata/extract-meta.json'));
+  } else if (await isUsableFile(wikidataMetaPath)) {
+    await fsp.copyFile(wikidataMetaPath, path.join(packsDir, 'wikidata/extract-meta.json'));
+  }
   await fsp.writeFile(
     path.join(packsDir, 'wikidata/manifest.json'),
     `${JSON.stringify(
@@ -346,14 +366,17 @@ const concordanceSources = {
   cbdb: readNdjson(path.join(packsDir, 'cbdb/persons.ndjson')),
   dila: readNdjson(path.join(packsDir, 'dila/persons.ndjson')),
 };
+/** @type {{ pack: (typeof stagedWikidataPacks)[number], records: any[] }[]} */
+const wikidataPersonBuckets = [];
 for (const pack of stagedWikidataPacks.filter((p) => p.file === 'persons.ndjson')) {
   const records = readNdjson(path.join(packsDir, 'wikidata', pack.slug, pack.file));
+  wikidataPersonBuckets.push({ pack, records });
   concordanceSources.wikidata = [...(concordanceSources.wikidata ?? []), ...records];
 }
 const wrappersPath = path.join(norbertDir, 'person-wrappers.ndjson');
 const surnamesPath = path.join(norbertDir, 'surnames.json');
 const cbdbWdPath = path.join(packsDir, 'wikidata/cbdb-wikidata-concordance.ndjson');
-const concordance = buildNorbertConcordance(
+let concordance = buildNorbertConcordance(
   readNdjson(path.join(norbertDir, 'persons.ndjson')),
   concordanceSources,
   {
@@ -365,6 +388,15 @@ const concordance = buildNorbertConcordance(
     includeTier2Review: false,
   },
 );
+const reviewCsvPath = path.join(repoRoot, 'reports/norbert-person-concordance-review.csv');
+if (fs.existsSync(reviewCsvPath)) {
+  const merged = mergeReviewLinks(concordance, parseCsv(fs.readFileSync(reviewCsvPath, 'utf8')));
+  concordance = merged.merged;
+  console.log(
+    `  auto-accept ${merged.stats.existing}, +${merged.stats.added} reviewed link rows` +
+      (merged.stats.skippedDup ? ` (${merged.stats.skippedDup} already present)` : ''),
+  );
+}
 writeNdjson(path.join(norbertDir, 'concordance.ndjson'), concordance);
 const integrated = integrateConcordance(
   concordance,
@@ -384,7 +416,58 @@ for (const [source, records] of Object.entries(integrated.sources)) {
   const sourceDir = source === 'cbdb' ? 'cbdb' : source === 'dila' ? 'dila' : null;
   if (sourceDir) writeNdjson(path.join(packsDir, sourceDir, 'persons.ndjson'), records);
 }
+for (const { pack, records } of wikidataPersonBuckets) {
+  writeNdjson(path.join(packsDir, 'wikidata', pack.slug, pack.file), records);
+}
 console.log(`  ${concordance.length} Norbert concordance matches; ${integrated.applied} links applied`);
+
+console.log('Building purge orders…');
+{
+  const { purgeOrdersFromConcordanceDiff, serializePurgeOrders, makePurgeOrder } =
+    await import('../shared/purgeOrders.mjs');
+  const prevPath = path.join(norbertDir, 'concordance.prev.ndjson');
+  const purgeDir = path.join(packsDir, 'purge-orders');
+  fs.mkdirSync(purgeDir, { recursive: true });
+  const previous = fs.existsSync(prevPath) ? readNdjson(prevPath) : [];
+  const orders = previous.length
+    ? purgeOrdersFromConcordanceDiff(previous, concordance, {
+        bundleVersion,
+        notePrefix: 'Authority pack update:',
+      })
+    : [
+        makePurgeOrder({
+          kind: 'pack-note',
+          bundleVersion,
+          note: `Authority pack update: person concordance ships ${concordance.length} accepted links. Review new crosswalks as needed.`,
+        }),
+      ];
+  fs.writeFileSync(
+    path.join(purgeDir, 'purge-orders.ndjson'),
+    serializePurgeOrders(orders),
+    'utf8',
+  );
+  console.log(`  ${orders.length} purge orders → purge-orders/purge-orders.ndjson`);
+}
+
+const viafFull = path.join(packsDir, 'wikidata/viaf-wikidata-concordance.ndjson');
+if (fs.existsSync(viafFull) && stagedWikidataPacks.length) {
+  console.log('Filtering + chunking VIAF↔Wikidata concordance to shipped pack QIDs…');
+  execFileSync(
+    process.execPath,
+    [
+      path.join(repoRoot, 'wikidata/filterViafConcordance.mjs'),
+      '--concordance',
+      viafFull,
+      '--scan-packs',
+      path.join(packsDir, 'wikidata'),
+      '--out',
+      path.join(packsDir, 'wikidata/viaf-wikidata-concordance.filtered.ndjson'),
+      '--chunk-dir',
+      path.join(packsDir, 'wikidata/viaf-wikidata-concordance'),
+    ],
+    { stdio: 'inherit' },
+  );
+}
 
 console.log('Building Norbert office concordance…');
 const norbertOfficesPath = path.join(norbertDir, 'offices.ndjson');
