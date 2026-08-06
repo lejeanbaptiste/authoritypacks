@@ -22,6 +22,7 @@ packs/ndl/orgs-smoke-ja/
 packs/ndl/ime.csv
 packs/chgis-test/
 packs/norbert/
+packs/huckbot5000/
 
 # Ignore Wikidata raw extract directories (intermediate files)
 packs/wikidata/raw-*/
@@ -45,3 +46,4 @@ packs/wikidata/raw-zh-hant-*/
 
 # Norbert
 norbert_secret/
+skunkworks/
