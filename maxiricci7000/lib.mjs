@@ -16,6 +16,8 @@ const HUCKER_CITATION_RE = /\(\s*Hucker\s*\)/i;
 const PLACEHOLDER_EN_RE =
   /^\[?\s*(not yet translated|untranslated|n\/?a|none|null|todo)\s*\]?$/i;
 const RR_RE = /\bRR\s*:\s*([^.;\n]+)/i;
+const CJK_CHAR_RE = /[\u3400-\u9fff]/;
+const NUMERIC_OR_PUNCT_EN_RE = /^[\d.\-_/\\|=+\s]+$/;
 
 const FR_STOPWORDS = new Set(
   'de du des le la les un une et ou à au aux en y d l sur pour par avec sans dans'.split(' '),
@@ -37,8 +39,12 @@ export function cleanEnglishGloss(en) {
   let out = normalizeEnglish(en);
   if (!out) return '';
   out = out.replace(/\s*=+\s*$/g, '').trim();
-  if (out.length < 2) return '';
+  if (out.length < 3) return '';
   if (PLACEHOLDER_EN_RE.test(out)) return '';
+  if (NUMERIC_OR_PUNCT_EN_RE.test(out)) return '';
+  // CBDB sometimes parks Chinese or codes in the "translation" field.
+  if (CJK_CHAR_RE.test(out)) return '';
+  if (!/[A-Za-zÀ-ÿ]/.test(out)) return '';
   if (/^(variant|abbreviation|see |from |Manchu word)/i.test(out)) return '';
   return out;
 }
@@ -54,6 +60,23 @@ export function cleanFrenchGloss(s) {
   // Drop trailing parentheticals (pinyin dumps, rank notes) but keep internal ones.
   out = out.replace(/\s*\([^)]*\)\s*$/, '').trim();
   return out;
+}
+
+/**
+ * Reject generated French that is empty, numeric, tiny, or still contains CJK
+ * (failed clean separation from the Chinese headword / mixed OCR).
+ * @returns {{ ok: true } | { ok: false, reason: string }}
+ */
+export function assessFrenchCandidate({ en, fr }) {
+  const english = cleanEnglishGloss(en);
+  if (!english) return { ok: false, reason: 'bad-english-input' };
+  const french = cleanFrenchGloss(fr);
+  if (!french) return { ok: false, reason: 'empty-french' };
+  if (french.length < 3) return { ok: false, reason: 'tiny-french' };
+  if (CJK_CHAR_RE.test(french)) return { ok: false, reason: 'cjk-in-french' };
+  if (NUMERIC_OR_PUNCT_EN_RE.test(french)) return { ok: false, reason: 'numeric-french' };
+  if (!/[A-Za-zÀ-ÿ]/.test(french)) return { ok: false, reason: 'no-latin-french' };
+  return { ok: true };
 }
 
 /** Fix common OCR confusions in RR snippets (I/l, V≈l'). */

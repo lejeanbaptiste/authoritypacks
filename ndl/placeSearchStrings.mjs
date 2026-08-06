@@ -1,5 +1,9 @@
 import { addYomiSearchStrings } from './yomiReadings.mjs';
-import { isChineseNumeralOnly, normalizeSurface } from '../shared/normalize.mjs';
+import {
+  containsLatinLetters,
+  isChineseNumeralOnly,
+  normalizeSurface,
+} from '../shared/normalize.mjs';
 
 /** @param {import('./types.mjs').NdlPlaceRaw} raw */
 export function placeSearchStringsFromRaw(raw) {
@@ -7,7 +11,7 @@ export function placeSearchStringsFromRaw(raw) {
   const seen = new Set();
   const add = (s) => {
     const t = normalizeSurface(s);
-    if (!t || seen.has(t) || isChineseNumeralOnly(t)) return;
+    if (!t || seen.has(t) || isChineseNumeralOnly(t) || containsLatinLetters(t)) return;
     seen.add(t);
     out.push(t);
   };

@@ -2,7 +2,11 @@
  * Search strings for non-person Wikidata kinds.
  */
 
-import { addSearchString, normalizeSurface } from '../shared/normalize.mjs';
+import {
+  addSearchString,
+  containsLatinLetters,
+  normalizeSurface,
+} from '../shared/normalize.mjs';
 
 /** US/elsewhere admin units that only have a Japanese label translation. */
 const FOREIGN_ADMIN_SUFFIX_RE =
@@ -24,6 +28,7 @@ const GEO_GENERIC_RE =
 export function isBlockedKindSearchString(surface, kind, opts = {}) {
   const s = normalizeSurface(surface);
   if (!s) return true;
+  if (containsLatinLetters(s)) return true;
   if (FOREIGN_ADMIN_SUFFIX_RE.test(s)) return true;
   if (GEO_GENERIC_RE.test(s) && kind !== 'place') return true;
   if (kind === 'org' && SCHOOL_SUFFIX_RE.test(s) && !GEO_DISAMBIG_RE.test(s)) {

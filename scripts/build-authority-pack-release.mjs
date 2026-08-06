@@ -53,6 +53,7 @@ const bundles = [
       'authority-packs/chgis',
       'authority-packs/norbert',
       'authority-packs/huckbot5000',
+      'authority-packs/maxiricci7000',
       'authority-packs/wikidata/person-zh-hant-tang',
       'authority-packs/wikidata/person-zh-hant-pre-ming',
       'authority-packs/wikidata/person-zh-hant-ming',

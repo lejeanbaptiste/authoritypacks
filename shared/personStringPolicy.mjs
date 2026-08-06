@@ -1,7 +1,12 @@
-import { addSearchString, isChineseNumeralOnly, normalizeSurface } from './normalize.mjs';
+import {
+  addSearchString,
+  containsLatinLetters,
+  isChineseNumeralOnly,
+  normalizeSurface,
+} from './normalize.mjs';
 
-/** Symbols and Latin letters — excluded from person match strings (CBDB v1 policy). */
-const BLOCKED_CHAR_RE = /[\*(\[\-]|[A-Za-z]/;
+/** Symbols — excluded from person match strings (CBDB v1 policy). Latin via containsLatinLetters. */
+const BLOCKED_CHAR_RE = /[\*(\[\-]/;
 
 /** Placeholder names: 王某, 李某, … (CBDB blocks surname+某; also block any single-surname + 某). */
 const PLACEHOLDER_MOU_RE = /^[\u4e00-\u9fff]某$/;
@@ -41,6 +46,7 @@ export function isBlockedPersonString(surface, surnameChn) {
   const s = normalizeSurface(surface);
   if (!s) return true;
   if (isMissingNameToken(s)) return true;
+  if (containsLatinLetters(s)) return true;
   if (BLOCKED_CHAR_RE.test(s)) return true;
   if (PLACEHOLDER_MOU_RE.test(s)) return true;
   if (BIRTH_ORDER_RE.test(s)) return true;

@@ -2,9 +2,9 @@
   "id": "test-ndl-persons",
   "source": "NDL",
   "buildToolVersion": "0.1.0",
-  "compiledAt": "2026-08-04T12:10:58.228Z",
+  "compiledAt": "2026-08-06T22:05:36.122Z",
   "upstream": {
-    "raw": "/home/d/Python/ljb/authoritypacks/ndl/fixtures/sample-persons.raw.ndjson"
+    "raw": "/Users/daniel/Code/leJeanBaptiste/authority extraction/ndl/fixtures/sample-persons.raw.ndjson"
   },
   "license": "NDL Terms of Use (attribution required)",
   "attribution": "Data from Web NDL Authorities (National Diet Library). 国立国会図書館の「Web NDL Authorities」から取得した典拠データです。",

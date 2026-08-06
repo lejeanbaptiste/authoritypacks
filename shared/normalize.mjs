@@ -1,10 +1,16 @@
 /** @typedef {import('./types.mjs').AuthorityCandidate} AuthorityCandidate */
 
 const DEFAULT_MIN = 2;
-const LATIN_MIN = 3;
 
 /** Chinese numeral characters (digits + place-value units, incl. 萬). */
 const CHINESE_NUMERAL_ONLY_RE = /^[一二三四五六七八九十百千萬]+$/;
+
+/**
+ * Any Latin-script letter (ASCII or accented). Tagging packs match CJK /
+ * Tibetan / etc. source text — Latin surfaces are never useful searchStrings.
+ * Fullwidth Latin (Ａ–Ｚ) is included separately (not Script=Latin).
+ */
+const LATIN_LETTER_RE = /\p{Script=Latin}|[Ａ-Ｚａ-ｚ]/u;
 
 /**
  * True when `surface` is composed entirely of Chinese numeral characters
@@ -15,6 +21,14 @@ const CHINESE_NUMERAL_ONLY_RE = /^[一二三四五六七八九十百千萬]+$/;
 export function isChineseNumeralOnly(surface) {
   const s = normalizeSurface(surface);
   return s.length > 0 && CHINESE_NUMERAL_ONLY_RE.test(s);
+}
+
+/**
+ * True when the surface contains any Latin letter (incl. accented / fullwidth).
+ * @param {string} surface
+ */
+export function containsLatinLetters(surface) {
+  return LATIN_LETTER_RE.test(surface ?? '');
 }
 
 /**
@@ -33,9 +47,9 @@ export function normalizeSurface(raw) {
 export function isValidSearchString(surface, opts = {}) {
   const s = normalizeSurface(surface);
   if (!s) return false;
-  const min =
-    opts.minLength ??
-    (opts.script === 'latn' || /^[\u0000-\u024F\s\-'.]+$/.test(s) ? LATIN_MIN : DEFAULT_MIN);
+  // Tag packs never index Latin (romanization, English titles, catalog codes…).
+  if (containsLatinLetters(s)) return false;
+  const min = opts.minLength ?? DEFAULT_MIN;
   return [...s].length >= min;
 }
 

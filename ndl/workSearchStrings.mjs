@@ -1,4 +1,8 @@
-import { isChineseNumeralOnly, normalizeSurface } from '../shared/normalize.mjs';
+import {
+  containsLatinLetters,
+  isChineseNumeralOnly,
+  normalizeSurface,
+} from '../shared/normalize.mjs';
 
 /** @param {import('./types.mjs').NdlWorkRaw} raw */
 export function workSearchStringsFromRaw(raw) {
@@ -6,7 +10,7 @@ export function workSearchStringsFromRaw(raw) {
   const seen = new Set();
   const add = (s) => {
     const t = normalizeSurface(s);
-    if (!t || seen.has(t) || isChineseNumeralOnly(t)) return;
+    if (!t || seen.has(t) || isChineseNumeralOnly(t) || containsLatinLetters(t)) return;
     seen.add(t);
     out.push(t);
   };

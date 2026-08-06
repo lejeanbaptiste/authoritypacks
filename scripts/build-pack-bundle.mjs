@@ -171,6 +171,15 @@ const huckbotManifestPath = [
 const includeHuckbot =
   (await isUsableFile(huckbotTranslationsPath)) && Boolean(huckbotManifestPath);
 
+// MaxiRicci7000 French office glosses (optional local stage).
+const maxiRicciTranslationsPath = path.join(localPacksRoot, 'maxiricci7000/translations.ndjson');
+const maxiRicciManifestPath = [
+  path.join(localPacksRoot, 'maxiricci7000/manifest.json'),
+  path.join(localPacksRoot, 'maxiricci7000/translations-manifest.json'),
+].find((candidate) => fs.existsSync(candidate));
+const includeMaxiRicci =
+  (await isUsableFile(maxiRicciTranslationsPath)) && Boolean(maxiRicciManifestPath);
+
 const ndlPersonsRaw = await resolveOptional(
   path.join(upstreamDir, 'ndl/raw/persons.raw.ndjson'),
   path.join(localPacksRoot, 'ndl/raw/persons.raw.ndjson'),
@@ -278,6 +287,14 @@ if (includeHuckbot) {
   await fsp.mkdir(huckbotDestDir, { recursive: true });
   await fsp.copyFile(huckbotTranslationsPath, path.join(huckbotDestDir, 'translations.ndjson'));
   await fsp.copyFile(huckbotManifestPath, path.join(huckbotDestDir, 'manifest.json'));
+}
+
+if (includeMaxiRicci) {
+  console.log('Staging MaxiRicci7000 French translations…');
+  const maxiDestDir = path.join(packsDir, 'maxiricci7000');
+  await fsp.mkdir(maxiDestDir, { recursive: true });
+  await fsp.copyFile(maxiRicciTranslationsPath, path.join(maxiDestDir, 'translations.ndjson'));
+  await fsp.copyFile(maxiRicciManifestPath, path.join(maxiDestDir, 'manifest.json'));
 }
 
 console.log('Compiling Norbert…');
@@ -707,6 +724,7 @@ const packFiles = [];
 const bundleSourceIds = ['cbdb', 'dila', 'norbert', 'noble-title-filter'];
 if (includeChgis) bundleSourceIds.push('chgis');
 if (includeHuckbot) bundleSourceIds.push('huckbot5000');
+if (includeMaxiRicci) bundleSourceIds.push('maxiricci7000');
 if (includeWikidata) bundleSourceIds.push('wikidata');
 if (includeNdl) bundleSourceIds.push('ndl');
 
@@ -812,6 +830,11 @@ if (!includeChgis) {
 if (!includeHuckbot) {
   console.log(
     'Huckbot5000 not included: run `npm run compile:huckbot5000-translations` so packs/huckbot5000/translations.ndjson exists.',
+  );
+}
+if (!includeMaxiRicci) {
+  console.log(
+    'MaxiRicci7000 not included: run `npm run compile:maxiricci7000` so packs/maxiricci7000/translations.ndjson exists.',
   );
 }
 if (!includeNdl) {

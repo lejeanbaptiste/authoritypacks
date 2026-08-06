@@ -15,6 +15,11 @@ redistributable; `metadata.englishFromHucker` keeps provenance for audit. This i
 a deliberate risk call (distinct from the English collision-archive rule). Harvard
 hosting a scan of Hucker is noted as context, not a formal license grant.
 
+**LJB wiring:** pack id `maxiricci7000-translations` fills `metadata.translationFr`
+on CBDB/Norbert office candidates (by `officeIds`, with zh/dynasty fallback) and
+mints `entity_translations` with `language: 'fr'`. English Huckbot glosses are
+unchanged.
+
 ## Prerequisites
 
 ```bash
@@ -52,6 +57,10 @@ Outputs under `packs/maxiricci7000/` (gitignored):
 - `candidates-a.ndjson` / `candidates-b.ndjson`
 - `french-lexicon.ndjson` — mined during Batch B
 - `translations.ndjson` + `translations-manifest.json`
+
+Compile drops junk (numeric English like `8947`, CJK parked in the English
+field, French that still contains Chinese characters). Rejected rows land in
+`reports/maxiricci7000-rejected.ndjson`.
 
 Expect ~1 call/s; Batch A is thousands of rows (hours). Use `--resume` after interruptions.
 

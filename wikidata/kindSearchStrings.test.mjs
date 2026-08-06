@@ -34,4 +34,22 @@ test('kindSearchStringsFromWikidata drops blocked aliases', () => {
   );
   assert.equal(strings.includes('桜小学校'), false);
   assert.equal(strings.includes('モンロー・タウンシップ'), false);
+  assert.equal(strings.includes('Monroe Township'), false);
+});
+
+test('blocks Latin letters in place/org/work search strings', () => {
+  assert.equal(isBlockedKindSearchString('馬木IC', 'place'), true);
+  assert.equal(isBlockedKindSearchString('ACFフィオレンティーナ', 'org'), true);
+  assert.equal(isBlockedKindSearchString('Self-help', 'work'), true);
+  assert.equal(isBlockedKindSearchString('東大寺', 'place'), false);
+
+  const strings = kindSearchStringsFromWikidata(
+    {
+      primaryLabel: '馬木インターチェンジ',
+      aliases: ['馬木IC', '馬木'],
+    },
+    { kind: 'place' },
+  );
+  assert.equal(strings.includes('馬木IC'), false);
+  assert.ok(strings.includes('馬木インターチェンジ') || strings.includes('馬木'));
 });

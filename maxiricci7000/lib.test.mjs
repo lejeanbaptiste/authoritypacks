@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  assessFrenchCandidate,
   batchAKey,
   batchBKey,
   buildFrenchRetrievalIndex,
@@ -28,6 +29,28 @@ test('cleanRotoursSnippet fixes OCR I\' / V confusions', () => {
 test('cleanEnglishGloss rejects placeholders', () => {
   assert.equal(cleanEnglishGloss('[Not Yet Translated]'), '');
   assert.equal(cleanEnglishGloss('Erudite (Hucker)'), 'Erudite');
+});
+
+test('cleanEnglishGloss rejects numeric / CJK / punctuation "English"', () => {
+  assert.equal(cleanEnglishGloss('8947'), '');
+  assert.equal(cleanEnglishGloss('//'), '');
+  assert.equal(cleanEnglishGloss('統稱'), '');
+  assert.equal(cleanEnglishGloss('General of the Basimu部'), '');
+});
+
+test('assessFrenchCandidate drops CJK-in-French and bad English', () => {
+  assert.equal(
+    assessFrenchCandidate({ en: '8947', fr: 'grand maître' }).ok,
+    false,
+  );
+  assert.equal(
+    assessFrenchCandidate({ en: 'Palace Guard Officer', fr: 'officier de la garde du palais' }).ok,
+    true,
+  );
+  assert.equal(
+    assessFrenchCandidate({ en: 'General', fr: 'général du Basimu部' }).ok,
+    false,
+  );
 });
 
 test('cleanFrenchGloss strips labels', () => {

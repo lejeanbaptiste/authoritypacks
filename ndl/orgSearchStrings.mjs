@@ -1,8 +1,11 @@
 import { addYomiSearchStrings } from './yomiReadings.mjs';
-import { isChineseNumeralOnly, normalizeSurface } from '../shared/normalize.mjs';
+import {
+  containsLatinLetters,
+  isChineseNumeralOnly,
+  normalizeSurface,
+} from '../shared/normalize.mjs';
 
 const KANJI_RE = /[一-鿿]/u;
-const LATIN_RE = /[A-Za-z]/u;
 const DIGIT_RE = /\d/u;
 
 /**
@@ -13,7 +16,7 @@ function isUsableOrgName(value) {
   const name = normalizeSurface(value);
   if (!name) return false;
   if (isChineseNumeralOnly(name)) return false;
-  if (LATIN_RE.test(name) || DIGIT_RE.test(name)) return false;
+  if (containsLatinLetters(name) || DIGIT_RE.test(name)) return false;
   if (!KANJI_RE.test(name)) return false;
   return true;
 }
@@ -26,7 +29,7 @@ export function orgSearchStringsFromRaw(raw) {
   const seen = new Set();
   const add = (s) => {
     const t = normalizeSurface(s);
-    if (!t || seen.has(t) || isChineseNumeralOnly(t)) return;
+    if (!t || seen.has(t) || isChineseNumeralOnly(t) || containsLatinLetters(t)) return;
     seen.add(t);
     out.push(t);
   };

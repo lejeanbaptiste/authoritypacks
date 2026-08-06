@@ -6,10 +6,9 @@
  * single-kanji labels, and catalog stubs with occupation-only headings are out.
  */
 import { codePointLength, isMissingNameToken } from './personStringPolicy.mjs';
-import { normalizeSurface } from './normalize.mjs';
+import { containsLatinLetters, normalizeSurface } from './normalize.mjs';
 
 const KANJI_RE = /[\u4e00-\u9fff]/u;
-const LATIN_RE = /[A-Za-z]/u;
 const DIGIT_RE = /\d/u;
 const KANA_ONLY_RE = /^[\u3040-\u309f\u30a0-\u30ffー・]+$/u;
 const DHARMA_SUFFIX_RE =
@@ -51,7 +50,7 @@ export function isNdlGivenNamePart(part) {
   if (!p) return false;
   if (NON_GIVEN_HEADING_RE.test(p)) return false;
   if (OCCUPATION_HEADING_RE.test(p)) return false;
-  if (LATIN_RE.test(p) && !KANJI_RE.test(p)) return false;
+  if (containsLatinLetters(p) && !KANJI_RE.test(p)) return false;
   // Years / date ranges already excluded; require some Japanese script.
   if (!KANJI_RE.test(p) && !/[\u3040-\u30ff]/u.test(p)) return false;
   return true;
@@ -79,7 +78,7 @@ export function parseNdlPersonHeading(heading) {
 export function hasUsableJapanesePersonScript(value) {
   const name = normalizeSurface(value ?? '');
   if (!name || isMissingNameToken(name)) return false;
-  if (LATIN_RE.test(name) || DIGIT_RE.test(name)) return false;
+  if (containsLatinLetters(name) || DIGIT_RE.test(name)) return false;
   if (!KANJI_RE.test(name)) return false;
   return true;
 }

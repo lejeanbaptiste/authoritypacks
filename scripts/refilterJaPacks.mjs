@@ -10,12 +10,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
+import { containsLatinLetters, normalizeSurface } from '../shared/normalize.mjs';
+import { isBlockedKindSearchString } from '../wikidata/kindSearchStrings.mjs';
 import {
   isAcceptableJapanesePersonName,
   sanitizeJapanesePersonSearchSurface,
 } from '../shared/japanesePersonName.mjs';
-import { isBlockedKindSearchString } from '../wikidata/kindSearchStrings.mjs';
-import { normalizeSurface } from '../shared/normalize.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -93,6 +93,7 @@ function refilterKind(row, kind) {
   for (const raw of /** @type {string[]} */ (row.searchStrings ?? [])) {
     const s = normalizeSurface(raw);
     if (!s || seen.has(s)) continue;
+    if (containsLatinLetters(s)) continue;
     if (isBlockedKindSearchString(s, kind)) continue;
     seen.add(s);
     nextStrings.push(s);
