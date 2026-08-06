@@ -5,63 +5,46 @@ Working checklist for source extraction, re-extraction, pack compilation, and pu
 **This file is the living todo list** for authority-pack work. Prefer updating
 checkboxes here over scattering status notes in chat or ad-hoc scratch files.
 
-## Open work (snapshot 2026-08-05)
+## Open work (snapshot 2026-08-06)
 
 High-priority unfinished items only. Detail and history live in the sections
 below.
 
-### Next (blocked on design / join work)
+### Next (blocked on LJB merge / design)
 
 - [ ] **Pack-purge Settings UI** — pending design so it does not fight existing
   LJB `entityOrders` / merge-docket vocabulary ([purge-orders.md](./purge-orders.md)).
+  Hold LJB code edits until the other-machine commits are merged.
 - [ ] **First GitHub Release** — upload local tarball + `packs-index.json`;
-  smoke-test install in LJB (hold until purge design settles).
+  smoke-test install in LJB (hold until LJB merge + purge design settle).
 
 ### Small follow-ups
 
 - [ ] Confirm tag-bomb / pack-preview always pass `dateFilter` into
   `authorityPackRead` (desktop chunking is ready; check any callers still using
-  a date-blind `cachedPackReader` wrapper).
+  a date-blind `cachedPackReader` wrapper). **LJB-side — wait for merge.**
 - [ ] Optional place polish: zh-hant vs CBDB/DILA/CHGIS; ja vs NDL ambiguity
   reports.
-- [ ] Optional: re-run `wikidata:extract-crosswalk` with `--keys viaf,cbdb,ndl,dila,bdrc`
-  (dump pass) if person-row DILA/BDRC ids are needed; current sidecar has
-  viaf/cbdb/ndl only.
 
-### Just finished (2026-08-04 / 08-05)
+### Just finished (2026-08-06)
 
-- [x] **Attach crosswalks to Wikidata person packs** — join from retained
-  `wikidata-authority-crosswalk.ndjson` (+ pair sidecars); no dump crawl.
-  Command: `npm run wikidata:attach-crosswalk`. Coverage: **311,129 / 481,983**
-  person QIDs with sidecar hits; every person row now has at least
-  `metadata.crosswalk.wikidata`. Keys present: viaf, cbdb, ndl (+ preserved
-  norbert). Spot-checks: 毛澤東 `Q5816` → VIAF/NDL; 唐代宗 `Q9753` → CBDB
-  `19246` + norbert `4144`; 葛飾北斎 `Q5586` → VIAF/NDL.
-- [x] **Pack bundle rebuilt** after attach (sha256
-  `c414c9832ee1d373f1024f3cfc723c58dfe798cd2e28cd17558d2520b4046dba`).
-- [x] **Japanese places P17** — dump scan finished; compiled **214,157** places
-  → `packs/wikidata/place-ja/`; staged in the pack bundle.
-- [x] Earlier pack bundle (`npm run build:packs -- --upstream upstream`):
+- [x] **DILA/BDRC crosswalk dump pass** — fresh
+  `wikidata:extract-crosswalk` (`viaf,cbdb,ndl,dila,bdrc`): **5,143,842** rows;
+  dila **2,859** / bdrc **23,266** pairs. Re-attached to person packs
+  (**329,289 / 481,983** QIDs with sidecar hits). Spot-checks: 唐代宗 `Q9753` →
+  DILA `A004379` (+ CBDB/norbert); `person-bo` sample → BDRC `P1KG21914`.
+- [x] **Pack bundle rebuilt** with person-row crosswalks + dila/bdrc pair
+  sidecars staged:
   `dist/authority-packs-2026-07-05+cbdb20260627+norbert2026-07-25-reduced-authority+wikidatalocal+ndllocal.tar.gz`
-  (~380 MB), plus `dist/packs-index.json`. Includes `place-ja`, filtered VIAF
-  (`viaf-wikidata-concordance.filtered.ndjson` + 90 chunks), date-segregated
-  CBDB/DILA/Norbert persons.
-- [x] Fix Norbert concordance integrate for `person-N` vs bare review IDs
-  (`indexNorbertById` in `integrateConcordance.mjs`). Bundle apply:
-  **4,671** matches → **4,662** links (9 skipped). Spot-check: 丁固
-  `person-1736` ↔ CBDB `20614`.
-- [x] Merge reviewed Norbert person concordance CSV (`link` rows) into the
-  build (`concordance:merge-review` path inside `build:packs`).
-- [x] Filter + chunk VIAF concordance; **shipped in the local tarball**; LJB
-  disambiguation enrich path already wired on GitHub `main`.
-- [x] lejeanbaptiste local `main` reset to GitHub `origin/main` (stale divergent
-  history discarded; WIP stash kept).
-- [x] **Person date segregation** — dynasty spans no longer written as person
-  `startYear`/`endYear`. Priority: birth/death (`fine`) → floruit → CBDB
-  `c_index_year` ±30 (`index`) → nationality-only (dynasty years on
-  `nationality[]`). Import accepts only `dateSource: 'fine'`
-  (`shared/personDates.mjs`; LJB `personDates.ts` + packLoader / lookup /
-  mint paths). Recompiled into the 2026-08-05 bundle.
+  (~404 MB), sha256
+  `d3edc3f3fc16e1052c28afa895d31ea459adcb08e569de2d2e1a4f3af57bc3b9`,
+  plus `dist/packs-index.json`.
+
+### Earlier (2026-08-04 / 08-05)
+
+- [x] **Attach crosswalks to Wikidata person packs** (viaf/cbdb/ndl first pass)
+  + Japanese places P17 + Norbert `person-N` integrate fix + date segregation.
+  See git / prior bundle notes.
 ---
 
 ## Current decision: offices and appointments (2026-07-26)
@@ -226,9 +209,8 @@ than web scrapes.
   (`npm run wikidata:attach-crosswalk`, 2026-08-05).
 - [x] If raw extracts do not exist, rescan the Wikidata dump for the required person slices.
   *(Superseded 2026-08-04: full-dump identifier sidecars already retained; do not rescan for crosswalk alone.)*
-- [x] Verify compiled Wikidata `metadata.crosswalk` preserves CBDB (`P497`), VIAF, NDL
-  (sidecar keys). DILA (`P1187`) / BDRC not in the 2026-08-03 extract — optional
-  later dump pass with `--keys …,dila,bdrc`.
+- [x] Verify compiled Wikidata `metadata.crosswalk` preserves CBDB (`P497`), VIAF,
+  NDL, DILA (`P1187`), and BDRC (2026-08-06 extract + attach).
 - [x] Filter + chunk VIAF concordance to shipped pack QIDs
   (`npm run wikidata:viaf-filter` → `viaf-wikidata-concordance.filtered.ndjson`
   + `viaf-wikidata-concordance/*.ndjson`). Full dump sidecar stays local.

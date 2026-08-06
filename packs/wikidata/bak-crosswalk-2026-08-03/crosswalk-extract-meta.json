@@ -1,28 +1,22 @@
 {
-  "extractedAt": "2026-08-06T01:17:31.848Z",
+  "extractedAt": "2026-08-03T04:49:54.919Z",
   "dumpPath": "/home/d/Data/latest-all.json.bz2",
   "keys": [
     "viaf",
     "cbdb",
-    "ndl",
-    "dila",
-    "bdrc"
+    "ndl"
   ],
   "entitiesScanned": 120986268,
-  "rowsMatched": 5143842,
+  "rowsMatched": 5119532,
   "pairCounts": {
     "viaf": 4678793,
     "cbdb": 415843,
-    "ndl": 179307,
-    "dila": 2859,
-    "bdrc": 23266
+    "ndl": 179307
   },
   "ambiguousSkipped": {
     "viaf": 13627,
     "cbdb": 5,
-    "ndl": 191,
-    "dila": 1,
-    "bdrc": 1658
+    "ndl": 191
   },
   "resumed": false,
   "complete": true,

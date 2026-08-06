@@ -47,13 +47,13 @@ GitHub `main` (`viafWikidataConcordance.ts`).
 
 **Still open** (see [docs/extraction-todo.md](docs/extraction-todo.md)):
 
-1. Optional: expand the crosswalk extract with DILA/BDRC keys (dump pass) if
-   those person-row ids are needed; viaf/cbdb/ndl are already on person packs.
-2. Sanity-check: a string that returns both Wikidata and VIAF via LINCS for a
-   known pair should collapse to one candidate.
+1. Sanity-check in LJB after merge: a string that returns both Wikidata and VIAF
+   via LINCS for a known pair should collapse to one candidate.
+2. GitHub Release of the local tarball (hold for LJB merge / purge design).
 
-**Done locally:** person-row attach (`npm run wikidata:attach-crosswalk`) and
-filtered VIAF concordance in the rebuild tarball.
+**Done locally:** person-row attach including DILA/BDRC
+(`npm run wikidata:attach-crosswalk`) and filtered VIAF + pair sidecars in the
+rebuild tarball.
 
 Rebuild / refresh commands:
 

@@ -8,12 +8,14 @@
  *   - viaf-wikidata-concordance.ndjson
  *   - cbdb-wikidata-concordance.ndjson
  *   - ndl-wikidata-concordance.ndjson
+ *   - dila-wikidata-concordance.ndjson   (when `dila` is in --keys)
+ *   - bdrc-wikidata-concordance.ndjson   (when `bdrc` is in --keys)
  *
  * Usage:
  *   node wikidata/extractCrosswalkConcordance.mjs \
  *     --dump /home/d/Data/latest-all.json.bz2 \
  *     --out-dir packs/wikidata \
- *     --keys viaf,cbdb,ndl \
+ *     --keys viaf,cbdb,ndl,dila,bdrc \
  *     --resume
  */
 
@@ -30,9 +32,22 @@ const ROOT = path.resolve(__dirname, '..');
 
 /** @typedef {'viaf' | 'cbdb' | 'ndl' | 'dila' | 'chgis' | 'bdrc'} CrosswalkKey */
 
-export const DEFAULT_CROSSWALK_KEYS = /** @type {CrosswalkKey[]} */ (['viaf', 'cbdb', 'ndl']);
+export const DEFAULT_CROSSWALK_KEYS = /** @type {CrosswalkKey[]} */ ([
+  'viaf',
+  'cbdb',
+  'ndl',
+  'dila',
+  'bdrc',
+]);
 
-export const PAIR_KEYS = /** @type {CrosswalkKey[]} */ (['viaf', 'cbdb', 'ndl']);
+/** Keys that also get a dedicated `{key}-wikidata-concordance.ndjson` pair file. */
+export const PAIR_KEYS = /** @type {CrosswalkKey[]} */ ([
+  'viaf',
+  'cbdb',
+  'ndl',
+  'dila',
+  'bdrc',
+]);
 
 /**
  * @param {string} dumpPath
@@ -157,6 +172,8 @@ export function createPairState() {
     viaf: { map: new Map(), ambiguous: 0 },
     cbdb: { map: new Map(), ambiguous: 0 },
     ndl: { map: new Map(), ambiguous: 0 },
+    dila: { map: new Map(), ambiguous: 0 },
+    bdrc: { map: new Map(), ambiguous: 0 },
   };
 }
 
@@ -338,7 +355,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
 
   if (!dumpPath) {
     console.error(
-      'Usage: node wikidata/extractCrosswalkConcordance.mjs --dump PATH [--out-dir packs/wikidata] [--keys viaf,cbdb,ndl] [--resume] [--max N] [--progress N]',
+      'Usage: node wikidata/extractCrosswalkConcordance.mjs --dump PATH [--out-dir packs/wikidata] [--keys viaf,cbdb,ndl,dila,bdrc] [--resume] [--max N] [--progress N]',
     );
     process.exit(1);
   }

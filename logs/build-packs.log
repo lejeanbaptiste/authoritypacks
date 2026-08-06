@@ -27,6 +27,8 @@ Staging Wikidata packs…
   cbdb-wikidata-concordance.ndjson
   viaf-wikidata-concordance.ndjson
   ndl-wikidata-concordance.ndjson
+  dila-wikidata-concordance.ndjson
+  bdrc-wikidata-concordance.ndjson
 Building Norbert concordance…
   auto-accept 848, +3823 reviewed link rows (2 already present)
   4671 Norbert concordance matches; 4662 links applied
@@ -44,4 +46,4 @@ Applying reviewed noble-title filter…
 Bundle: /home/d/Python/ljb/authoritypacks/dist/authority-packs-2026-07-05+cbdb20260627+norbert2026-07-25-reduced-authority+wikidatalocal+ndllocal.tar.gz
 Index:  /home/d/Python/ljb/authoritypacks/dist/packs-index.json
 Version: 2026-07-05+cbdb20260627+norbert2026-07-25-reduced-authority+wikidatalocal+ndllocal
-Tarball sha256: c414c9832ee1d373f1024f3cfc723c58dfe798cd2e28cd17558d2520b4046dba
+Tarball sha256: d3edc3f3fc16e1052c28afa895d31ea459adcb08e569de2d2e1a4f3af57bc3b9

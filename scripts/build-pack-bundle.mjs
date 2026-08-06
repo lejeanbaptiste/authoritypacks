@@ -329,6 +329,8 @@ if (includeWikidata) {
     'cbdb-wikidata-concordance.ndjson',
     'viaf-wikidata-concordance.ndjson',
     'ndl-wikidata-concordance.ndjson',
+    'dila-wikidata-concordance.ndjson',
+    'bdrc-wikidata-concordance.ndjson',
   ]) {
     const src = path.join(localPacksRoot, 'wikidata', name);
     if (await isUsableFile(src)) {

@@ -212,6 +212,8 @@ export async function attachAuthorityCrosswalk(opts) {
       { file: path.join(opts.wikidataRoot, 'viaf-wikidata-concordance.ndjson'), key: 'viaf' },
       { file: path.join(opts.wikidataRoot, 'cbdb-wikidata-concordance.ndjson'), key: 'cbdb' },
       { file: path.join(opts.wikidataRoot, 'ndl-wikidata-concordance.ndjson'), key: 'ndl' },
+      { file: path.join(opts.wikidataRoot, 'dila-wikidata-concordance.ndjson'), key: 'dila' },
+      { file: path.join(opts.wikidataRoot, 'bdrc-wikidata-concordance.ndjson'), key: 'bdrc' },
     ]);
   }
 

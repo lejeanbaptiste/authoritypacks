@@ -23,7 +23,7 @@
     "wikidata:compile-places-ja": "node wikidata/compileKind.mjs --raw packs/wikidata/raw-ja-places/places.raw.ndjson --kind place --language ja --country japan --out packs/wikidata/place-ja",
     "refilter:ja-packs": "node scripts/refilterJaPacks.mjs",
     "wikidata:viaf-concordance": "node wikidata/buildViafConcordance.mjs --scan-packs packs/wikidata --out packs/wikidata/viaf-wikidata-concordance.ndjson",
-    "wikidata:extract-crosswalk": "node wikidata/extractCrosswalkConcordance.mjs --dump /home/d/Data/latest-all.json.bz2 --out-dir packs/wikidata --keys viaf,cbdb,ndl",
+    "wikidata:extract-crosswalk": "node wikidata/extractCrosswalkConcordance.mjs --dump /home/d/Data/latest-all.json.bz2 --out-dir packs/wikidata --keys viaf,cbdb,ndl,dila,bdrc",
     "wikidata:attach-crosswalk": "node wikidata/attachAuthorityCrosswalk.mjs --wikidata-root packs/wikidata --also-pairs",
     "wikidata:extract-works-zh": "node wikidata/extract.mjs --kinds work --membership label-only --language zh-hant",
     "wikidata:extract-zh-ja-orgs-works": "node wikidata/extract.mjs --kinds org,work --membership label-only --languages zh-hant,ja --out packs/wikidata/raw-zh-hant-ja-org-work",

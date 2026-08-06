@@ -26,6 +26,7 @@ test('crosswalkRowFromEntity keeps only requested keys', () => {
     wikidata: 'Q9753',
     crosswalk: { viaf: '24645678', cbdb: '1762', ndl: '00621584' },
   });
+  assert.deepEqual(crosswalkRowFromEntity(entity, ['dila'])?.crosswalk, { dila: 'A001492' });
 });
 
 test('addCrosswalkToPairMaps skips ambiguous authority ids', () => {
