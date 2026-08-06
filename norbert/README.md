@@ -129,6 +129,30 @@ remain unresolved. Accepted links are recorded in
 `office-concordance.ndjson`, and CBDB's office id becomes the canonical entity
 id while the Norbert row id remains as provenance.
 
+Period policy:
+- **Dated Norbert offices:** name + range overlap (including boundary-touch,
+  e.g. meeting at 618) is enough to bridge.
+- **Undated Norbert offices:** Hucker must affirm the title is one continuous
+  office across a span covering the CBDB dynasty and at least one earlier
+  dynasty. If Hucker is silent or gives distinct period glosses, no link.
+
+During development on the repo-root `packs/` tree (without a full
+`build:packs` run):
+
+```bash
+npm run reconcile:norbert-offices
+```
+
+This derives appointment-based office dates, builds office concordance, and
+writes crosswalks. Dates are also applied automatically at the end of
+`compile:norbert`.
+
+Hucker continuity for undated offices is implemented in
+[`huckerOfficeContinuity.mjs`](./huckerOfficeContinuity.mjs) (also used by
+Huckbot5000 generation skip for OCR period coverage). See
+[`huckbot5000/README.md`](../huckbot5000/README.md) for how concordance feeds
+target resolution.
+
 Implementation: [`compileOffices.mjs`](./compileOffices.mjs).
 
 ## Person-wrapper export

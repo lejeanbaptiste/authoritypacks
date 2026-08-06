@@ -14,6 +14,24 @@ import { loadCbdbPersonConcordance } from './personConcordance.mjs';
 /** @typedef {import('better-sqlite3').Database} Database */
 
 /**
+ * CBDB's OFFICE_CODES.c_office_trans field pipes some entries straight from
+ * Charles O. Hucker's copyrighted "A Dictionary of Official Titles in
+ * Imperial China" (Stanford University Press, 1985), tagged with a literal
+ * "(Hucker)" citation suffix in CBDB's own upstream data. CBDB's own
+ * CC-BY-NC-SA license covers CBDB's compilation, not a third party's prose
+ * it cites -- see leaf-writer/docs/huckbot5000-planning.md for the audit
+ * that found ~80% verbatim/near-verbatim overlap on a sample of these rows.
+ * c_office_trans_alt carries no such citation (verified against the full
+ * compiled pack) and is left untouched.
+ */
+const HUCKER_CITATION_RE = /\(Hucker\)/;
+
+/** @param {string | null | undefined} translation */
+function isHuckerSourced(translation) {
+  return typeof translation === 'string' && HUCKER_CITATION_RE.test(translation);
+}
+
+/**
  * @param {Database} db
  * @param {ReturnType<typeof loadCbdbDynastyMap>} dynastyMap
  */
@@ -374,14 +392,14 @@ export function compileCbdbOffices(db, dynastyMap) {
           ?.map((id) => `cbdb:office-type:${id}`),
         pinyin: row.c_office_pinyin || undefined,
         alternatePinyin: row.c_office_pinyin_alt || undefined,
-        translation: row.c_office_trans || undefined,
+        translation: isHuckerSourced(row.c_office_trans) ? undefined : row.c_office_trans || undefined,
         alternateTranslation: row.c_office_trans_alt || undefined,
         sourceRef: row.c_source != null ? String(row.c_source) : undefined,
         sourcePages: row.c_pages || undefined,
         note: row.c_notes || undefined,
         description: cbdbOfficeClue({
           name: row.c_office_chn,
-          translation: row.c_office_trans || undefined,
+          translation: isHuckerSourced(row.c_office_trans) ? undefined : row.c_office_trans || undefined,
           dynastyChn: row.c_dynasty_chn || dynasty?.label,
         }),
       },

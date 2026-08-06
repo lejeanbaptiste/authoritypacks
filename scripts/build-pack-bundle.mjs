@@ -263,10 +263,13 @@ if (includeChgis) {
 }
 
 console.log('Compiling Norbert…');
-await compileNorbertPack({
+const norbertCompileResult = await compileNorbertPack({
   sqlPath: norbertSqlPath,
   outDir: path.join(packsDir, 'norbert'),
 });
+console.log(
+  `  ${norbertCompileResult.officesWithDerivedDates} Norbert offices with derived dates`,
+);
 
 if (includeNdl) {
   if (includeNdlPersons) {
@@ -474,9 +477,25 @@ if (fs.existsSync(viafFull) && stagedWikidataPacks.length) {
 console.log('Building Norbert office concordance…');
 const norbertOfficesPath = path.join(norbertDir, 'offices.ndjson');
 const norbertOfficeRelationsPath = path.join(norbertDir, 'office-relations.ndjson');
+const huckerEntriesPath = path.join(repoRoot, 'skunkworks/scripts/out/hucker_entries.ndjson');
+let officeHuckerByZh = null;
+// Hucker OCR is used only for office-concordance continuity gating.
+// packs/huckbot5000-insiders/ (local collision archive, source: Hucker) must never
+// be staged into this release bundle — it is gitignored and not listed here.
+if (fs.existsSync(huckerEntriesPath)) {
+  const { readHuckerPairs } = await import('../huckbot5000/lib.mjs');
+  const { indexHuckerOfficeEntries } = await import('../norbert/huckerOfficeContinuity.mjs');
+  officeHuckerByZh = indexHuckerOfficeEntries(readHuckerPairs(huckerEntriesPath));
+  console.log('  Hucker continuity index loaded for undated Norbert offices');
+} else {
+  console.warn(
+    '  WARNING: Hucker corpus missing; undated Norbert offices will not be linked to CBDB',
+  );
+}
 const officeConcordance = buildOfficeConcordance(
   readNdjson(norbertOfficesPath),
   readNdjson(path.join(packsDir, 'cbdb/offices.ndjson')),
+  { huckerByZh: officeHuckerByZh },
 );
 writeNdjson(path.join(norbertDir, 'office-concordance.ndjson'), officeConcordance);
 const integratedOffices = integrateOfficeConcordance(

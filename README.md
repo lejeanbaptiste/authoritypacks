@@ -10,6 +10,7 @@ This repo holds **extract → compile → publish** tooling. The **matcher, revi
 |-----|----------------|
 | [**docs/extraction-todo.md**](docs/extraction-todo.md) | **Living todo list** — open work snapshot + full checklists |
 | [**docs/phases.md**](docs/phases.md) | Master roadmap — all sources, human checkpoints |
+| [**huckbot5000/README.md**](huckbot5000/README.md) | Office-title gap-fill pipeline (generate → audit → review → pack) |
 | [**wikidata/README.md**](wikidata/README.md) | Wikidata config tables + validator (W0 done) |
 | [**docs/person-concordance-plan.md**](docs/person-concordance-plan.md) | Tiered Norbert↔CBDB/DILA/Wikidata person linking (implemented + review merge) |
 | [**docs/purge-orders.md**](docs/purge-orders.md) | Developer pack change notices → user review docket |
@@ -17,6 +18,8 @@ This repo holds **extract → compile → publish** tooling. The **matcher, revi
 
 Leaf-writer companions (integration, not extraction):
 
+- [huckbot5000-integration-plan.md](../leaf-writer/docs/huckbot5000-integration-plan.md) — Huckbot status + queue
+- [huckbot5000-planning.md](../leaf-writer/docs/huckbot5000-planning.md) — feasibility evidence log
 - [authority-packs-planning.md](../leaf-writer/docs/authority-packs-planning.md) — strategy
 - [authority-databases-phases.md](../leaf-writer/docs/authority-databases-phases.md) — CBDB/DILA in-app (tracks **A**, **L**)
 
@@ -29,6 +32,8 @@ authority extraction/
   shared/                 # normalize, clue, ndjson, teiParse, dynastyMap
   cbdb/                   # compile + report (C1–C2 done)
   dila/                   # compile (D1 done)
+  norbert/                # compile + office dates/concordance
+  huckbot5000/            # office-title gap-fill (generate → audit → pack)
   wikidata/               # Wikidata track (W0 done)
   packs/                  # compiled NDJSON (gitignored)
   reports/                # ambiguity CSVs

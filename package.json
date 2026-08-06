@@ -41,6 +41,11 @@
     "compile:cbdb": "node cbdb/compile.mjs",
     "compile:norbert": "node norbert/compile.mjs",
     "compile:huckbot5000": "node huckbot5000/compile.mjs",
+    "generate:huckbot5000": "node huckbot5000/generate.mjs",
+    "audit:huckbot5000": "node huckbot5000/audit.mjs",
+    "compile:huckbot5000-include": "node scripts/compile-huckbot5000-include.mjs",
+    "compile:huckbot5000-translations": "node huckbot5000/compileTranslations.mjs",
+    "compile:huckbot5000-insiders": "node huckbot5000/compileInsidersTranslations.mjs",
     "packs:dedupe-zi": "node scripts/dedupeFamilyPrefixedNames.mjs",
     "norbert:sqlite": "node norbert/sqlToSqlite.mjs",
     "cbdb:strip-reference": "node cbdb/stripReferenceDb.mjs",
@@ -48,6 +53,8 @@
     "audit:origins": "node scripts/audit-origins.mjs",
     "audit:noble-titles": "node scripts/audit-noble-titles.mjs",
     "compile:noble-title-include": "node scripts/compile-noble-title-include.mjs",
+    "derive:norbert-office-dates": "node norbert/deriveOfficeDates.mjs",
+    "reconcile:norbert-offices": "node norbert/reconcileOffices.mjs",
     "concordance:offices": "node norbert/officeConcordance.mjs",
     "concordance:persons": "node norbert/concordance.mjs --norbert packs/norbert --cbdb packs/cbdb --dila packs/dila --wikidata packs/wikidata --out packs/norbert/norbert-concordance.ndjson --review-csv reports/norbert-person-concordance-review.csv",
     "concordance:merge-review": "node norbert/mergeReviewCsv.mjs",
@@ -71,6 +78,7 @@
   "dependencies": {
     "better-sqlite3": "^12.11.1",
     "fast-xml-parser": "^5.9.3",
+    "pinyin-pro": "^3.28.2",
     "proj4": "^2.20.9",
     "sax": "^1.6.0",
     "shapefile": "^0.6.6"

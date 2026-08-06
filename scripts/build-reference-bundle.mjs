@@ -1,11 +1,22 @@
 #!/usr/bin/env node
 /**
- * Build authority-reference-person-{version}.zip for LJB A6 lookup.
+ * Build authority-reference-norbert-{version}.zip for LJB A6 lookup.
  *
  * Contains:
  *   norbert.sqlite3
- *   cbdb-person.sqlite3
  *   manifest.json
+ *
+ * CBDB used to be bundled here too (cbdb-person.sqlite3), built by stripping
+ * the full CBDB sqlite locally and shipping the result via our own GitHub
+ * release. As of 2026-08-06 that's no longer how LJB gets CBDB reference
+ * data: each install fetches CBDB's own official release directly and strips
+ * it locally itself (see leaf-writer's downloadCbdbDirect in
+ * apps/desktop/src/authorityDatabases.ts and
+ * leaf-writer/docs/huckbot5000-planning.md), so this app is never the one
+ * redistributing a repackaged copy of CBDB's data. Norbert has no equivalent
+ * concern — it's our own reduced-authority export ("internal-derived-public"
+ * in upstream/pins.json), not a third party's copyrighted compilation — so
+ * it keeps shipping this way.
  *
  * Usage:
  *   node scripts/build-reference-bundle.mjs [--upstream DIR] [--out DIR]
@@ -17,7 +28,6 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildNorbertSqlite } from '../norbert/sqlToSqlite.mjs';
-import { stripCbdbReferenceDb } from '../cbdb/stripReferenceDb.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
@@ -57,16 +67,10 @@ const norbertLabels = resolveExisting(
   path.join(repoRoot, 'norbert_secret/dynasty-labels.json'),
   path.join(repoRoot, 'norbert_public/dynasty-labels.json'),
 );
-const cbdbSqlite = resolveExisting(
-  path.join(upstreamDir, 'cbdb.sqlite3'),
-  path.join(repoRoot, '../leaf-writer/databases/cbdb_20260627.sqlite3'),
-);
 
 if (!norbertSql) throw new Error('Missing Norbert public SQL dump');
-if (!cbdbSqlite) throw new Error('Missing CBDB sqlite — run fetch:upstream');
 
 const norbertOut = path.join(outDir, 'norbert.sqlite3');
-const cbdbOut = path.join(outDir, 'cbdb-person.sqlite3');
 
 console.log('Building Norbert reference sqlite…');
 await buildNorbertSqlite({
@@ -75,16 +79,10 @@ await buildNorbertSqlite({
   outPath: norbertOut,
 });
 
-console.log('Stripping CBDB person reference sqlite…');
-stripCbdbReferenceDb({ sqlitePath: cbdbSqlite, outPath: cbdbOut });
-
-const version = [
-  pins.cbdb?.version ?? 'cbdb',
-  pins.norbert?.version ?? 'norbert',
-].join('+');
+const version = pins.norbert?.version ?? 'norbert';
 
 const manifest = {
-  id: 'authority-reference-person',
+  id: 'authority-reference-norbert',
   version,
   compiledAt: new Date().toISOString(),
   compilePolicyVersion: pins.compilePolicyVersion,
@@ -96,17 +94,11 @@ const manifest = {
       attribution: pins.norbert?.attribution,
       sourceVersion: pins.norbert?.version,
     },
-    'cbdb-person.sqlite3': {
-      sha256: await sha256File(cbdbOut),
-      bytes: fs.statSync(cbdbOut).size,
-      license: pins.cbdb?.license,
-      attribution: pins.cbdb?.attribution,
-      sourceVersion: pins.cbdb?.version,
-    },
   },
   notes: [
     'Tagging packs remain separate NDJSON tarballs.',
     'DILA reference TEI is fetched by LJB from Open Content, not included here.',
+    'CBDB reference data is fetched directly from CBDB\'s own official release by each LJB install — not bundled here. See leaf-writer/docs/huckbot5000-planning.md.',
   ],
 };
 
@@ -114,7 +106,7 @@ const manifestPath = path.join(outDir, 'manifest.json');
 await fsp.writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
 await fsp.mkdir(releaseDir, { recursive: true });
-const zipName = `authority-reference-person-${version.replace(/[^A-Za-z0-9._+-]+/g, '_')}.zip`;
+const zipName = `authority-reference-norbert-${version.replace(/[^A-Za-z0-9._+-]+/g, '_')}.zip`;
 const zipPath = path.join(releaseDir, zipName);
 if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
 
@@ -122,7 +114,6 @@ const staging = path.join(outDir, '_zip_stage');
 await fsp.rm(staging, { recursive: true, force: true });
 await fsp.mkdir(staging, { recursive: true });
 await fsp.copyFile(norbertOut, path.join(staging, 'norbert.sqlite3'));
-await fsp.copyFile(cbdbOut, path.join(staging, 'cbdb-person.sqlite3'));
 await fsp.copyFile(manifestPath, path.join(staging, 'manifest.json'));
 
 execFileSync('zip', ['-r', '-q', zipPath, '.'], { cwd: staging, stdio: 'inherit' });

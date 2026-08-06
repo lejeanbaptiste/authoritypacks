@@ -25,6 +25,13 @@ below.
   a date-blind `cachedPackReader` wrapper). **LJB-side — wait for merge.**
 - [ ] Optional place polish: zh-hant vs CBDB/DILA/CHGIS; ja vs NDL ambiguity
   reports.
+- [ ] **Huckbot5000 full LLM generate + review** — scaffolding ready
+  (`huckbot5000/`, Norbert office reconcile). Commands and queue:
+  [huckbot5000-integration-plan.md](../leaf-writer/docs/huckbot5000-integration-plan.md),
+  [huckbot5000/README.md](../huckbot5000/README.md). Independent of pack-purge /
+  first release above.
+- [ ] **`authoritypacks` release cut** — Hucker-stripped CBDB offices +
+  Norbert-only reference zip; needs explicit go-ahead (yanks old live assets).
 
 ### Just finished (2026-08-06)
 

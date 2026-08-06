@@ -23,6 +23,8 @@ packs/ndl/ime.csv
 packs/chgis-test/
 packs/norbert/
 packs/huckbot5000/
+packs/huckbot5000-insiders/
+huckbot5000/insiders-include.ndjson
 
 # Ignore Wikidata raw extract directories (intermediate files)
 packs/wikidata/raw-*/

@@ -19,6 +19,7 @@ import { compileNorbertSurnamesFromNameRows } from './surnames.mjs';
 import { inferNorbertSourceRelations } from '../shared/officeGraph.mjs';
 import { attachAppointmentsToPersons } from '../shared/appointmentIndex.mjs';
 import { compileNorbertPersonWrappers } from './personWrappers.mjs';
+import { deriveOfficeDates } from './deriveOfficeDates.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const defaultSql = path.resolve(__dirname, '../norbert_secret/norbert-authority.sql');
@@ -73,9 +74,12 @@ export async function compileNorbertPack(options = {}) {
     tables.person_origin,
     tables.person_nt,
   );
-  const offices = compileNorbertOffices(tables.office);
+  let offices = compileNorbertOffices(tables.office);
   const appointments = compileNorbertAppointments(tables.officeholding_raw, offices);
   attachAppointmentsToPersons(persons, appointments);
+
+  const dateDerivation = deriveOfficeDates(offices, persons, appointments);
+  offices = dateDerivation.offices;
 
   const peopleById = new Map();
   for (const person of persons) {
@@ -163,6 +167,7 @@ export async function compileNorbertPack(options = {}) {
     persons: personOut.count,
     originAssertions: persons.reduce((n, p) => n + (p.metadata?.origin?.length ?? 0), 0),
     offices: officeOut.count,
+    officesWithDerivedDates: dateDerivation.stats.officesWithEvidence,
     appointments: appointmentOut.count,
     personWrappers: wrapperOut.count,
     officeRelations: officeRelationOut.count,
@@ -180,7 +185,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   compileNorbertPack()
     .then((result) => {
       console.log(
-        `  → ${result.persons} persons (${result.personStringCount} strings), ${result.personWrappers} wrappers, ${result.offices} offices (${result.officeStringCount} strings) (${((Date.now() - t0) / 1000).toFixed(1)}s)`,
+        `  → ${result.persons} persons (${result.personStringCount} strings), ${result.personWrappers} wrappers, ${result.offices} offices (${result.officeStringCount} strings, ${result.officesWithDerivedDates} with derived dates) (${((Date.now() - t0) / 1000).toFixed(1)}s)`,
       );
     })
     .catch((err) => {
