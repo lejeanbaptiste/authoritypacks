@@ -83,14 +83,18 @@ export function personDateMetadata(input) {
 /**
  * Years safe to treat as biographical truth (entity import / TEI birth–death).
  * Filter-only anchors (floruit, index, nationality) return empty.
+ * Re-applies the year-0 sentinel drop so older packs that still store
+ * `startYear: 0` with `dateSource: 'fine'` do not import a fake birth.
  *
  * @param {{ dateSource?: string, startYear?: number, endYear?: number } | null | undefined} meta
  */
 export function biographicalYearsFromMetadata(meta) {
   if (!meta || meta.dateSource !== 'fine') return {};
+  const startYear = finiteYear(meta.startYear);
+  const endYear = finiteYear(meta.endYear);
   return {
-    ...(meta.startYear != null ? { startYear: meta.startYear } : {}),
-    ...(meta.endYear != null ? { endYear: meta.endYear } : {}),
+    ...(startYear != null ? { startYear } : {}),
+    ...(endYear != null ? { endYear } : {}),
   };
 }
 
@@ -114,5 +118,7 @@ export function hasFilterInterval(meta) {
 function finiteYear(value) {
   if (value == null || value === '') return null;
   const n = typeof value === 'number' ? value : Number(value);
-  return Number.isFinite(n) ? n : null;
+  // CBDB and some legacy exports use 0 for "unknown" — never treat as birth/death.
+  if (!Number.isFinite(n) || n === 0) return null;
+  return n;
 }

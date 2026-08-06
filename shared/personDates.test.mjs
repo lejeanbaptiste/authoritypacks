@@ -21,13 +21,18 @@ test('fine dates win over floruit, index, and never invent dynasty years', () =>
   assert.deepEqual(biographicalYearsFromMetadata(meta), { startYear: 1021, endYear: 1086 });
 });
 
-test('floruit is filter-only', () => {
-  const meta = personDateMetadata({ flEarliest: 1040, flLatest: 1060 });
-  assert.equal(meta.dateSource, 'floruit');
-  assert.equal(meta.startYear, 1040);
-  assert.equal(meta.endYear, 1060);
-  assert.deepEqual(biographicalYearsFromMetadata(meta), {});
-  assert.equal(hasFilterInterval(meta), true);
+test('year 0 is not a biographical birth/death', () => {
+  const meta = personDateMetadata({ birthYear: 0, deathYear: 522 });
+  assert.equal(meta.dateSource, 'fine');
+  assert.equal(meta.startYear, undefined);
+  assert.equal(meta.endYear, 522);
+  assert.deepEqual(biographicalYearsFromMetadata(meta), { endYear: 522 });
+});
+
+test('floruit of 0/0 is dropped (CBDB unknown sentinel)', () => {
+  const meta = personDateMetadata({ flEarliest: 0, flLatest: 0, indexYear: 0 });
+  assert.deepEqual(meta, { dateSource: 'nationality' });
+  assert.equal(hasFilterInterval(meta), false);
 });
 
 test('index year expands to ± window (CBDB mean-date model)', () => {
