@@ -24,6 +24,7 @@ packs/chgis-test/
 packs/norbert/
 packs/huckbot5000/
 packs/huckbot5000-insiders/
+packs/maxiricci7000/
 huckbot5000/insiders-include.ndjson
 
 # Ignore Wikidata raw extract directories (intermediate files)

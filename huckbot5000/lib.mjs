@@ -80,16 +80,18 @@ export async function readCbdbHuckerPairs(sqlitePath) {
   try {
     const rows = db
       .prepare(
-        `SELECT c_office_chn AS zh, c_office_trans AS en FROM OFFICE_CODES WHERE c_office_trans LIKE '%(Hucker)%'
+        // '%(Hucker%' also catches the one upstream row truncated as "(Hucker"
+        // without a closing paren (c_office_id 987).
+        `SELECT c_office_chn AS zh, c_office_trans AS en FROM OFFICE_CODES WHERE c_office_trans LIKE '%(Hucker%'
          UNION ALL
-         SELECT c_office_chn AS zh, c_office_trans_alt AS en FROM OFFICE_CODES WHERE c_office_trans_alt LIKE '%(Hucker)%'`,
+         SELECT c_office_chn AS zh, c_office_trans_alt AS en FROM OFFICE_CODES WHERE c_office_trans_alt LIKE '%(Hucker%'`,
       )
       .all();
     const seen = new Set();
     const pairs = [];
     for (const row of rows) {
       const zh = (row.zh ?? '').trim();
-      const en = (row.en ?? '').replace(/\(Hucker\)/gi, '').trim();
+      const en = (row.en ?? '').replace(/\(Hucker\b[^)]*\)?/gi, '').trim();
       if (!zh || !en) continue;
       const key = `${zh} ${en}`;
       if (seen.has(key)) continue;

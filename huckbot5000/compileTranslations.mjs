@@ -78,7 +78,10 @@ function main() {
       + 'database right, US copyright) before any public redistribution — see '
       + 'leaf-writer/docs/huckbot5000-planning.md Legal note.',
     files: {
-      'translations.ndjson': { count: translations.length },
+      'translations.ndjson': {
+        count: translations.length,
+        entityCount: translations.length,
+      },
     },
     policy: {
       version: '2026-08-06',
@@ -87,7 +90,11 @@ function main() {
         + 'and human-reviewed via reports/huckbot5000-candidate-review.csv',
     },
   };
-  fs.writeFileSync(path.join(outDir, 'translations-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  // Bundle helpers expect manifest.json (CHGIS/noble-title pattern). Keep the
+  // older translations-manifest.json name as a copy for local tooling.
+  const manifestBody = `${JSON.stringify(manifest, null, 2)}\n`;
+  fs.writeFileSync(path.join(outDir, 'manifest.json'), manifestBody);
+  fs.writeFileSync(path.join(outDir, 'translations-manifest.json'), manifestBody);
 
   console.log(`Compiled ${translations.length} Huckbot5000 translations -> ${path.join(outDir, 'translations.ndjson')}`);
 }

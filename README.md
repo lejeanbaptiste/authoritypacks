@@ -11,6 +11,7 @@ This repo holds **extract → compile → publish** tooling. The **matcher, revi
 | [**docs/extraction-todo.md**](docs/extraction-todo.md) | **Living todo list** — open work snapshot + full checklists |
 | [**docs/phases.md**](docs/phases.md) | Master roadmap — all sources, human checkpoints |
 | [**huckbot5000/README.md**](huckbot5000/README.md) | Office-title gap-fill pipeline (generate → audit → review → pack) |
+| [**maxiricci7000/README.md**](maxiricci7000/README.md) | French glosses via GPT-4o (Hucker full entries → gap retrieval) |
 | [**wikidata/README.md**](wikidata/README.md) | Wikidata config tables + validator (W0 done) |
 | [**docs/person-concordance-plan.md**](docs/person-concordance-plan.md) | Tiered Norbert↔CBDB/DILA/Wikidata person linking (implemented + review merge) |
 | [**docs/purge-orders.md**](docs/purge-orders.md) | Developer pack change notices → user review docket |
@@ -34,6 +35,7 @@ authority extraction/
   dila/                   # compile (D1 done)
   norbert/                # compile + office dates/concordance
   huckbot5000/            # office-title gap-fill (generate → audit → pack)
+  maxiricci7000/          # French glosses via GPT-4o (Batch A Hucker → Batch B gaps)
   wikidata/               # Wikidata track (W0 done)
   packs/                  # compiled NDJSON (gitignored)
   reports/                # ambiguity CSVs

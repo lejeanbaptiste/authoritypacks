@@ -17,17 +17,18 @@ import { loadCbdbPersonConcordance } from './personConcordance.mjs';
  * CBDB's OFFICE_CODES.c_office_trans field pipes some entries straight from
  * Charles O. Hucker's copyrighted "A Dictionary of Official Titles in
  * Imperial China" (Stanford University Press, 1985), tagged with a literal
- * "(Hucker)" citation suffix in CBDB's own upstream data. CBDB's own
+ * "(Hucker)" citation suffix in CBDB's own upstream data (one upstream row is
+ * truncated to "(Hucker" without the closing paren). CBDB's own
  * CC-BY-NC-SA license covers CBDB's compilation, not a third party's prose
  * it cites -- see leaf-writer/docs/huckbot5000-planning.md for the audit
  * that found ~80% verbatim/near-verbatim overlap on a sample of these rows.
  * c_office_trans_alt carries no such citation (verified against the full
  * compiled pack) and is left untouched.
  */
-const HUCKER_CITATION_RE = /\(Hucker\)/;
+const HUCKER_CITATION_RE = /\(Hucker\b/i;
 
 /** @param {string | null | undefined} translation */
-function isHuckerSourced(translation) {
+export function isHuckerSourced(translation) {
   return typeof translation === 'string' && HUCKER_CITATION_RE.test(translation);
 }
 

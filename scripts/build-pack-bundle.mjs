@@ -161,6 +161,16 @@ const includeChgis = await isUsableFile(chgisPlacesPath);
 const chgisDilaCrosswalkAvailable =
   includeChgis && fs.existsSync(chgisDilaCrosswalkPath);
 
+// Publishable Huckbot gap-fill glosses (optional local stage, like CHGIS).
+// Never stage packs/huckbot5000-insiders/ — collision archive is local-only.
+const huckbotTranslationsPath = path.join(localPacksRoot, 'huckbot5000/translations.ndjson');
+const huckbotManifestPath = [
+  path.join(localPacksRoot, 'huckbot5000/manifest.json'),
+  path.join(localPacksRoot, 'huckbot5000/translations-manifest.json'),
+].find((candidate) => fs.existsSync(candidate));
+const includeHuckbot =
+  (await isUsableFile(huckbotTranslationsPath)) && Boolean(huckbotManifestPath);
+
 const ndlPersonsRaw = await resolveOptional(
   path.join(upstreamDir, 'ndl/raw/persons.raw.ndjson'),
   path.join(localPacksRoot, 'ndl/raw/persons.raw.ndjson'),
@@ -260,6 +270,14 @@ if (includeChgis) {
   await fsp.mkdir(chgisDestDir, { recursive: true });
   await fsp.copyFile(chgisPlacesPath, path.join(chgisDestDir, 'places.ndjson'));
   await fsp.copyFile(chgisManifestPath, path.join(chgisDestDir, 'manifest.json'));
+}
+
+if (includeHuckbot) {
+  console.log('Staging Huckbot5000 translations…');
+  const huckbotDestDir = path.join(packsDir, 'huckbot5000');
+  await fsp.mkdir(huckbotDestDir, { recursive: true });
+  await fsp.copyFile(huckbotTranslationsPath, path.join(huckbotDestDir, 'translations.ndjson'));
+  await fsp.copyFile(huckbotManifestPath, path.join(huckbotDestDir, 'manifest.json'));
 }
 
 console.log('Compiling Norbert…');
@@ -688,6 +706,7 @@ await writeLargePackDateChunks(packsDir);
 const packFiles = [];
 const bundleSourceIds = ['cbdb', 'dila', 'norbert', 'noble-title-filter'];
 if (includeChgis) bundleSourceIds.push('chgis');
+if (includeHuckbot) bundleSourceIds.push('huckbot5000');
 if (includeWikidata) bundleSourceIds.push('wikidata');
 if (includeNdl) bundleSourceIds.push('ndl');
 
@@ -789,6 +808,11 @@ console.log(`Version: ${bundleVersion}`);
 console.log(`Tarball sha256: ${tarballSha256}`);
 if (!includeChgis) {
   console.log('CHGIS not included: run `npm run compile:chgis` locally and check in packs/chgis/places.ndjson (see chgis/README.md).');
+}
+if (!includeHuckbot) {
+  console.log(
+    'Huckbot5000 not included: run `npm run compile:huckbot5000-translations` so packs/huckbot5000/translations.ndjson exists.',
+  );
 }
 if (!includeNdl) {
   console.log('NDL not included: add packs/ndl/raw/persons.raw.ndjson and packs/ndl/raw/works.raw.ndjson (or .upstream/ndl/raw/ equivalents).');

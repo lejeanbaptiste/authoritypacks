@@ -168,11 +168,11 @@ export function norbertOfficeClue(p) {
  * @param {string} [p.dynastyChn]
  */
 export function cbdbOfficeClue(p) {
-  const parts = [p.name];
-  if (p.translation) parts.push(`(${p.translation}`);
-  if (p.dynastyChn) parts.push(`${p.dynastyChn})`);
-  else if (p.translation) parts.push(')');
-  return parts.join(', ').replace(', (', ' (').replace('(,', '(');
+  const inner = [];
+  if (p.translation) inner.push(p.translation);
+  if (p.dynastyChn) inner.push(p.dynastyChn);
+  if (inner.length) return `${p.name} (${inner.join(', ')})`;
+  return p.name;
 }
 
 /** First clause before 。 or . */

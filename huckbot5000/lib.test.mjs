@@ -119,14 +119,21 @@ test('readCbdbHuckerPairs reads only (Hucker)-tagged rows and strips the citatio
   db.prepare('INSERT INTO OFFICE_CODES VALUES (?, ?, ?, ?)').run(
     3, '都水監主簿', null, 'Recorder of the Directorate of Waterways (Hucker)',
   );
+  db.prepare('INSERT INTO OFFICE_CODES VALUES (?, ?, ?, ?)').run(
+    4, '州縣長吏', 'Senior Subalterns of the Prefecture or District (Hucker', null,
+  );
   db.close();
 
   try {
     const pairs = await readCbdbHuckerPairs(dbPath);
-    assert.equal(pairs.length, 2);
+    assert.equal(pairs.length, 3);
     const byZh = indexHuckerByHeadword(pairs);
     assert.equal(byZh.get('提舉')[0].en, 'Supervisor');
     assert.equal(byZh.get('都水監主簿')[0].en, 'Recorder of the Directorate of Waterways');
+    assert.equal(
+      byZh.get('州縣長吏')[0].en,
+      'Senior Subalterns of the Prefecture or District',
+    );
     assert.equal(byZh.has('知縣'), false);
   } finally {
     fs.unlinkSync(dbPath);

@@ -122,6 +122,8 @@ the compiled include, never the raw source.
   appear in CBDB's `(Hucker)`-tagged OFFICE_CODES are also skipped — LJB
   displays those from the user's CBDB; Huckbot fills true blanks only.
   Hucker's gloss is never copied into *our* redistributable packs.
+  The publishable translations pack is staged into release bundles by
+  `scripts/build-pack-bundle.mjs` (never the insiders collision archive).
 - `proceduralPlaceSuffix.mjs` -- place+suffix compound detection and template
   translation (unit-tested in `proceduralPlaceSuffix.test.mjs`). Applied
   automatically in `generate.mjs` before any LLM calls. Place stems are
