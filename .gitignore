@@ -10,6 +10,8 @@ reports/*.csv
 reports/*.tsv
 # Checked-in CHGIS<->DILA crosswalk (built locally, shipped with the release)
 !reports/chgis-dila-crosswalk.tsv
+# Checked-in Norbert person concordance review (Tier 2 link rows; required by build:packs)
+!reports/norbert-person-concordance-review.csv
 
 # Ignore compiled packs (can be regenerated from sources)
 packs/cbdb/

@@ -91,6 +91,10 @@ pre-Tang 姓+名+字, ruler temple/posthumous). Ambiguous and Tier 2
 near-misses go to the review CSV only. Person-wrappers supply noble-title
 fields when the persons pack lacks `metadata.nobleTitles`.
 
+`reports/norbert-person-concordance-review.csv` is **checked into git** and
+**required** by `npm run build:packs` / `authoritypacks:release`. Keep that
+exact filename; renaming it (e.g. to `.bak`) makes CI ship auto-only links.
+
 After you fill the CSV `action` column (`link` / `ignore` / `distinguish`),
 merge accepted links and write bidirectional `metadata.crosswalk` into the
 person packs:

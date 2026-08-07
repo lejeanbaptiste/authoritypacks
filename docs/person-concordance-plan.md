@@ -14,11 +14,12 @@ This revises the earlier diagnosis with three Norbert-specific constraints:
 Status: **implemented and review-merged** (2026-08-04).
 
 - Tiered matcher: `norbert/concordance.mjs` (`npm run concordance:persons`).
-- Review CSV: `reports/norbert-person-concordance-review.csv`.
-- Accepted Tier 0 / 1A–1C plus reviewed Tier 2 `link` rows live in
-  `packs/norbert/norbert-concordance.ndjson` (**4,802** rows after merge;
-  was 977 auto-accept only). Apply pack crosswalks with
-  `npm run concordance:merge-review` then `npm run concordance:integrate`.
+- Review CSV: `reports/norbert-person-concordance-review.csv` (**tracked in
+  git**; `build:packs` fails if missing).
+- Accepted Tier 0 / 1A–1C plus reviewed Tier 2 `link` rows are merged at pack
+  build time (~4.7k concordance rows). Apply pack crosswalks with
+  `npm run concordance:merge-review` then `npm run concordance:integrate`,
+  or just run `npm run build:packs`.
 - Remaining concordance work (optional polish, purge-order UI, release) is
   tracked in [`docs/extraction-todo.md`](./extraction-todo.md).
 

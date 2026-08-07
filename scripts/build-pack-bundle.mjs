@@ -429,7 +429,14 @@ let concordance = buildNorbertConcordance(
   },
 );
 const reviewCsvPath = path.join(repoRoot, 'reports/norbert-person-concordance-review.csv');
-if (fs.existsSync(reviewCsvPath)) {
+if (!fs.existsSync(reviewCsvPath)) {
+  throw new Error(
+    `Missing required ${path.relative(repoRoot, reviewCsvPath)}. ` +
+      'Tier 2 Norbert person review links are checked into git and must be present for pack builds ' +
+      '(do not rename to .bak — that silently drops thousands of manual matches).',
+  );
+}
+{
   const merged = mergeReviewLinks(concordance, parseCsv(fs.readFileSync(reviewCsvPath, 'utf8')));
   concordance = merged.merged;
   console.log(
