@@ -50,13 +50,15 @@ export function norbertPersonClue(p) {
   return p.name;
 }
 
-/** Simpler format: 名 (dates, dynasty — extra) */
+/** Biographical years, or real floruit — never CBDB index-year filter anchors. */
 function formatLifeDates(p) {
   if (p.birthYear != null && p.deathYear != null) return `${p.birthYear}–${p.deathYear}`;
   if (p.birthYear != null) return `b. ${p.birthYear}`;
   if (p.deathYear != null) return `d. ${p.deathYear}`;
   if (p.flStart != null && p.flEnd != null) return `fl. ${p.flStart}–${p.flEnd}`;
-  if (p.indexYear != null) return `fl. ${p.indexYear}`;
+  if (p.flStart != null) return `fl. ${p.flStart}`;
+  if (p.flEnd != null) return `fl. ${p.flEnd}`;
+  // CBDB c_index_year is a filter mean, not floruit — omit from clues.
   return '';
 }
 

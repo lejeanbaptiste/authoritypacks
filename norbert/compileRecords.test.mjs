@@ -33,7 +33,13 @@ test('Norbert person compilation never exports dynasty ranges as person dates', 
 
   assert.equal(person.metadata.startYear, undefined);
   assert.equal(person.metadata.endYear, undefined);
-  assert.equal(person.metadata.dateSource, undefined);
+  // Labelled, not merely absent. Consumers decide what may become birth/death by
+  // reading `dateSource`; leaving it unset made every one of those guards fail
+  // open, which is how 劉宋 (420–479) ended up as a person's vitals downstream.
+  assert.equal(person.metadata.dateSource, 'nationality');
+  // The dynasty span is still carried for the date filter — just not as a lifespan.
+  assert.equal(person.metadata.dynasties[0].startYear, 960);
+  assert.equal(person.metadata.dynasties[0].endYear, 1279);
   assert.equal(person.metadata.description.includes('960'), false);
   assert.equal(person.metadata.description.includes('1279'), false);
 });

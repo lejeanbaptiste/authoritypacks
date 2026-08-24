@@ -2,13 +2,12 @@
  * Segregate biographical years from tagging-pack filter anchors.
  *
  * Tagging packs need *some* temporal handle for the date slider. Data packs /
- * entity import need only real vital dates. Never copy a dynasty span onto
- * `startYear`/`endYear` — that stopgap was being read as birth–death.
+ * entity import need real vital dates and real floruit — never index years as fl.
  *
  * Priority for the filter interval written onto the person:
- *   1. birth / death          → dateSource: 'fine'     (importable)
- *   2. floruit earliest/latest → dateSource: 'floruit'  (filter only)
- *   3. index / mean year ± window → dateSource: 'index' (filter only; CBDB model)
+ *   1. birth / death          → dateSource: 'fine'     (importable as vitals)
+ *   2. floruit earliest/latest → dateSource: 'floruit'  (real fl.; store as fl. range)
+ *   3. index / mean year ± window → dateSource: 'index' (filter only; never fl.)
  *   4. else                   → dateSource: 'nationality' and **no** start/end
  *      (dynasty years live on `nationality[]` for the filter fallback)
  *
@@ -81,8 +80,8 @@ export function personDateMetadata(input) {
 }
 
 /**
- * Years safe to treat as biographical truth (entity import / TEI birth–death).
- * Filter-only anchors (floruit, index, nationality) return empty.
+ * Years safe to treat as birth/death vitals (entity import / TEI birth–death).
+ * Floruit is real floruit (separate import path); index/nationality return empty.
  * Re-applies the year-0 sentinel drop so older packs that still store
  * `startYear: 0` with `dateSource: 'fine'` do not import a fake birth.
  *
@@ -95,6 +94,22 @@ export function biographicalYearsFromMetadata(meta) {
   return {
     ...(startYear != null ? { startYear } : {}),
     ...(endYear != null ? { endYear } : {}),
+  };
+}
+
+/**
+ * Real floruit earliest/latest (`dateSource: 'floruit'`).
+ * @param {{ dateSource?: string, startYear?: number, endYear?: number } | null | undefined} meta
+ */
+export function floruitYearsFromMetadata(meta) {
+  if (!meta || meta.dateSource !== 'floruit') return {};
+  const startYear = finiteYear(meta.startYear);
+  const endYear = finiteYear(meta.endYear) ?? startYear;
+  const resolvedStart = startYear ?? endYear;
+  if (resolvedStart == null) return {};
+  return {
+    startYear: resolvedStart,
+    endYear: endYear ?? resolvedStart,
   };
 }
 

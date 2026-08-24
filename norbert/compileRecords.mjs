@@ -1,5 +1,6 @@
 import { norbertPersonClue } from '../shared/clue.mjs';
 import { normalizeSurface } from '../shared/normalize.mjs';
+import { personDateMetadata } from '../shared/personDates.mjs';
 import { isMissingNameToken } from '../shared/personStringPolicy.mjs';
 import {
   personNameEntriesFromNorbert,
@@ -322,6 +323,16 @@ export function compileNorbertPersons(
       searchStrings: searchStrings.length ? searchStrings : [primaryName],
       names: nameEntries,
       metadata: {
+        // Norbert has no person vitals — its `person` table carries no year
+        // columns — so the shared classifier resolves every row to
+        // `dateSource: 'nationality'` with no start/end. Emitting that label is
+        // what lets consumers tell a dynasty span from a lifespan: the guards
+        // downstream all key on `dateSource`, so omitting it made them fail open
+        // and let 劉宋 (420–479) reach a person's birth/death fields. Routed
+        // through `personDateMetadata` rather than hardcoded so that if Norbert
+        // ever gains birth/death columns, wiring them here is a one-line change
+        // and the classification stays in one place.
+        ...personDateMetadata({}),
         dynasty: dynastyLabel,
         ...(dynastiesList.length ? { dynasties: dynastiesList } : {}),
         nationality,

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Person dates
+
+- Pack compile now treats year `0` as unknown (CBDB sentinel): it is never emitted as birth, death, floruit, or index year. Floruit `0/0` falls through to nationality-only dating instead of inventing a zero lifespan. Import-side helpers re-check year `0` so older packs that still store it do not mint fake vitals. Takes effect on the next asset-pack rebuild.
+
 ### Date-chunked tag packs
 
 - Added a reusable compiler for date-partitioned authority candidates.

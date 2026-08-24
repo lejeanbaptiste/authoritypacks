@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   INDEX_YEAR_WINDOW,
   biographicalYearsFromMetadata,
+  floruitYearsFromMetadata,
   hasFilterInterval,
   personDateMetadata,
 } from './personDates.mjs';
@@ -42,6 +43,15 @@ test('index year expands to ± window (CBDB mean-date model)', () => {
   assert.equal(meta.startYear, 1065 - INDEX_YEAR_WINDOW);
   assert.equal(meta.endYear, 1065 + INDEX_YEAR_WINDOW);
   assert.deepEqual(biographicalYearsFromMetadata(meta), {});
+  assert.deepEqual(floruitYearsFromMetadata(meta), {});
+});
+
+test('floruit earliest/latest is real floruit, not birth/death', () => {
+  const meta = personDateMetadata({ flEarliest: 479, flLatest: 502 });
+  assert.equal(meta.dateSource, 'floruit');
+  assert.deepEqual(biographicalYearsFromMetadata(meta), {});
+  assert.deepEqual(floruitYearsFromMetadata(meta), { startYear: 479, endYear: 502 });
+  assert.equal(hasFilterInterval(meta), true);
 });
 
 test('no vital or index data → nationality marker with no person years', () => {
