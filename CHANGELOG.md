@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Huckbot5000 licensing
+
+- The `huckbot5000` translations manifest now states its redistribution status instead of
+  contradicting it. The reviewed gap-fill pack (`packs/huckbot5000/translations.ndjson`) has
+  shipped in `authority-packs-chinese` since v0.1.14, but its manifest still read
+  `license: 'internal-pending-review'` with "before any public redistribution". It now emits
+  `license: 'internal'` + `policy.redistribute: true` with a dated owner-decision note
+  (`compileTranslations.mjs`, `buildToolVersion` 0.1.0 → 0.1.1). Scope is that pack only: the
+  `huckbot5000-insiders` collision archive stays local-only and the lexicon manifest keeps
+  `internal-pending-review`. README Guarantees and `huckbot5000-planning.md`'s Legal note
+  updated to match. No change to translated rows.
+
 ### Person dates
 
 - Pack compile now treats year `0` as unknown (CBDB sentinel): it is never emitted as birth, death, floruit, or index year. Floruit `0/0` falls through to nationality-only dating instead of inventing a zero lifespan. Import-side helpers re-check year `0` so older packs that still store it do not mint fake vitals. Takes effect on the next asset-pack rebuild.

@@ -62,7 +62,7 @@ function main() {
   const manifest = {
     id: 'huckbot5000-translations',
     source: 'Huckbot5000',
-    buildToolVersion: '0.1.0',
+    buildToolVersion: '0.1.1',
     compiledAt: new Date().toISOString(),
     upstream: {
       source: 'GPT-4o and/or procedural rules for offices that lack a publishable English gloss; '
@@ -70,13 +70,13 @@ function main() {
         + 'human-reviewed row by row. Publishable rows are independent gap-fill glosses, not '
         + 'dictionary excerpts — see leaf-writer/docs/huckbot5000-planning.md.',
     },
-    license: 'internal-pending-review',
+    license: 'internal',
     attribution:
       'Reviewed gap-fill English glosses for Chinese office titles (source: Huckbot5000). '
       + 'Distinct from Hucker\'s Dictionary of Official Titles; candidates matching known '
-      + 'Hucker wording are excluded from this pack. Pending rights review (EU sui generis '
-      + 'database right, US copyright) before any public redistribution — see '
-      + 'leaf-writer/docs/huckbot5000-planning.md Legal note.',
+      + 'Hucker wording are excluded from this pack. Project policy (2026-09-01): reviewed '
+      + 'gap-fill rows are treated as redistributable project output and ship in the public '
+      + 'authoritypacks release — see leaf-writer/docs/huckbot5000-planning.md Legal note.',
     files: {
       'translations.ndjson': {
         count: translations.length,
@@ -84,7 +84,15 @@ function main() {
       },
     },
     policy: {
-      version: '2026-08-06',
+      version: '2026-09-01',
+      redistribute: true,
+      note:
+        'Owner cleared the reviewed gap-fill pack for public redistribution (2026-09-01): '
+        + 'independent English glosses for offices Hucker / CBDB-(Hucker) leave unglossed, '
+        + 'not dictionary excerpts, with any candidate matching known Hucker wording hard-'
+        + 'gated out before human review. Scoped to this pack: the huckbot5000-insiders '
+        + 'collision archive (source: Hucker) stays local-only, and the lexicon manifest '
+        + 'keeps internal-pending-review. Shipped in authority-packs-chinese since v0.1.14.',
       rulesRef: 'huckbot5000-planning.md (leaf-writer/docs) Step 4',
       gate: 'huckbot5000/approved-include.ndjson rows only; collision-filter hard-gated '
         + 'and human-reviewed via reports/huckbot5000-candidate-review.csv',

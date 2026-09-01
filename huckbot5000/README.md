@@ -165,8 +165,11 @@ the compiled include, never the raw source.
   rejected regardless of human review status.
 - A candidate that only romanizes the Chinese headword (e.g. 平隼案 →
   "Pingshun Office") is rejected as a transliteration punt.
-- `license: 'internal-pending-review'` on every manifest until
-  huckbot5000-planning.md's Legal note (EU *sui generis* database right, US
-  copyright) is resolved -- do not redistribute publicly before then.
+- The translations manifest carries `license: 'internal'` +
+  `policy.redistribute: true`: the reviewed gap-fill pack was cleared for public
+  redistribution (2026-09-01, owner decision recorded in
+  huckbot5000-planning.md's Legal note) and ships in `authority-packs-chinese`
+  from v0.1.14. The lexicon manifest (`compile.mjs`) is out of scope for that
+  clearance and stays `internal-pending-review`.
 - The collision archive (`huckbot5000-insiders`) is for local provenance/audit
   only and must not appear in public releases.
