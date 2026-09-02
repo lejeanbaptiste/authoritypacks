@@ -65,6 +65,13 @@ Type **0** stays **out** (~45k strings). Mythical persons are **in** (no special
 - `metadata.officeTypeIds` retains every `OFFICE_CODE_TYPE_REL` membership.
 - Pinyin, translations, notes, source ids, and source pages from
   `OFFICE_CODES` are preserved as metadata when present.
+- Pre-Han (`c_dy = 漢前`) offices use the office-type period (西周 / 春秋 /
+  戰國) or a polity named in `c_notes` (e.g. 晋) for `metadata.dynasty` and
+  the one-line `description`; definitional notes (e.g. 掌出使) are included as
+  glosses. `參見` / `同 …` cross-reference notes are omitted from the clue.
+- Near-duplicate pre-Han rows (same source dynasty 漢前, name, note, translation,
+  and office-type ids) collapse to the lowest `c_office_id`; merged ids are listed
+  in `office-concordance.ndjson`. Later-dynasty homonyms are never collapsed.
 - LJB may mint a project office entity after disambiguation; corpus mentions
   remain `roleName`.
 

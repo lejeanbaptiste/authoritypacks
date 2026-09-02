@@ -1,17 +1,17 @@
 {
-  "id": "test-ndl-persons",
+  "id": "test-ndl-works",
   "source": "NDL",
   "buildToolVersion": "0.1.0",
-  "compiledAt": "2026-08-06T22:05:36.122Z",
+  "compiledAt": "2026-09-02T21:21:32.875Z",
   "upstream": {
-    "raw": "/Users/daniel/Code/leJeanBaptiste/authority extraction/ndl/fixtures/sample-persons.raw.ndjson"
+    "raw": "/Users/daniel/Code/leJeanBaptiste/authority extraction/packs/test-ndl/works.raw.ndjson"
   },
   "license": "NDL Terms of Use (attribution required)",
   "attribution": "Data from Web NDL Authorities (National Diet Library). 国立国会図書館の「Web NDL Authorities」から取得した典拠データです。",
   "language": "ja",
   "files": {
-    "persons.ndjson": {
-      "entityCount": 2
+    "works.ndjson": {
+      "entityCount": 3
     }
   }
 }

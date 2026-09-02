@@ -4,7 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
-import { compileCbdb, compileCbdbAppointments, compileCbdbOrigins, compileCbdbPersons } from './compileRecords.mjs';
+import { compileCbdb, compileCbdbAppointments, compileCbdbOffices, compileCbdbOrigins, compileCbdbPersons } from './compileRecords.mjs';
+import { collapseCbdbOfficeDuplicates } from './officeDedup.mjs';
 import { loadCbdbPersonConcordance } from './personConcordance.mjs';
 import { loadCbdbDynastyMap } from '../shared/dynastyMap.mjs';
 
@@ -189,6 +190,64 @@ test('CBDB appointment compile preserves person and office assertions', () => {
     db.close();
   }
 });
+
+test(
+  'CBDB compile — pre-Han offices use period dynasty and definitional gloss',
+  { skip: !FULL_SQLITE_CANDIDATES },
+  () => {
+    const db = openDb(FULL_SQLITE_CANDIDATES);
+    try {
+      const dynastyMap = loadCbdbDynastyMap(db);
+      const offices = compileCbdbOffices(db, dynastyMap);
+      const xingrenChunqiu = offices.find((row) => row.authorityId === '802321');
+      assert.ok(xingrenChunqiu, 'expected 行人 (春秋) office row');
+      assert.equal(xingrenChunqiu.metadata?.dynasty, '春秋');
+      assert.equal(xingrenChunqiu.metadata?.description, '行人 (掌外事, 春秋)');
+
+      const zhongdafu = offices.find((row) => row.authorityId === '802534');
+      assert.ok(zhongdafu, 'expected 晋侯-series 中大夫 office row');
+      assert.equal(zhongdafu.metadata?.dynasty, '晋');
+      assert.equal(zhongdafu.metadata?.description, '中大夫 (宠信谋臣, 晋)');
+    } finally {
+      db.close();
+    }
+  },
+);
+
+test(
+  'CBDB compile — collapses near-duplicate pre-Han office ids',
+  { skip: !FULL_SQLITE_CANDIDATES },
+  () => {
+    const db = openDb(FULL_SQLITE_CANDIDATES);
+    try {
+      const dynastyMap = loadCbdbDynastyMap(db);
+      const compiled = compileCbdbOffices(db, dynastyMap);
+      const { offices, concordance } = collapseCbdbOfficeDuplicates(compiled);
+
+      const chushi = offices.filter((row) => row.primaryName === '褚師');
+      assert.equal(chushi.length, 1, 'three 褚師 duplicates should collapse to one');
+      assert.equal(chushi[0].authorityId, '802415');
+
+      const mergedChushi = concordance.filter((row) => row.canonicalId === '802415');
+      assert.deepEqual(
+        mergedChushi.map((row) => row.mergedFromId).sort(),
+        ['802448', '802690'],
+      );
+
+      assert.equal(
+        concordance.length,
+        103,
+        'raw 漢前 rows with identical name/note/type/translation should collapse',
+      );
+      assert.ok(
+        offices.length < compiled.length,
+        'collapsed pack should have fewer office rows than raw compile',
+      );
+    } finally {
+      db.close();
+    }
+  },
+);
 
 test(
   'CBDB compile — full dump person count (integration)',

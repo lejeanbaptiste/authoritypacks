@@ -1000,6 +1000,7 @@ norbert_id,norbert_name,candidate_source,candidate_id,candidate_name,tier,match_
 2296,王肅,dila,A003283,王肅,2,tier2-scored-review,review-only,55,王肅;dynasty:南齊,北魏|劉宋,,,,,,link
 2296,王肅,cbdb,563233,王肅,2,tier2-scored-review,review-only,55,王肅;dynasty:宋,北魏|劉宋,,,,,,ignore
 2296,王肅,cbdb,692016,王肅,2,tier2-scored-review,review-only,55,王肅;dynasty:宋,北魏|劉宋,,,,,,ignore
+487,王肅,cbdb,135476,王肅,2,tier2-scored-review,review-only,55,王肅;dynasty:西晉,三國魏|西晉,子雍,,,,,link
 7558,陸真,cbdb,432208,陸真,2,tier2-scored-review,review-only,55,陸真;dynasty:北魏,北魏|劉宋,,,,,,link
 54,韓延之,cbdb,432882,韓延之,2,tier2-scored-review,review-only,55,韓延之;dynasty:東晉,北魏|劉宋,,,,,,link
 2279,張湛,dila,A015384,張湛,2,tier2-scored-review,review-only,55,張湛;dynasty:東晉,北魏|北涼,,,,,,link

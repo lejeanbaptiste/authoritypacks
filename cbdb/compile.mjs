@@ -37,6 +37,7 @@ export function compileCbdbPack(options = {}) {
       personConcordance,
       places,
       offices,
+      officeConcordance,
       appointments,
       officeTypes,
       officeRelations,
@@ -53,6 +54,11 @@ export function compileCbdbPack(options = {}) {
       outputDir,
       'person-concordance.ndjson',
       personConcordance,
+    );
+    const officeConcordanceOut = writePackFile(
+      outputDir,
+      'office-concordance.ndjson',
+      officeConcordance,
     );
     const officeTypeOut = writePackFile(outputDir, 'office-types.ndjson', officeTypes);
     const officeRelationOut = writePackFile(
@@ -83,6 +89,7 @@ export function compileCbdbPack(options = {}) {
         'offices.ndjson': { entityCount: officeOut.count, stringCount: stringCount(offices) },
         'appointments.ndjson': { entityCount: appointmentOut.count },
         'person-concordance.ndjson': { relationCount: personConcordanceOut.count },
+        'office-concordance.ndjson': { relationCount: officeConcordanceOut.count },
         'office-types.ndjson': { entityCount: officeTypeOut.count },
         'office-relations.ndjson': { relationCount: officeRelationOut.count },
       },

@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### CBDB offices
+
+- **Pre-Han office clues** (`cbdb/officeMetadata.mjs`): `metadata.dynasty` and year spans now prefer a polity named in `c_notes` (e.g. 晋) or the office-type period (西周 / 春秋 / 戰國) over the coarse CBDB `漢前` bucket. Definitional `c_notes` glosses (e.g. 掌外事) appear in the one-line `description`; `參見 …` and `同 …` cross-reference notes are omitted. Tang/Song and later offices are unchanged.
+- **Pre-Han office dedup** (`cbdb/officeDedup.mjs`): near-duplicate 漢前 rows with the same name, note, translation, and office-type ids collapse to the lowest `c_office_id`. **61 groups / 103 merged ids** in the current CBDB dump; `offices.ndjson` drops from 33 764 to **33 661** rows. Merged ids ship in new **`office-concordance.ndjson`** beside the CBDB pack (`compile.mjs`, `compileRecords.mjs`). Later-dynasty homonyms are never collapsed.
+- `shared/dynastyMap.mjs` adds 西周 / 春秋 / 戰國 / 晋 spans; `shared/clue.mjs` accepts an office gloss in `cbdbOfficeClue`.
+
+### Norbert person concordance
+
+- Reviewed link in `reports/norbert-person-concordance-review.csv`: **Norbert person-487 → CBDB 135476** (王肅, 西晉, 子雍). Rebuilt into `packs/norbert/norbert-concordance.ndjson` via `concordance:merge-review` + `concordance:integrate`. **person-2296** is unchanged (CBDB 468114 + DILA A003283); the two 王肅 rows are not merged.
+
 ### Huckbot5000 licensing
 
 - The `huckbot5000` translations manifest now states its redistribution status instead of

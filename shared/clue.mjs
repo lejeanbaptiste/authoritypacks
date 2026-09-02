@@ -167,11 +167,13 @@ export function norbertOfficeClue(p) {
  * @param {Object} p
  * @param {string} p.name
  * @param {string} [p.translation]
+ * @param {string} [p.gloss] definitional note from CBDB (e.g. 掌出使)
  * @param {string} [p.dynastyChn]
  */
 export function cbdbOfficeClue(p) {
   const inner = [];
   if (p.translation) inner.push(p.translation);
+  if (p.gloss) inner.push(p.gloss);
   if (p.dynastyChn) inner.push(p.dynastyChn);
   if (inner.length) return `${p.name} (${inner.join(', ')})`;
   return p.name;

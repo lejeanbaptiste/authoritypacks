@@ -7,6 +7,12 @@
 
 /** @type {Record<string, Omit<DynastyRange, 'label'>>} */
 export const STATIC_DYNASTY_ALIASES = {
+  西周: { startYear: -1046, endYear: -771, dynastyEn: 'Western Zhou' },
+  春秋: { startYear: -770, endYear: -476, dynastyEn: 'Spring and Autumn' },
+  戰國: { startYear: -475, endYear: -221, dynastyEn: 'Warring States' },
+  战国: { startYear: -475, endYear: -221, dynastyEn: 'Warring States' },
+  晋: { startYear: -770, endYear: -376, dynastyEn: 'Jin' },
+  晉: { startYear: -770, endYear: -376, dynastyEn: 'Jin' },
   秦: { startYear: -221, endYear: -206, dynastyEn: 'Qin' },
   西漢: { startYear: -206, endYear: 9, dynastyEn: 'Western Han' },
   西汉: { startYear: -206, endYear: 9, dynastyEn: 'Western Han' },

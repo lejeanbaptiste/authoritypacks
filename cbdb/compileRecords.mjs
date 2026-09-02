@@ -9,6 +9,8 @@ import { nationalityAssertion } from '../shared/nationalityConcordance.mjs';
 import { personDateMetadata } from '../shared/personDates.mjs';
 import { officeEntityId } from '../shared/officeGraph.mjs';
 import { loadCbdbPersonConcordance } from './personConcordance.mjs';
+import { resolveCbdbOfficePresentation } from './officeMetadata.mjs';
+import { collapseCbdbOfficeDuplicates } from './officeDedup.mjs';
 
 /** @typedef {import('../shared/types.mjs').AuthorityCandidate} AuthorityCandidate */
 /** @typedef {import('better-sqlite3').Database} Database */
@@ -338,6 +340,16 @@ export function compileCbdbAppointments(db, offices) {
  * @param {ReturnType<typeof loadCbdbDynastyMap>} dynastyMap
  */
 export function compileCbdbOffices(db, dynastyMap) {
+  const officeTypeLabelsById = new Map();
+  for (const row of db
+    .prepare(
+      `SELECT c_office_type_node_id, c_office_type_desc_chn
+       FROM OFFICE_TYPE_TREE`,
+    )
+    .all()) {
+    officeTypeLabelsById.set(String(row.c_office_type_node_id), row.c_office_type_desc_chn || undefined);
+  }
+
   const officeTypeIds = new Map();
   for (const row of db
     .prepare(
@@ -374,6 +386,17 @@ export function compileCbdbOffices(db, dynastyMap) {
     if (!searchStrings.size) continue;
 
     const dynasty = resolveDynastyByCode(row.c_dy, dynastyMap);
+    const typeIds = officeTypeIds.get(String(row.c_office_id)) ?? [];
+    const presentation = resolveCbdbOfficePresentation({
+      baseDynasty: row.c_dynasty_chn || dynasty?.label,
+      baseStartYear: dynasty?.startYear,
+      baseEndYear: dynasty?.endYear,
+      note: row.c_notes,
+      officeTypeLabels: typeIds
+        .map((id) => officeTypeLabelsById.get(id))
+        .filter((label) => Boolean(label)),
+      dynastyMap,
+    });
 
     out.push({
       source: SOURCE,
@@ -383,14 +406,13 @@ export function compileCbdbOffices(db, dynastyMap) {
       searchStrings: [...searchStrings],
       metadata: {
         teiTag: 'roleName',
-        dynasty: row.c_dynasty_chn || dynasty?.label,
-        startYear: dynasty?.startYear,
-        endYear: dynasty?.endYear,
+        sourceDynasty: row.c_dynasty_chn || undefined,
+        dynasty: presentation.dynasty,
+        startYear: presentation.startYear,
+        endYear: presentation.endYear,
         entityId: officeEntityId(SOURCE, row.c_office_id),
         canonicalEntityId: officeEntityId(SOURCE, row.c_office_id),
-        officeTypeIds: officeTypeIds
-          .get(String(row.c_office_id))
-          ?.map((id) => `cbdb:office-type:${id}`),
+        officeTypeIds: typeIds.map((id) => `cbdb:office-type:${id}`),
         pinyin: row.c_office_pinyin || undefined,
         alternatePinyin: row.c_office_pinyin_alt || undefined,
         translation: isHuckerSourced(row.c_office_trans) ? undefined : row.c_office_trans || undefined,
@@ -401,7 +423,8 @@ export function compileCbdbOffices(db, dynastyMap) {
         description: cbdbOfficeClue({
           name: row.c_office_chn,
           translation: isHuckerSourced(row.c_office_trans) ? undefined : row.c_office_trans || undefined,
-          dynastyChn: row.c_dynasty_chn || dynasty?.label,
+          gloss: presentation.gloss,
+          dynastyChn: presentation.dynasty,
         }),
       },
     });
@@ -485,12 +508,14 @@ export function compileCbdb(db) {
   const dynastyMap = loadCbdbDynastyMap(db);
   const personConcordance = loadCbdbPersonConcordance(db);
   const officeGraph = compileCbdbOfficeGraph(db);
-  const offices = compileCbdbOffices(db, dynastyMap);
+  const compiledOffices = compileCbdbOffices(db, dynastyMap);
+  const { offices, concordance: officeConcordance } = collapseCbdbOfficeDuplicates(compiledOffices);
   return {
     persons: compileCbdbPersons(db, dynastyMap),
     personConcordance: personConcordance.rows,
     places: compileCbdbPlaces(db, dynastyMap),
     offices,
+    officeConcordance,
     appointments: compileCbdbAppointments(db, offices),
     officeTypes: officeGraph.types,
     officeRelations: officeGraph.relations,
