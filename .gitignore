@@ -24,9 +24,16 @@ packs/ndl/orgs-smoke-ja/
 packs/ndl/ime.csv
 packs/chgis-test/
 packs/norbert/
-packs/huckbot5000/
+# Huckbot / MaxiRicci: track shippable outputs only (like Wikidata); keep staging + insiders local.
+packs/huckbot5000/candidates*.ndjson
+packs/huckbot5000/lexicon.ndjson
+packs/huckbot5000/translations-manifest.json
 packs/huckbot5000-insiders/
-packs/maxiricci7000/
+packs/maxiricci7000/batch-*.ndjson
+packs/maxiricci7000/candidates-*.ndjson
+packs/maxiricci7000/french-lexicon.ndjson
+packs/maxiricci7000/rotours-seeds.ndjson
+packs/maxiricci7000/translations-manifest.json
 huckbot5000/insiders-include.ndjson
 
 # Ignore Wikidata raw extract directories (intermediate files)

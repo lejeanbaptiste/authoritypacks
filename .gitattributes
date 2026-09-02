@@ -9,3 +9,9 @@ packs/wikidata/**/manifest.json filter=lfs diff=lfs merge=lfs -text
 # Track the pre-compiled CHGIS pack with Git LFS (compiled locally from
 # Harvard Dataverse shapefiles; see chgis/README.md)
 packs/chgis/*.ndjson filter=lfs diff=lfs merge=lfs -text
+
+# Shippable office gloss gap-fill packs (CI release; insiders stay gitignored)
+packs/huckbot5000/translations.ndjson filter=lfs diff=lfs merge=lfs -text
+packs/huckbot5000/manifest.json filter=lfs diff=lfs merge=lfs -text
+packs/maxiricci7000/translations.ndjson filter=lfs diff=lfs merge=lfs -text
+packs/maxiricci7000/manifest.json filter=lfs diff=lfs merge=lfs -text

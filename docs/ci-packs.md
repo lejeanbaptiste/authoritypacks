@@ -50,6 +50,24 @@ If those files are absent, the bundle still builds, but it will contain only CBD
 
 For release-time enforcement, run the bundle with `--require-ndl`. That makes the build fail fast if the NDL raws are missing.
 
+## Huckbot5000 and MaxiRicci7000 (chinese bundle)
+
+Shippable gap-fill packs are **committed in git (LFS)**, not rebuilt in CI:
+
+- `packs/huckbot5000/translations.ndjson` + `manifest.json`
+- `packs/maxiricci7000/translations.ndjson` + `manifest.json`
+
+Staging files (`candidates*.ndjson`, lexicon, batch targets) and **`packs/huckbot5000-insiders/`** (Hucker collision archive) stay gitignored. `npm run authoritypacks:release` **fails** if the two translation packs are missing.
+
+Rebuild locally after review workflow changes:
+
+```bash
+npm run compile:huckbot5000-translations
+npm run compile:maxiricci7000
+git add packs/huckbot5000/translations.ndjson packs/huckbot5000/manifest.json \
+        packs/maxiricci7000/translations.ndjson packs/maxiricci7000/manifest.json
+```
+
 ## Wikidata staging
 
 Wikidata person packs are **compiled locally** from the Wikidata JSON dump (see [`wikidata/README.md`](../wikidata/README.md)). They are not fetched by `fetch-upstream.mjs`.

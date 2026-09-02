@@ -4,6 +4,10 @@
 
 _Bump `compilePolicyVersion` to **2026-09-02** (office compile changes below). Rebuild packs before tagging a release._
 
+### Release packaging
+
+- **Huckbot5000 + MaxiRicci7000 now ship from CI again.** Shippable outputs (`packs/huckbot5000/translations.ndjson`, `packs/maxiricci7000/translations.ndjson`, manifests) are tracked in git (LFS). Staging candidates and `packs/huckbot5000-insiders/` stay gitignored. `build-authority-pack-release.mjs` fails the release build if either pack is missing from the chinese tarball.
+
 ### CBDB offices
 
 - **Pre-Han office clues** (`cbdb/officeMetadata.mjs`): `metadata.dynasty` and year spans now prefer a polity named in `c_notes` (e.g. 晋) or the office-type period (西周 / 春秋 / 戰國) over the coarse CBDB `漢前` bucket. Definitional `c_notes` glosses (e.g. 掌外事) appear in the one-line `description`; `參見 …` and `同 …` cross-reference notes are omitted. Tang/Song and later offices are unchanged.

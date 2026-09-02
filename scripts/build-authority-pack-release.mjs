@@ -18,9 +18,28 @@ const repoRoot = path.resolve(__dirname, '..');
 const distDir = path.join(repoRoot, 'dist');
 const releaseDir = path.join(repoRoot, 'release');
 
+/** Chinese bundle must include these; CI cannot ship without them (see .gitignore / Git LFS). */
+const REQUIRED_CHINESE_PACK_DIRS = [
+  'authority-packs/huckbot5000',
+  'authority-packs/maxiricci7000',
+];
+
 execFileSync('node', [path.join(repoRoot, 'scripts/build-pack-bundle.mjs')], {
   stdio: 'inherit',
 });
+
+for (const entry of REQUIRED_CHINESE_PACK_DIRS) {
+  const translations = path.join(distDir, entry, 'translations.ndjson');
+  try {
+    await fs.access(translations);
+  } catch {
+    throw new Error(
+      `Release build missing required pack ${entry}/translations.ndjson. ` +
+        'Commit packs/huckbot5000 and packs/maxiricci7000 shippable outputs (Git LFS); ' +
+        'packs/huckbot5000-insiders/ must stay local-only.',
+    );
+  }
+}
 
 const index = JSON.parse(await fs.readFile(path.join(distDir, 'packs-index.json'), 'utf8'));
 const version = index.bundleVersion;
@@ -87,9 +106,16 @@ await fs.copyFile(path.join(distDir, 'packs-index.json'), path.join(releaseDir, 
 
 for (const bundle of bundles) {
   const entries = [];
+  const required = bundle.name.includes('-chinese-') ? REQUIRED_CHINESE_PACK_DIRS : [];
   for (const entry of bundle.entries) {
-    if (await fs.stat(path.join(distDir, entry)).then(() => true).catch(() => false)) {
+    const src = path.join(distDir, entry);
+    const exists = await fs.stat(src).then(() => true).catch(() => false);
+    if (exists) {
       entries.push(entry);
+      continue;
+    }
+    if (required.includes(entry)) {
+      throw new Error(`Required chinese bundle entry missing after compile: ${entry}`);
     }
   }
   if (entries.length === 0) {
