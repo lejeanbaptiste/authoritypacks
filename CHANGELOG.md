@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+_Bump `compilePolicyVersion` to **2026-09-02** (office compile changes below). Rebuild packs before tagging a release._
+
 ### CBDB offices
 
 - **Pre-Han office clues** (`cbdb/officeMetadata.mjs`): `metadata.dynasty` and year spans now prefer a polity named in `c_notes` (e.g. 晋) or the office-type period (西周 / 春秋 / 戰國) over the coarse CBDB `漢前` bucket. Definitional `c_notes` glosses (e.g. 掌外事) appear in the one-line `description`; `參見 …` and `同 …` cross-reference notes are omitted. Tang/Song and later offices are unchanged.
