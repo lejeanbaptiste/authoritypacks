@@ -106,9 +106,11 @@ the compiled include, never the raw source.
      `packs/huckbot5000/translations.ndjson`, every row tagged
      `source: 'Huckbot5000'`.
    - `npm run compile:huckbot5000-insiders` →
-     `packs/huckbot5000-insiders/translations.ndjson`, every row tagged
+     `packs/huckbot5000-insiders/` as a **local plugin pack**
+     (`plugin.manifest.json` + `translations.ndjson`), every row tagged
      `source: 'Hucker'`, license `local-use-only-do-not-redistribute`.
-     Collision archive for audit only — never add to a release tarball.
+     Install in LJB via Tools → Plugins → **Install from folder…**
+     (choose `packs/huckbot5000-insiders`). Never add to a release tarball.
 
 ## Files
 

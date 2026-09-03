@@ -59,3 +59,13 @@ packs/wikidata/raw-zh-hant-*/
 # Norbert
 norbert_secret/
 skunkworks/
+
+# BDRC — raw/cleaned CSVs and compiled packs stay local-only
+bdrc/*
+!bdrc/fixtures/
+!bdrc/fixtures/**
+!bdrc/compile.mjs
+!bdrc/compileRecords.mjs
+!bdrc/compile.test.mjs
+!bdrc/README.md
+packs/bdrc/

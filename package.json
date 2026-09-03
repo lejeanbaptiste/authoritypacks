@@ -38,6 +38,7 @@
     "ndl:export-ime": "node ndl/exportIme.mjs",
     "ndl:compile-places": "node ndl/compilePlaces.mjs",
     "ndl:compile-orgs": "node ndl/compileOrgs.mjs",
+    "compile:bdrc": "node bdrc/compile.mjs",
     "compile:dila": "node dila/compile.mjs",
     "compile:cbdb": "node cbdb/compile.mjs",
     "compile:norbert": "node norbert/compile.mjs",

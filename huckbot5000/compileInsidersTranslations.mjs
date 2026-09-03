@@ -35,15 +35,19 @@ function readInsidersRows(filePath) {
   return rows;
 }
 
-function main() {
-  if (!fs.existsSync(inputPath)) {
-    console.error(
-      `ERROR: ${inputPath} not found. Run npm run compile:huckbot5000-include first `
+/**
+ * @param {{ inputPath?: string, outDir?: string }} [options]
+ */
+export function compileHuckbotInsiders(options = {}) {
+  const includeFile = options.inputPath ?? inputPath;
+  const outputDir = options.outDir ?? outDir;
+  if (!fs.existsSync(includeFile)) {
+    throw new Error(
+      `Missing ${includeFile}. Run npm run compile:huckbot5000-include first `
         + '(writes both approved-include and insiders-include).',
     );
-    process.exit(1);
   }
-  const includeRows = readInsidersRows(inputPath);
+  const includeRows = readInsidersRows(includeFile);
 
   const translations = includeRows.map((row) => ({
     source: 'Hucker',
@@ -62,8 +66,8 @@ function main() {
     },
   }));
 
-  fs.mkdirSync(outDir, { recursive: true });
-  writeNdjson(path.join(outDir, 'translations.ndjson'), translations);
+  fs.mkdirSync(outputDir, { recursive: true });
+  writeNdjson(path.join(outputDir, 'translations.ndjson'), translations);
 
   const manifest = {
     id: 'huckbot5000-insiders',
@@ -83,7 +87,10 @@ function main() {
       + 'must not be published or bundled into authoritypacks releases. Publishable gap-fill '
       + 'glosses live in packs/huckbot5000/ (source: Huckbot5000).',
     files: {
-      'translations.ndjson': { count: translations.length },
+      'translations.ndjson': {
+        count: translations.length,
+        entityCount: translations.length,
+      },
     },
     policy: {
       version: '2026-08-06',
@@ -92,12 +99,75 @@ function main() {
       redistribute: false,
     },
   };
-  fs.writeFileSync(path.join(outDir, 'translations-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  const manifestBody = `${JSON.stringify(manifest, null, 2)}\n`;
+  fs.writeFileSync(path.join(outputDir, 'manifest.json'), manifestBody);
+  fs.writeFileSync(path.join(outputDir, 'translations-manifest.json'), manifestBody);
+  writePluginWrapper(outputDir, translations.length);
 
-  console.log(
-    `Compiled ${translations.length} collision-archive translations -> ${path.join(outDir, 'translations.ndjson')} `
-      + '(local provenance/audit only — do not redistribute)',
+  return { count: translations.length, outDir: outputDir };
+}
+
+/**
+ * Local-only LJB plugin so Tools → Plugins → Install from folder works.
+ * @param {string} outputDir
+ * @param {number} count
+ */
+function writePluginWrapper(outputDir, count) {
+  const pluginManifest = {
+    manifestVersion: '1.0.0',
+    id: 'huckbot5000-insiders',
+    name: 'Huckbot5000 insiders (internal)',
+    version: '0.1.0',
+    description:
+      'Private Hucker collision-archive office glosses. Local use only — do not publish or redistribute.',
+    author: 'Daniel Patrick Morgan',
+    license: 'UNLICENSED',
+    ljb: { minVersion: '0.1.0' },
+    languages: ['zh-hant', 'zh-hans', 'lzh'],
+    languagePrompt: {
+      message:
+        'An internal Huckbot5000 insiders gloss pack is available. Open Tools → Plugins to install it.',
+      documentLanguages: ['zh-hant', 'zh-hans', 'lzh'],
+    },
+    entry: {
+      kind: 'javascript',
+      module: 'dist/register.mjs',
+    },
+    contributions: {
+      authorityPacks: [
+        {
+          id: 'huckbot5000-insiders',
+          label: 'Huckbot5000 insiders (Hucker, local)',
+          defaultTag: '',
+          install: { source: 'bundled', path: 'translations.ndjson' },
+        },
+      ],
+    },
+    bundled: ['dist/register.mjs', 'translations.ndjson', 'manifest.json'],
+  };
+  fs.writeFileSync(
+    path.join(outputDir, 'plugin.manifest.json'),
+    `${JSON.stringify(pluginManifest, null, 2)}\n`,
+  );
+  const distDir = path.join(outputDir, 'dist');
+  fs.mkdirSync(distDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(distDir, 'register.mjs'),
+    `export async function register(context) {\n`
+      + `  context.log('Huckbot5000 insiders pack loaded (${count} Hucker collision glosses)');\n`
+      + `}\n`,
   );
 }
 
-main();
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try {
+    const result = compileHuckbotInsiders();
+    console.log(
+      `Compiled ${result.count} collision-archive translations -> ${path.join(result.outDir, 'translations.ndjson')} `
+        + '(local provenance/audit only — do not redistribute)',
+    );
+  } catch (err) {
+    console.error(`ERROR: ${err instanceof Error ? err.message : String(err)}`);
+    process.exit(1);
+  }
+}

@@ -40,6 +40,29 @@ export function normalizeSurface(raw) {
   return raw.normalize('NFC').replace(/\s+/g, ' ').trim();
 }
 
+/** Any Tibetan code point (U+0F00–U+0FFF). */
+const TIBETAN_RE = /[ༀ-࿿]/;
+
+/**
+ * Tibetan search-string hygiene for the auto-tag matcher, applied only to
+ * strings that contain Tibetan:
+ *  - fold the non-breaking tsheg U+0F0C to the plain tsheg U+0F0B (a display
+ *    variant only);
+ *  - drop a leading or trailing tsheg / shad (U+0F0B–U+0F14). Authority
+ *    headwords are cited with a terminal shad ("བཀྲ་ཤིས།") that the running
+ *    text almost never carries at that position, so an exact-substring matcher
+ *    would miss every in-sentence mention.
+ * The intersyllabic tsheg is kept — it is a syllable boundary inside the name,
+ * not a word delimiter.
+ * @param {string} surface
+ */
+export function normalizeTibetanSearchString(surface) {
+  if (!surface || !TIBETAN_RE.test(surface)) return surface;
+  return surface
+    .replace(/༌/g, '་')
+    .replace(/^[་-༔\s]+|[་-༔\s]+$/g, '');
+}
+
 /**
  * @param {string} surface
  * @param {{ script?: string, minLength?: number }} [opts]
@@ -59,7 +82,7 @@ export function isValidSearchString(surface, opts = {}) {
  * @param {{ script?: string }} [opts]
  */
 export function addSearchString(set, surface, opts) {
-  const s = normalizeSurface(surface);
+  const s = normalizeTibetanSearchString(normalizeSurface(surface));
   // Place/work/org packs otherwise pick up ordinal enumeration junk (一八, 十二, …).
   if (isChineseNumeralOnly(s)) return;
   if (isValidSearchString(s, opts)) set.add(s);
