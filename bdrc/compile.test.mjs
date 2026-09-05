@@ -34,6 +34,16 @@ test('personFromRows — primary from PersonPrimaryName, titles not in searchStr
   assert.equal(person.metadata?.sourceRef, 'http://purl.bdrc.io/resource/P37');
 });
 
+test('personFromRows — prefers the more syllabic duplicate within a name-type tier', () => {
+  const rows = [
+    { p: 'P0RK419', n: 'dashabalashrI/', nt: 'PersonPrimaryName', bo: 'དཤབལཤྲཱི།' },
+    { p: 'P0RK419', n: 'dha sha bha la shrI/', nt: 'PersonPrimaryName', bo: 'དྷ་ཤ་བྷ་ལ་ཤྲཱི།' },
+  ];
+  const person = personFromRows('P0RK419', rows);
+  assert.ok(person);
+  assert.equal(person.primaryName, 'དྷ་ཤ་བྷ་ལ་ཤྲཱི།');
+});
+
 test('placeFromRows — all prefLabels become searchStrings', () => {
   const place = placeFromRows('G222', [
     { p: 'G222', n: 'po ta la/', nt: 'prefLabel', bo: 'པོ་ཏ་ལ།' },

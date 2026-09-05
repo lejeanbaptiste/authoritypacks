@@ -152,17 +152,28 @@ export function personFromRows(authorityId, rows) {
  */
 function pickPrimaryBo(rows) {
   for (const nt of PRIMARY_NAME_NT_ORDER) {
-    for (const row of rows) {
-      if (row.nt !== nt) continue;
-      const bo = cleanBoSurface(row.bo);
-      if (bo) return bo;
-    }
+    const candidates = rows
+      .filter((row) => row.nt === nt)
+      .map((row) => cleanBoSurface(row.bo))
+      .filter(Boolean);
+    if (candidates.length) return mostSyllabic(candidates);
   }
-  for (const row of rows) {
-    const bo = cleanBoSurface(row.bo);
-    if (bo) return bo;
-  }
-  return null;
+  const candidates = rows.map((row) => cleanBoSurface(row.bo)).filter(Boolean);
+  return candidates.length ? mostSyllabic(candidates) : null;
+}
+
+/**
+ * BDRC occasionally lists duplicate encodings of the same name within one
+ * name-type tier — a properly tsheg-delimited form alongside a glued/malformed
+ * one (e.g. a Wylie source missing its inter-syllable spaces). Prefer the
+ * form with the most tsheg-separated syllables, since it preserves the most
+ * information; ties keep the first-encountered (CSV) order.
+ * @param {string[]} candidates
+ */
+function mostSyllabic(candidates) {
+  return candidates.reduce((best, candidate) =>
+    candidate.split('་').length > best.split('་').length ? candidate : best,
+  );
 }
 
 /**

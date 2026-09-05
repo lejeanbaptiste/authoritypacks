@@ -2,7 +2,7 @@
   "id": "test-ndl-works",
   "source": "NDL",
   "buildToolVersion": "0.1.0",
-  "compiledAt": "2026-09-03T22:29:35.975Z",
+  "compiledAt": "2026-09-05T11:56:55.915Z",
   "upstream": {
     "raw": "/Users/daniel/Code/leJeanBaptiste/authority extraction/packs/test-ndl/works.raw.ndjson"
   },

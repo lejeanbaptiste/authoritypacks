@@ -2,7 +2,13 @@
 
 ## Unreleased
 
-_Bump `compilePolicyVersion` to **2026-09-02** (office compile changes below). Rebuild packs before tagging a release._
+_`compilePolicyVersion` is **2026-09-04** (office compile changes below + Tibetan search-string cleaning). Bundle rebuilt: `2026-09-04+cbdb20260627+norbert2026-07-25-reduced-authority+wikidata20260706+ndllocal`._
+
+### Tibetan search strings
+
+- **Terminal shad / tsheg stripped from `searchStrings`.** `shared/normalize.mjs` `addSearchString` now runs Tibetan surfaces through `normalizeTibetanSearchString`: fold the non-breaking tsheg U+0F0C to the plain tsheg U+0F0B, and drop a leading or trailing tsheg / shad (U+0F0B–U+0F14). Interior tshegs are kept — they are syllable boundaries inside the name, not word ends. `primaryName` and typed `names[]` are untouched, so the BDRC headword form (`བཀྲ་ཤིས།`) still displays with its shad; only the match key is cleaned (`བཀྲ་ཤིས`). BDRC persons had a terminal shad on **22,552 / 23,841** search strings — an exact-substring matcher only hit a name that happened to fall immediately before a shad in the text, i.e. missed nearly every mid-clause mention.
+- **Existing packs cleaned in place.** New `scripts/normalizeTibetanSearchStrings.mjs` (same shape as `purgeLatinSearchStrings.mjs`, idempotent, `--dry-run`): re-normalized the tracked Wikidata bo packs — `person-bo` 18,922 rows, `place-bo` 363, `org-bo` 24, 0 dropped. BDRC packs (gitignored, `redistribute: false`) regenerated from the cleaned CSVs with `node bdrc/compile.mjs`.
+- The Tibetan release bundle (`authority-packs-tibetan-*`) carries only the three Wikidata bo packs; BDRC is local-only and not shipped.
 
 ### Release packaging
 
