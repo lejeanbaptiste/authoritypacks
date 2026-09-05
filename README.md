@@ -1,6 +1,6 @@
 # Authority extraction
 
-Offline **build pipelines** that turn public authority sources (CBDB, DILA, Wikidata, NDL, CHGIS, …) into **tag-string packs** for [LEAF/LJB](https://gitlab.com/calincs/cwrc/leaf-writer/leaf-writer) auto-tagging. **GeoNames packs are out of scope** (no Track G work).
+Offline **build pipelines** that turn public authority sources (CBDB, DILA, Wikidata, NDL, CHGIS, …) into **tag-string packs** for [LEAF/Grognard](https://gitlab.com/calincs/cwrc/leaf-writer/leaf-writer) auto-tagging. **GeoNames packs are out of scope** (no Track G work).
 
 This repo holds **extract → compile → publish** tooling. The **matcher, review UI, and tag bomb** live in leaf-writer.
 
@@ -43,8 +43,8 @@ authority extraction/
 
 ## VIAF ↔ Wikidata concordance (status)
 
-LJB disambiguation merges live Wikidata + VIAF hits using a precompiled P214
-table (pack id `wikidata-viaf-concordance`). Runtime wiring is **done** on LJB
+Grognard disambiguation merges live Wikidata + VIAF hits using a precompiled P214
+table (pack id `wikidata-viaf-concordance`). Runtime wiring is **done** on Grognard
 GitHub `main` (`viafWikidataConcordance.ts`).
 
 **Locally built (not yet in a public release tarball):**
@@ -54,9 +54,9 @@ GitHub `main` (`viafWikidataConcordance.ts`).
 
 **Still open** (see [docs/extraction-todo.md](docs/extraction-todo.md)):
 
-1. Sanity-check in LJB after merge: a string that returns both Wikidata and VIAF
+1. Sanity-check in Grognard after merge: a string that returns both Wikidata and VIAF
    via LINCS for a known pair should collapse to one candidate.
-2. GitHub Release of the local tarball (hold for LJB merge / purge design).
+2. GitHub Release of the local tarball (hold for Grognard merge / purge design).
 
 **Done locally:** person-row attach including DILA/BDRC
 (`npm run wikidata:attach-crosswalk`) and filtered VIAF + pair sidecars in the
@@ -125,7 +125,7 @@ See [**docs/phases.md**](docs/phases.md) for progress and **👤 decisions**.
 
 ## Output format
 
-All tracks compile to the same **LJB `AuthorityCandidate` NDJSON** shape (see leaf-writer `autoTagging/authority.ts`). Each pack ships a `manifest.json` (id, version, sha256, license, upstream). Large packs may additionally advertise date chunks, while small and legacy packs remain single-file NDJSON.
+All tracks compile to the same **Grognard `AuthorityCandidate` NDJSON** shape (see leaf-writer `autoTagging/authority.ts`). Each pack ships a `manifest.json` (id, version, sha256, license, upstream). Large packs may additionally advertise date chunks, while small and legacy packs remain single-file NDJSON.
 
 ## License
 

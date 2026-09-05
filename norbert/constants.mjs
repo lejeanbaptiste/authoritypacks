@@ -7,7 +7,7 @@ export const NAME_TYPE_EXCLUDE = new Set([
 export const SOURCE = 'Norbert';
 
 /**
- * Norbert `person_names.name_type_id` → LJB canonical name-type id
+ * Norbert `person_names.name_type_id` → Grognard canonical name-type id
  * (`leaf-writer/packages/cwrc-leafwriter/src/autoTagging/nameTypes.ts`).
  *
  * Norbert numbering differs from CBDB; see README mapping table.

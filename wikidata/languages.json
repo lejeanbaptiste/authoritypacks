@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "description": "Maps LJB project language codes to Wikidata label/alias language tags for pack builds.",
+  "description": "Maps Grognard project language codes to Wikidata label/alias language tags for pack builds.",
   "packLanguages": [
     {
       "id": "zh-hant",
       "label": "Chinese (Traditional)",
-      "ljbProjectCodes": ["zh-Hant"],
+      "grognardProjectCodes": ["zh-Hant"],
       "wikidataLabelLanguages": ["zh-hant", "zh-tw"],
       "script": "hant",
       "defaultForChineseProject": true
@@ -13,14 +13,14 @@
     {
       "id": "zh-hans",
       "label": "Chinese (Simplified)",
-      "ljbProjectCodes": ["zh-Hans"],
+      "grognardProjectCodes": ["zh-Hans"],
       "wikidataLabelLanguages": ["zh-hans", "zh-cn"],
       "script": "hans"
     },
     {
       "id": "lzh",
       "label": "Literary Chinese",
-      "ljbProjectCodes": ["lzh"],
+      "grognardProjectCodes": ["lzh"],
       "wikidataLabelLanguages": ["lzh", "zh-hant"],
       "script": "hant",
       "note": "Few dedicated lzh labels; fall back to zh-hant when building."
@@ -28,35 +28,35 @@
     {
       "id": "ja",
       "label": "Japanese",
-      "ljbProjectCodes": ["ja"],
+      "grognardProjectCodes": ["ja"],
       "wikidataLabelLanguages": ["ja"],
       "script": "ja"
     },
     {
       "id": "ko",
       "label": "Korean",
-      "ljbProjectCodes": ["ko"],
+      "grognardProjectCodes": ["ko"],
       "wikidataLabelLanguages": ["ko"],
       "script": "ko"
     },
     {
       "id": "en",
       "label": "English",
-      "ljbProjectCodes": ["en"],
+      "grognardProjectCodes": ["en"],
       "wikidataLabelLanguages": ["en"],
       "script": "latn"
     },
     {
       "id": "bo",
       "label": "Tibetan",
-      "ljbProjectCodes": ["bo"],
+      "grognardProjectCodes": ["bo"],
       "wikidataLabelLanguages": ["bo"],
       "script": "tibt"
     },
     {
       "id": "vi",
       "label": "Vietnamese",
-      "ljbProjectCodes": ["vi"],
+      "grognardProjectCodes": ["vi"],
       "wikidataLabelLanguages": ["vi"],
       "script": "latn"
     }
@@ -69,6 +69,6 @@
   "minSurfaceLength": {
     "default": 2,
     "latn": 3,
-    "note": "Strings shorter than this are dropped from tag packs (matches LJB DEFAULT_MIN_MATCH_LENGTH for CJK)."
+    "note": "Strings shorter than this are dropped from tag packs (matches Grognard DEFAULT_MIN_MATCH_LENGTH for CJK)."
   }
 }

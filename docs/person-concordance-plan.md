@@ -297,7 +297,7 @@ queue.
 
 - Inferring person identity from shared place labels alone.
 - Auto-merging DILA ↔ CBDB on shared strings without idnos or the tiers above.
-- Replacing LJB runtime disambiguation UI; this plan is about **pack-time**
+- Replacing Grognard runtime disambiguation UI; this plan is about **pack-time**
   concordance rows that feed `metadata.crosswalk`.
 
 ---

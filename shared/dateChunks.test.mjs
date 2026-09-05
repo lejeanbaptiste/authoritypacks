@@ -8,7 +8,7 @@ import { writeDateChunks } from './dateChunks.mjs';
 import { readNdjson } from './ndjson.mjs';
 
 test('date chunks preserve entities/search strings and repeat boundary spans', () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ljb-date-chunks-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'grognard-date-chunks-'));
   try {
     const rows = [
       { source: 'Test', authorityId: 'one', searchStrings: ['甲'], metadata: { startYear: 199, endYear: 201 } },

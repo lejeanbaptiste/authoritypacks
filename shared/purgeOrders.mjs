@@ -1,6 +1,6 @@
 /**
  * Pack **purge orders**: developer-authored concordance / pack change notices
- * shipped inside the authority-pack bundle. On install, LJB copies pending
+ * shipped inside the authority-pack bundle. On install, Grognard copies pending
  * orders into the user's local docket for manual review (never silent
  * rewrite of project entities.xml).
  *

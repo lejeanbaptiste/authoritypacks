@@ -62,7 +62,7 @@ for (const kind of requiredKinds) {
 // --- languages ---
 const packLangIds = new Set();
 for (const lang of languagesDoc.packLanguages) {
-  for (const field of ['id', 'label', 'ljbProjectCodes', 'wikidataLabelLanguages']) {
+  for (const field of ['id', 'label', 'grognardProjectCodes', 'wikidataLabelLanguages']) {
     if (!lang[field] || (Array.isArray(lang[field]) && lang[field].length === 0)) {
       fail(`languages.json: ${lang.id ?? '?'} missing ${field}`);
     }

@@ -99,7 +99,7 @@
 /**
  * @typedef {Object} NameEntry
  * @property {string} text
- * @property {string} [type] LJB canonical name-type id (see leaf-writer
+ * @property {string} [type] Grognard canonical name-type id (see leaf-writer
  *   `autoTagging/nameTypes.ts`: primary/courtesy/art/posthumous/temple/
  *   dharma/pen/variant/family/given/birth) or a source-specific label
  *   leaf-writer's `normalizeNameType` understands (Wikidata P-ids, CJK
@@ -115,7 +115,7 @@
  * @property {string} authorityId
  * @property {EntityKind} kind
  * @property {string} primaryName Stable authority headword / database title.
- * @property {string} [displayName] Surface shown when LJB creates or labels an
+ * @property {string} [displayName] Surface shown when Grognard creates or labels an
  * entity. Sources without a distinction use `primaryName` as the fallback.
  * @property {string[]} searchStrings
  * @property {NameEntry[]} [names] Typed names, when the source preserves name

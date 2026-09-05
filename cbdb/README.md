@@ -1,12 +1,12 @@
 # CBDB compile
 
-Compiles CBDB sqlite → LJB `AuthorityCandidate` NDJSON.
+Compiles CBDB sqlite → Grognard `AuthorityCandidate` NDJSON.
 
 ## Person reference sqlite (A6)
 
-For link/backfill enrichment LJB builds a **table-subset** `cbdb-person.sqlite3`
+For link/backfill enrichment Grognard builds a **table-subset** `cbdb-person.sqlite3`
 locally from CBDB's official release (not the full ~550 MB dump). Installed
-on the user's machine only — LJB does not redistribute this file.
+on the user's machine only — Grognard does not redistribute this file.
 
 ```bash
 npm run cbdb:strip-reference -- --sqlite .upstream/cbdb.sqlite3 --out dist/reference/cbdb-person.sqlite3
@@ -72,7 +72,7 @@ Type **0** stays **out** (~45k strings). Mythical persons are **in** (no special
 - Near-duplicate pre-Han rows (same source dynasty 漢前, name, note, translation,
   and office-type ids) collapse to the lowest `c_office_id`; merged ids are listed
   in `office-concordance.ndjson`. Later-dynasty homonyms are never collapsed.
-- LJB may mint a project office entity after disambiguation; corpus mentions
+- Grognard may mint a project office entity after disambiguation; corpus mentions
   remain `roleName`.
 
 CBDB's `OFFICE_TYPE_TREE` is a classification hierarchy, not a table of
@@ -98,11 +98,11 @@ prefixed duplicates via `collapseTypedNamesAfterZiClean`). `names[]` also
 carries bare 姓 / 名 / 字 and short 別號/諡號/尊號 that fail the phase-1 length
 gates — too ambiguous for the matcher, still useful at link time.
 
-This is what LJB's entity database uses to keep courtesy names (字) — common
+This is what Grognard's entity database uses to keep courtesy names (字) — common
 words that make poor auto-tag seeds — out of corpus tagging by default while
 still surfacing them for manual disambiguation and search.
 
-| CBDB code | `c_name_type_desc_chn` | LJB type |
+| CBDB code | `c_name_type_desc_chn` | Grognard type |
 |-----------|------------------------|----------|
 | — (`c_name_chn`) | — | `primary` |
 | 3 | 別名、曾用名 | `variant` |
@@ -152,7 +152,7 @@ packs/cbdb/
 
 `person-concordance.ndjson` preserves CBDB's `MERGED_PERSON_DATA` rows.
 Persons participating in a merge receive the same
-`metadata.canonicalEntityId` (`cbdb:person:<canonical CBDB id>`), so the LJB
+`metadata.canonicalEntityId` (`cbdb:person:<canonical CBDB id>`), so the Grognard
 entity importer groups the canonical record and its duplicates into one local
 entity while retaining each CBDB authority ID.
 

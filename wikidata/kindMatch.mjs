@@ -1,5 +1,5 @@
 /**
- * Match Wikidata dump entities to LJB pack kinds (person / place / org / work).
+ * Match Wikidata dump entities to Grognard pack kinds (person / place / org / work).
  */
 
 import { claimEntityIds, entityMatchesPersonSlice, entityHasPackLabel } from './entityParse.mjs';

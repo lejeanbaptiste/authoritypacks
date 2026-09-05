@@ -1,11 +1,11 @@
 # Wikidata pack build
 
-Offline pipeline to turn [Wikidata](https://www.wikidata.org/) dumps into **tag string packs** for LJB auto-tagging.
+Offline pipeline to turn [Wikidata](https://www.wikidata.org/) dumps into **tag string packs** for Grognard auto-tagging.
 
 **Roadmap:** [docs/phases.md](../docs/phases.md) (track **W**).  
 **Design detail:** [leaf-writer `docs/wikidata-tag-packs-planning.md`](../../leaf-writer/docs/wikidata-tag-packs-planning.md).
 
-**Status (2026-07-06):** W2 **done** — Tang pack compiled (34,923 persons). LJB load (track **L**) not started.
+**Status (2026-07-06):** W2 **done** — Tang pack compiled (34,923 persons). Grognard load (track **L**) not started.
 
 ---
 
@@ -43,7 +43,7 @@ Expect **3** persons in `packs/wikidata/person-zh-hant-tang/persons.ndjson` (李
 
 ### 3. Extract from the full dump (one scan, many dynasties)
 
-**Shipped Chinese person packs (what LJB installs):**
+**Shipped Chinese person packs (what Grognard installs):**
 
 | Pack | Role |
 |------|------|
@@ -134,7 +134,7 @@ Writes `packs/wikidata/person-zh-hant-{tang,song,yuan,ming,qing}/persons.ndjson`
 
 ### Pre-Ming pack (Song, Yuan, and earlier) — **canonical for Song/Yuan**
 
-Wikidata often omits `P27` for Song/Yuan persons. Use **`--membership pre-ming`** to extract a broader raw file, then compile the pre-Ming slice. That pack is what LJB’s Chinese lifecycle ships as `wikidata-persons-pre-ming`.
+Wikidata often omits `P27` for Song/Yuan persons. Use **`--membership pre-ming`** to extract a broader raw file, then compile the pre-Ming slice. That pack is what Grognard’s Chinese lifecycle ships as `wikidata-persons-pre-ming`.
 
 ```bash
 # Full dump — one pass (several hours); resume with --resume
@@ -243,7 +243,7 @@ Entity count here may be **slightly lower** than raw (e.g. 李某-style placehol
 | GitLab CI bundle for Wikidata | Track **W5** |
 | Automatic updates | **W5** |
 
-When you resume Wikidata work, next engineering steps are **W3** (quality/ambiguity report) and **L1** (LJB pack install path).
+When you resume Wikidata work, next engineering steps are **W3** (quality/ambiguity report) and **L1** (Grognard pack install path).
 
 ### Authority concordance (external ids)
 
@@ -262,7 +262,7 @@ Re-extract + recompile packs to populate concordance fields on existing slices.
 
 #### TODO — ship VIAF ↔ Wikidata concordance pack
 
-LJB expects `packs/wikidata/viaf-wikidata-concordance.filtered.ndjson`
+Grognard expects `packs/wikidata/viaf-wikidata-concordance.filtered.ndjson`
 (installed as `authority-packs/wikidata/viaf-wikidata-concordance.filtered.ndjson`,
 pack id `wikidata-viaf-concordance`), plus optional chunks under
 `viaf-wikidata-concordance/`. Build from the dump-scale sidecar by filtering
@@ -288,7 +288,7 @@ Configuration tables every later phase reads. No dump processing yet.
 |------|---------|
 | [`dynasties.json`](dynasties.json) | Chinese period presets: Wikidata Q-id, year range, labels, DILA/CBDB aliases |
 | [`kind-queries.json`](kind-queries.json) | Which `P31` roots qualify as person / place / org / work |
-| [`languages.json`](languages.json) | Pack languages ↔ LJB project codes ↔ Wikidata label tags |
+| [`languages.json`](languages.json) | Pack languages ↔ Grognard project codes ↔ Wikidata label tags |
 | [`schema.json`](schema.json) | JSON Schema (documentation) |
 | [`validate.mjs`](validate.mjs) | Sanity-check after editing tables |
 | [`queries.mjs`](queries.mjs) | SPARQL builders for W1 prototypes |
@@ -297,7 +297,7 @@ Configuration tables every later phase reads. No dump processing yet.
 | [`entityParse.mjs`](entityParse.mjs) | Parse dump entity claims, labels, crosswalk ids |
 | [`personSearchStrings.mjs`](personSearchStrings.mjs) | CBDB-aligned person string rules |
 | [`extract.mjs`](extract.mjs) | Stream Wikidata dump → raw person NDJSON (W2) |
-| [`compile.mjs`](compile.mjs) | Raw → LJB `AuthorityCandidate` pack (W4) |
+| [`compile.mjs`](compile.mjs) | Raw → Grognard `AuthorityCandidate` pack (W4) |
 
 ### Validate
 
@@ -360,10 +360,10 @@ On a 500-row Tang sample, this drops ~17% of raw strings (mostly bare 字 and �
 | W1 | **In progress** — `run-sparql.mjs` + reports |
 | W2 | **In progress** — `extract.mjs` + `compile.mjs` |
 | W3 | Quality gates, ambiguity CSV — **`wikidata/report.mjs`** |
-| W4 | `compile.mjs` → LJB `AuthorityCandidate` NDJSON |
+| W4 | `compile.mjs` → Grognard `AuthorityCandidate` NDJSON |
 | W5 | Publish packs + manifest hosting |
 
-LJB download UI + tag bomb wiring stays in **leaf-writer** (track **L**).
+Grognard download UI + tag bomb wiring stays in **leaf-writer** (track **L**).
 
 ## License
 

@@ -3,7 +3,7 @@
 Authority sources regularly put a sovereign, princely, or posthumous title in
 `persName`/`roleName` fields.  That makes the title look like an identity name
 and causes it to be imported and tagged incorrectly.  This directory is the
-reviewed boundary between source data and LJB's structural noble-title model.
+reviewed boundary between source data and Grognard's structural noble-title model.
 
 ## Review workflow
 

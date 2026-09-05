@@ -27,7 +27,7 @@ export function addCbdbPersonSearchString(set, surface, surnameChn) {
 /**
  * Build typed name entries + phase-1 search strings for one person.
  *
- * - **`names`**: every typed form LJB may store on entities.xml at link time,
+ * - **`names`**: every typed form Grognard may store on entities.xml at link time,
  *   including bare 姓 / 名 / 字 and short 號/諡 that fail the phase-1 length
  *   gates (min length 1 code point for those short forms).
  * - **`searchStrings`**: phase-1 matcher only — same inclusion/length rules as
@@ -65,24 +65,24 @@ export function buildPersonNamesFromAlts(person) {
     else byType.set(type, [v]);
   }
 
-  /** @type {Map<string, string>} text -> ljbType */
+  /** @type {Map<string, string>} text -> grognardType */
   const searchEntries = new Map();
-  /** @type {Map<string, string>} text -> ljbType (superset of search + short forms) */
+  /** @type {Map<string, string>} text -> grognardType (superset of search + short forms) */
   const nameEntries = new Map();
 
   /**
    * @param {string} surface
-   * @param {string} ljbType
+   * @param {string} grognardType
    * @param {{ minLength?: number, search?: boolean }} [opts]
    */
-  const add = (surface, ljbType, opts = {}) => {
+  const add = (surface, grognardType, opts = {}) => {
     const { minLength = 2, search = true, names = true } = opts;
     if (isBlockedPersonString(surface, surname)) return;
     const normalized = normalizeSurface(surface);
     if (!isValidSearchString(normalized, { minLength })) return;
-    if (names && !nameEntries.has(normalized)) nameEntries.set(normalized, ljbType);
+    if (names && !nameEntries.has(normalized)) nameEntries.set(normalized, grognardType);
     if (search && !searchEntries.has(normalized) && isValidSearchString(normalized)) {
-      searchEntries.set(normalized, ljbType);
+      searchEntries.set(normalized, grognardType);
     }
   };
 

@@ -7,9 +7,9 @@ Pipeline stages: **test** → **build-packs**.
 | Artifact | Description |
 |----------|-------------|
 | `dist/packs-index.json` | Bundle version, policy, upstream pins, per-file sha256, tarball hash |
-| `dist/authority-packs-{version}.tar.gz` | `authority-packs/cbdb/` + `authority-packs/dila/` and, when staged, `authority-packs/wikidata/` + `authority-packs/ndl/`, plus the curated `authority-packs/noble-title-filter/` policy pack, ready for LJB |
+| `dist/authority-packs-{version}.tar.gz` | `authority-packs/cbdb/` + `authority-packs/dila/` and, when staged, `authority-packs/wikidata/` + `authority-packs/ndl/`, plus the curated `authority-packs/noble-title-filter/` policy pack, ready for Grognard |
 | `release/authority-reference-person-*.zip` | Sibling of tagging tarballs: `norbert.sqlite3` + `cbdb-person.sqlite3` + `manifest.json` (A6) |
-| `release/reference-index.json` | Version + sha256 for LJB reference download |
+| `release/reference-index.json` | Version + sha256 for Grognard reference download |
 
 Artifacts expire in **30 days** until you attach them to a GitLab **Release** (when ready). Build reference alone with `npm run build:reference`.
 
@@ -72,7 +72,7 @@ git add packs/huckbot5000/translations.ndjson packs/huckbot5000/manifest.json \
 
 Wikidata person packs are **compiled locally** from the Wikidata JSON dump (see [`wikidata/README.md`](../wikidata/README.md)). They are not fetched by `fetch-upstream.mjs`.
 
-`build-pack-bundle.mjs` includes Wikidata when these compiled directories already exist (pre-Ming / Ming / Qing — the person packs wired into LJB’s Chinese profile; Tang is optional):
+`build-pack-bundle.mjs` includes Wikidata when these compiled directories already exist (pre-Ming / Ming / Qing — the person packs wired into Grognard’s Chinese profile; Tang is optional):
 
 - `.upstream/wikidata/person-zh-hant-pre-ming/persons.ndjson`
 - `.upstream/wikidata/person-zh-hant-ming/persons.ndjson`
@@ -103,7 +103,7 @@ npm run wikidata:compile-all -- --raw packs/wikidata/raw-zh-hant-priority1/perso
 npm run build:packs
 ```
 
-Tarball layout: `authority-packs/wikidata/person-zh-hant-{pre-ming,ming,qing}/persons.ndjson` (plus optional `tang`) and per-pack / bundle `manifest.json` files. LJB’s Chinese lifecycle maps to `wikidata-persons-pre-ming`, `wikidata-persons-ming`, `wikidata-persons-qing`.
+Tarball layout: `authority-packs/wikidata/person-zh-hant-{pre-ming,ming,qing}/persons.ndjson` (plus optional `tang`) and per-pack / bundle `manifest.json` files. Grognard’s Chinese lifecycle maps to `wikidata-persons-pre-ming`, `wikidata-persons-ming`, `wikidata-persons-qing`.
 
 **Song / Yuan:** included in **pre-Ming** (`--membership pre-ming`, death/birth ≤ 1367 or pre-Ming period claims). Separate `person-zh-hant-song` / `person-zh-hant-yuan` directories are obsolete `P27`-only leftovers — do not stage them in the bundle.
 
@@ -145,7 +145,7 @@ When ready for a public release:
 
 1. Run pipeline on a **tag** (e.g. `packs-2026-07-05`).
 2. GitLab → Releases → New release → attach `dist/authority-packs-*.tar.gz` and `packs-index.json` from the job artifacts.
-3. LJB weekly check will point at the release asset URL (track A5 in leaf-writer).
+3. Grognard weekly check will point at the release asset URL (track A5 in leaf-writer).
 
 Until then, download artifacts from the latest successful **build-packs** job on `main`.
 

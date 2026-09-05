@@ -112,8 +112,8 @@ export function personNameEntriesFromNorbert(person, options = {}) {
 
   /** @type {Map<string, string>} */
   const entries = new Map();
-  const add = (surface, ljbType) => {
-    if (!ljbType) return;
+  const add = (surface, grognardType) => {
+    if (!grognardType) return;
     const normalized = normalizeSurface(surface);
     if (!normalized || entries.has(normalized)) return;
     // "nan" (and empty) is never a name — drop even from intake names[].
@@ -122,7 +122,7 @@ export function personNameEntriesFromNorbert(person, options = {}) {
       if (isBlockedPersonString(normalized, surname)) return;
       if (!isValidSearchString(normalized)) return;
     }
-    entries.set(normalized, ljbType);
+    entries.set(normalized, grognardType);
   };
 
   if (!isMissingNameToken(primary)) add(primary, 'primary');

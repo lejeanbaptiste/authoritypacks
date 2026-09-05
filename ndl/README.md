@@ -1,11 +1,11 @@
 # NDL (Web NDL Authorities) pack build
 
-Offline pipeline to turn [Web NDL Authorities](https://id.ndl.go.jp/auth/ndla/) (国立国会図書館典拠データ) into **tag-string packs** for LJB auto-tagging on **Japanese** projects.
+Offline pipeline to turn [Web NDL Authorities](https://id.ndl.go.jp/auth/ndla/) (国立国会図書館典拠データ) into **tag-string packs** for Grognard auto-tagging on **Japanese** projects.
 
 **Roadmap:** [docs/phases.md](../docs/phases.md) (track **N**).  
-**LJB planning:** [leaf-writer `docs/authority-packs-planning.md`](../../leaf-writer/docs/authority-packs-planning.md) §4.6.
+**Grognard planning:** [leaf-writer `docs/authority-packs-planning.md`](../../leaf-writer/docs/authority-packs-planning.md) §4.6.
 
-**Status (2026-07-07):** N1 pipeline done — persons (~1M) + works (~900) + places harvester (~7.8k). Kana readings wired into compile. LJB wired (Japanese lifecycle).
+**Status (2026-07-07):** N1 pipeline done — persons (~1M) + works (~900) + places harvester (~7.8k). Kana readings wired into compile. Grognard wired (Japanese lifecycle).
 
 ---
 
@@ -128,7 +128,7 @@ Expect **~242,384** corporate bodies after filtering.
 
 ### Phase N2 — Compile
 
-- `ndl/compilePersons.mjs` / `ndl/compilePlaces.mjs` → LJB `AuthorityCandidate` NDJSON + manifest (same shape as CBDB/DILA).
+- `ndl/compilePersons.mjs` / `ndl/compilePlaces.mjs` → Grognard `AuthorityCandidate` NDJSON + manifest (same shape as CBDB/DILA).
 - Search strings: kanji heading + **katakana/hiragana readings** from NDL `ndl:transcription` (`lang=ja-kana` on prefLabel and altLabel).
 - Metadata: `yomi` (primary katakana) and `yomiHiragana` for IME/disambiguation UI.
 - Readings are split into segment, concatenated, and both-script forms (e.g. `トウキョウト タイトウク`, `トウキョウトタイトウク`, `とうきょうと たいとうく`).

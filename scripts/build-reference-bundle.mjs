@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Build authority-reference-norbert-{version}.zip for LJB A6 lookup.
+ * Build authority-reference-norbert-{version}.zip for Grognard A6 lookup.
  *
  * Contains:
  *   norbert.sqlite3
@@ -8,7 +8,7 @@
  *
  * CBDB used to be bundled here too (cbdb-person.sqlite3), built by stripping
  * the full CBDB sqlite locally and shipping the result via our own GitHub
- * release. As of 2026-08-06 that's no longer how LJB gets CBDB reference
+ * release. As of 2026-08-06 that's no longer how Grognard gets CBDB reference
  * data: each install fetches CBDB's own official release directly and strips
  * it locally itself (see leaf-writer's downloadCbdbDirect in
  * apps/desktop/src/authorityDatabases.ts and
@@ -97,8 +97,8 @@ const manifest = {
   },
   notes: [
     'Tagging packs remain separate NDJSON tarballs.',
-    'DILA reference TEI is fetched by LJB from Open Content, not included here.',
-    'CBDB reference data is fetched directly from CBDB\'s own official release by each LJB install — not bundled here. See leaf-writer/docs/huckbot5000-planning.md.',
+    'DILA reference TEI is fetched by Grognard from Open Content, not included here.',
+    'CBDB reference data is fetched directly from CBDB\'s own official release by each Grognard install — not bundled here. See leaf-writer/docs/huckbot5000-planning.md.',
   ],
 };
 

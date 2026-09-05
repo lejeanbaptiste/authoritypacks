@@ -22,7 +22,7 @@ export function compileNorbertSurnamesFromNameRows(nameRows) {
 }
 
 /**
- * Fallback: extract surnames already mapped to LJB `family` in compiled persons.ndjson.
+ * Fallback: extract surnames already mapped to Grognard `family` in compiled persons.ndjson.
  * @param {Iterable<{ names?: { text?: string; type?: string }[] }>} persons
  */
 export function compileNorbertSurnamesFromPersons(persons) {

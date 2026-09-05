@@ -1,6 +1,6 @@
 # Norbert compile
 
-Compiles a local Norbert MySQL dump → LJB `AuthorityCandidate` NDJSON for persons and offices.
+Compiles a local Norbert MySQL dump → Grognard `AuthorityCandidate` NDJSON for persons and offices.
 
 ## Input
 
@@ -175,9 +175,9 @@ as hypothetical persons. The SQL field mapping is documented in
 
 Childhood names (小名 / 小字, types 5–6) are excluded, mirroring CBDB policy.
 
-### Norbert → LJB mapping
+### Norbert → Grognard mapping
 
-| Norbert id | Chinese | LJB type |
+| Norbert id | Chinese | Grognard type |
 |------------|---------|----------|
 | — (`can_name`) | — | `primary` |
 | 0 | 姓 | `family` |

@@ -585,7 +585,7 @@ await fsp.writeFile(
   path.join(nobleTitlePackDir, 'manifest.json'),
   `${JSON.stringify({
     id: 'noble-title-filter',
-    source: 'LJB curated noble-title filter',
+    source: 'Grognard curated noble-title filter',
     buildToolVersion: '0.1.0',
     compiledAt: new Date().toISOString(),
     files: {

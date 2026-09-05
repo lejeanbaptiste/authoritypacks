@@ -74,9 +74,9 @@ export function resolveCbdbReferenceTables(src) {
 /**
  * Build a local person+office reference sqlite from CBDB's official release.
  *
- * Produced on each LJB install (`downloadCbdbDirect`) as a table-subset of the
+ * Produced on each Grognard install (`downloadCbdbDirect`) as a table-subset of the
  * database the user just downloaded from CBDB/Harvard. OFFICE_CODES translations
- * — including rows CBDB cites as "(Hucker)" — are left as published so LJB can
+ * — including rows CBDB cites as "(Hucker)" — are left as published so Grognard can
  * display the same office glosses the user would see in CBDB itself. We do not
  * copy those strings into redistributable tagging packs (see
  * `cbdb/compileRecords.mjs`, which omits `(Hucker)`-cited fields from

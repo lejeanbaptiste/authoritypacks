@@ -2,7 +2,7 @@
   "name": "authority-extraction",
   "version": "0.1.0",
   "private": true,
-  "description": "Offline pipelines to compile authority sources into LJB tag-string packs",
+  "description": "Offline pipelines to compile authority sources into Grognard tag-string packs",
   "type": "module",
   "scripts": {
     "validate": "node wikidata/validate.mjs",

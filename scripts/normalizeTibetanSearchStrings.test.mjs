@@ -10,7 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const script = path.join(__dirname, 'normalizeTibetanSearchStrings.mjs');
 
 const run = (file) => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ljb-bo-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'grognard-bo-'));
   const packDir = path.join(tmp, 'persons');
   fs.mkdirSync(packDir, { recursive: true });
   const p = path.join(packDir, 'persons.ndjson');

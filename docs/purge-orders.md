@@ -1,7 +1,7 @@
 # Pack purge orders
 
 Developer-authored **purge / concordance change notices** shipped inside the
-authority-pack tarball. On install, LJB queues them into a local docket for
+authority-pack tarball. On install, Grognard queues them into a local docket for
 **manual review** — they never silently rewrite `entities.xml`.
 
 ## Why
@@ -56,6 +56,6 @@ orders.
 - Install path: `installPackBundle` → `ingestPackPurgeOrdersFromInstall`
 - Local docket: `authority-databases/pack-purge-orders.jsonl`
 - Resolutions: `authority-databases/pack-purge-order-resolutions.jsonl`
-- Helpers: `lejeanbaptiste/.../autoTagging/packPurgeDocket.ts`
+- Helpers: `grognard/.../autoTagging/packPurgeDocket.ts`
 
 **UI:** pending count / review dialog still to wire into Settings (data path is ready).

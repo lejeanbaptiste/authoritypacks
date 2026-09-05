@@ -1,5 +1,5 @@
 /**
- * Compile raw Wikidata NDJSON (non-person kinds) → LJB AuthorityCandidate packs.
+ * Compile raw Wikidata NDJSON (non-person kinds) → Grognard AuthorityCandidate packs.
  */
 import fs from 'node:fs';
 import path from 'node:path';

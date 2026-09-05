@@ -4,7 +4,7 @@ import fs from 'node:fs';
  * Build CHGIS SYS_ID / pt_id → CBDB c_addr_id map from ADDR_CODES.CHGIS_PT_ID.
  *
  * better-sqlite3 is a native module and is not part of the toolchain bundle
- * shipped with packaged LJB installs (see scripts/build-chgis-toolchain-release.mjs) —
+ * shipped with packaged Grognard installs (see scripts/build-chgis-toolchain-release.mjs) —
  * it's only present in full dev checkouts of this repo. When it's missing,
  * the crosswalk is skipped rather than failing the whole CHGIS compile.
  * @param {string | null | undefined} sqlitePath

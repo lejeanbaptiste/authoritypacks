@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Compile cleaned BDRC CSV name lists → private LJB authority packs.
+ * Compile cleaned BDRC CSV name lists → private Grognard authority packs.
  *
  * Usage:
  *   node bdrc/compile.mjs
@@ -140,7 +140,7 @@ export function compileBdrc(options = {}) {
 }
 
 /**
- * Write a local-only LJB plugin folder (plugin.manifest.json + stub entry)
+ * Write a local-only Grognard plugin folder (plugin.manifest.json + stub entry)
  * so Tools → Plugins → Install from folder works.
  * @param {string} outputRoot
  * @param {Record<string, unknown>} packManifest
@@ -155,7 +155,7 @@ function writePluginWrapper(outputRoot, packManifest) {
       'Private BDRC person and place name pack for offline tagging. Do not publish or redistribute.',
     author: 'Daniel Patrick Morgan',
     license: 'UNLICENSED',
-    ljb: { minVersion: '0.1.0' },
+    grognard: { minVersion: '0.1.0' },
     languages: ['bo'],
     languagePrompt: {
       message:

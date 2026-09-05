@@ -52,7 +52,7 @@ test('CBDB compile — 王安石 (person 1762)', () => {
   }
 });
 
-test('CBDB compile — 王安石 names[] carries LJB type per entry', () => {
+test('CBDB compile — 王安石 names[] carries Grognard type per entry', () => {
   const db = openDb(FIXTURE_SQLITE);
   try {
     const dynastyMap = loadCbdbDynastyMap(db);

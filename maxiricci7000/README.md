@@ -15,7 +15,7 @@ redistributable; `metadata.englishFromHucker` keeps provenance for audit. This i
 a deliberate risk call (distinct from the English collision-archive rule). Harvard
 hosting a scan of Hucker is noted as context, not a formal license grant.
 
-**LJB wiring:** pack id `maxiricci7000-translations` fills `metadata.translationFr`
+**Grognard wiring:** pack id `maxiricci7000-translations` fills `metadata.translationFr`
 on CBDB/Norbert office candidates (by `officeIds`, with zh/dynasty fallback) and
 mints `entity_translations` with `language: 'fr'`. English Huckbot glosses are
 unchanged.

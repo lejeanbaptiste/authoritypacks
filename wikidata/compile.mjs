@@ -1,5 +1,5 @@
 /**
- * W4 — Compile raw Wikidata person NDJSON → LJB AuthorityCandidate pack.
+ * W4 — Compile raw Wikidata person NDJSON → Grognard AuthorityCandidate pack.
  */
 import fs from 'node:fs';
 import path from 'node:path';

@@ -10,19 +10,19 @@ checkboxes here over scattering status notes in chat or ad-hoc scratch files.
 High-priority unfinished items only. Detail and history live in the sections
 below.
 
-### Next (blocked on LJB merge / design)
+### Next (blocked on Grognard merge / design)
 
 - [ ] **Pack-purge Settings UI** — pending design so it does not fight existing
-  LJB `entityOrders` / merge-docket vocabulary ([purge-orders.md](./purge-orders.md)).
-  Hold LJB code edits until the other-machine commits are merged.
+  Grognard `entityOrders` / merge-docket vocabulary ([purge-orders.md](./purge-orders.md)).
+  Hold Grognard code edits until the other-machine commits are merged.
 - [ ] **First GitHub Release** — upload local tarball + `packs-index.json`;
-  smoke-test install in LJB (hold until LJB merge + purge design settle).
+  smoke-test install in Grognard (hold until Grognard merge + purge design settle).
 
 ### Small follow-ups
 
 - [ ] Confirm tag-bomb / pack-preview always pass `dateFilter` into
   `authorityPackRead` (desktop chunking is ready; check any callers still using
-  a date-blind `cachedPackReader` wrapper). **LJB-side — wait for merge.**
+  a date-blind `cachedPackReader` wrapper). **Grognard-side — wait for merge.**
 - [ ] Optional place polish: zh-hant vs CBDB/DILA/CHGIS; ja vs NDL ambiguity
   reports.
 - [ ] **Huckbot5000 full LLM generate + review** — scaffolding ready
@@ -168,9 +168,9 @@ than web scrapes.
   changes: `npm run build:norbert` from the plugins repository.
 - [ ] Rebuild the Leaf-Writer package when authority metadata or cache handling
   changes, then run its typecheck and focused authority/disambiguation tests.
-- [ ] Stage the refreshed authority-pack bundle for LJB and verify that a
+- [ ] Stage the refreshed authority-pack bundle for Grognard and verify that a
   person imported into `entities.xml` carries the expected appointment clues.
-- [ ] Build and test the LJB desktop release only after the staged bundle has
+- [ ] Build and test the Grognard desktop release only after the staged bundle has
   passed the local smoke test.
 - [ ] Publish the versioned release tarball and checksums; do not silently
   replace a pack already installed in a project.
@@ -223,7 +223,7 @@ than web scrapes.
   + `viaf-wikidata-concordance/*.ndjson`). Full dump sidecar stays local.
 - [x] Wire filtered VIAF concordance into disambiguation merge
   (`viafWikidataConcordance.ts` + enrich path in `disambiguationCandidates.ts`
-  on LJB GitHub `main`).
+  on Grognard GitHub `main`).
 - [x] Publish filtered VIAF artifacts in the local release tarball
   (`viaf-wikidata-concordance.filtered.ndjson` + chunks; GitHub Release still open).
 - [x] Re-run identifier and pack tests and spot-check records with known CBDB/DILA IDs.
@@ -231,7 +231,7 @@ than web scrapes.
 
 
 
-## Runtime / LJB pack consumption
+## Runtime / Grognard pack consumption
 
 - [x] Date-chunk-aware `authorityPack:read` (desktop) when manifest advertises
   `dateChunks` and the caller passes `startYear`/`endYear`.
@@ -241,13 +241,13 @@ than web scrapes.
 - [ ] Purge-order **Settings UI** (pending list, accept/ignore) — blocked until
   pack-purge vs `entityOrders` design is settled ([purge-orders.md](./purge-orders.md)).
 - [ ] First GitHub **Release** with tarball + `packs-index.json`; smoke-test
-  install in LJB (hold until open work above settles).
+  install in Grognard (hold until open work above settles).
 
 
 
 ## Wikidata Chinese toponyms
 
-**Done (2026-08):** `place-zh-hant` compiled (~254k, `label-only` membership), staged in the bundle/CI scripts, and available in LJB tag bomb as `wikidata-places-zh-hant`.
+**Done (2026-08):** `place-zh-hant` compiled (~254k, `label-only` membership), staged in the bundle/CI scripts, and available in Grognard tag bomb as `wikidata-places-zh-hant`.
 
 **Policy:** Chinese **supplement** only — not on the Chinese lifecycle `packIds` list. Default place authorities remain CBDB + DILA + CHGIS; Wikidata places stay opt-in because the slice is large and noisy (modern + historical labels, weak period filtering).
 
@@ -265,7 +265,7 @@ than web scrapes.
 
 **Done (2026-08-05):** `place-ja` re-extracted with Japan `P17` membership
 (**214,358** raw → **214,157** compiled), staged in the global pack bundle, and
-wired in LJB tag bomb as `wikidata-places-ja` (opt-in; not on Japanese
+wired in Grognard tag bomb as `wikidata-places-ja` (opt-in; not on Japanese
 lifecycle `packIds`).
 
 **Policy:** Japanese **supplement** only — default place authority remains NDL;
@@ -277,7 +277,7 @@ Wikidata places stay opt-in (Japan-scoped).
   (`wikidata:extract-places-ja` / `wikidata:compile-places-ja`).
 - [x] Decide: supplement to NDL places (opt-in in tag bomb, not default lifecycle).
 - [x] Add the accepted pack to the global bundle and CI staging.
-- [x] Wire `wikidata-places-ja` into LJB (`packPaths`, tag bomb load order, Japanese auto-tag UI).
+- [x] Wire `wikidata-places-ja` into Grognard (`packPaths`, tag bomb load order, Japanese auto-tag UI).
 - [ ] Optional polish: validate vs NDL places / Japanese corpus; ambiguity report for readings and modern/historical collisions.
 
 
@@ -291,4 +291,4 @@ Not unfinished feature work — run these when cutting a new authority-pack rele
 2. **Refresh exports** — re-fetch DILA person/place together; refresh Norbert’s reduced export only when the private dump changed.
 3. **Rebuild** — `npm test` and `npm run build:packs` (or `build:packs:full`); regenerate manifests, indexes, and tarballs.
 4. **Spot-check** — concordance counts and a few sample links across Norbert, CBDB, DILA, Wikidata.
-5. **Publish** — upload CI/release artifacts; smoke-test install + pack load in LJB before announcing.
+5. **Publish** — upload CI/release artifacts; smoke-test install + pack load in Grognard before announcing.

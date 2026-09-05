@@ -57,5 +57,5 @@ _`compilePolicyVersion` is **2026-09-04** (office compile changes below + Tibeta
   is 658,737 entities; the manifest records distinct and physical row totals
   separately because legitimate boundary overlap increases physical rows.
 
-The LEAF/LJB desktop reader remains compatible with legacy one-file packs and
+The LEAF/Grognard desktop reader remains compatible with legacy one-file packs and
 only uses chunk selection when a pack manifest advertises this layout.

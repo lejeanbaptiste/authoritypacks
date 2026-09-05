@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "description": "Wikidata P31 (instance of) roots for each LJB entity kind. Dump extract uses kind-instance-closure.json (P279* expansion) when present; rebuild with npm run wikidata:build-closure.",
+  "description": "Wikidata P31 (instance of) roots for each Grognard entity kind. Dump extract uses kind-instance-closure.json (P279* expansion) when present; rebuild with npm run wikidata:build-closure.",
   "kinds": {
     "person": {
-      "ljbKind": "person",
+      "grognardKind": "person",
       "teiTags": ["persName"],
       "instanceOf": ["Q5"],
       "excludeInstanceOf": [],
@@ -11,7 +11,7 @@
       "membershipNotes": "Include historical and fictional humans (Q5). Fictional items often also carry P31=Q15632617 — retained. Period: P27 dynasty qid from dynasties.json."
     },
     "place": {
-      "ljbKind": "place",
+      "grognardKind": "place",
       "teiTags": ["placeName", "geogName"],
       "instanceOf": [
         "Q618123",
@@ -48,7 +48,7 @@
       "membershipNotes": "Historical places: prefer P1480 valid in period or CHGIS P4711. Noisier than CBDB/CHGIS — use as supplement."
     },
     "org": {
-      "ljbKind": "org",
+      "grognardKind": "org",
       "teiTags": ["orgName"],
       "instanceOf": [
         "Q43229",
@@ -76,7 +76,7 @@
       "membershipNotes": "Dynasty-as-state (Q7270) is under person P27, not org packs, unless explicitly included later."
     },
     "work": {
-      "ljbKind": "work",
+      "grognardKind": "work",
       "teiTags": ["title"],
       "instanceOf": [
         "Q7725634",

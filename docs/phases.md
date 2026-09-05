@@ -2,27 +2,27 @@
 
 Status: **in progress** (2026-07-07).  
 **Repo:** `authority extraction` (this folder).  
-**Consumer:** [LEAF/LJB](../leaf-writer) tag bomb + disambiguation.
+**Consumer:** [LEAF/Grognard](../leaf-writer) tag bomb + disambiguation.
 
 This document is the **master roadmap for building packs offline**. It is organized so work alternates between **automated build steps** and **points where your judgment matters** — policy choices, spot-checks on real corpus text, and go/no-go before the next segment.
 
-**How to use this doc:** start with [Pack coverage matrix](#pack-coverage-matrix-ljb-tag-bomb) and [Remaining packs](#remaining-packs-checklist) for what to build next; use [Progress dashboard](#progress-dashboard-by-source-track) and per-track sections for implementation detail.
+**How to use this doc:** start with [Pack coverage matrix](#pack-coverage-matrix-grognard-tag-bomb) and [Remaining packs](#remaining-packs-checklist) for what to build next; use [Progress dashboard](#progress-dashboard-by-source-track) and per-track sections for implementation detail.
 
 ---
 
-## Pack coverage matrix (LJB tag bomb)
+## Pack coverage matrix (Grognard tag bomb)
 
 What each **TEI tag × language** needs, what exists today, and the primary source track.
 
 | Tag | Chinese (zh-Hant) | Japanese (ja) | Tibetan (bo) |
 |-----|-------------------|---------------|--------------|
 | **persName** | **Done** — CBDB + DILA + Wikidata (Tang, Ming, Qing, pre-Ming) | **Done** — NDL persons (~1M); 👤 validate mention forms | **Not started** — Wikidata `bo` (T0) or THL |
-| **placeName** | **Done** — CBDB + DILA + CHGIS (local install); Wikidata `place-zh-hant` supplement (opt-in) | **Done** — `ndl-places-ja`; Wikidata `place-ja` supplement (opt-in in LJB) | **Not started** — Wikidata `bo` (T0) or THL |
+| **placeName** | **Done** — CBDB + DILA + CHGIS (local install); Wikidata `place-zh-hant` supplement (opt-in) | **Done** — `ndl-places-ja`; Wikidata `place-ja` supplement (opt-in in Grognard) | **Not started** — Wikidata `bo` (T0) or THL |
 | **roleName** (官名) | **Done** — CBDB offices | — | — |
-| **title** (book / work) | **Not built** — Wikidata `work` zh-hant slice | **Partial** — NDL works batch (~900 著作典拠); wired in LJB | **Not started** — Wikidata if count > 0 |
+| **title** (book / work) | **Not built** — Wikidata `work` zh-hant slice | **Partial** — NDL works batch (~900 著作典拠); wired in Grognard | **Not started** — Wikidata if count > 0 |
 | **orgName** | **Not built** — Wikidata `org` zh-hant (CBDB 官名 ≠ org) | **Built** — `ndl-orgs-ja` SPARQL (~242k); 👤 harvest + validate | **Not started** — Wikidata if count > 0 |
 
-**LJB wiring:** Chinese lifecycle downloads CBDB + DILA + Wikidata person packs. Japanese lifecycle downloads NDL persons + works. CHGIS is Settings → install locally (no GitLab bundle). See [leaf-writer `authorityLifecycle.ts`](../leaf-writer/apps/desktop/src/authorityLifecycle.ts).
+**Grognard wiring:** Chinese lifecycle downloads CBDB + DILA + Wikidata person packs. Japanese lifecycle downloads NDL persons + works. CHGIS is Settings → install locally (no GitLab bundle). See [leaf-writer `authorityLifecycle.ts`](../leaf-writer/apps/desktop/src/authorityLifecycle.ts).
 
 ---
 
@@ -37,7 +37,7 @@ Ordered by value for “finish and plug in tagging packs” ([leaf-writer todo](
 | 1 | **`ndl-places-ja`** | N | **Built** — run harvest + validate on Japanese corpus |
 | 2 | **`ndl-orgs-ja`** | N | **Built** — run harvest (~242k) + validate on Japanese corpus |
 | 3 | **Wikidata works** | W | **`title`** — `zh-hant` classical titles first, then `ja`; see `kind-queries.json` work allowlist |
-| 4 | **Wikidata places** | W | **Supplement** only — zh-hant + ja wired in LJB tag bomb; CBDB/DILA/CHGIS and NDL lead; expect noise |
+| 4 | **Wikidata places** | W | **Supplement** only — zh-hant + ja wired in Grognard tag bomb; CBDB/DILA/CHGIS and NDL lead; expect noise |
 | 5 | **Wikidata orgs** | W | **`orgName`** — zh-hant (NDL ja orgs now built separately) |
 | 6 | **`wikidata-person-ja`** | W | **Supplement** to NDL persons — not a replacement (see [NDL vs Wikidata ja](#ndl-vs-wikidata-ja-persons)) |
 | 7 | **Tibetan persName / placeName** | T | SPARQL count first (`language=bo`); THL outreach if Wikidata too sparse |
@@ -78,7 +78,7 @@ What NDL *is* bounded by:
 
 - Long tail: pre-modern East Asian, Buddhist, regional history — people with `ja` labels but **no NDLNA** record.
 - Crosswalk: Q-id ↔ NDL via Wikidata `P349` helps disambiguation (N3).
-- Overlap is OK — LJB dedupes at disambiguation via Q-id / authority id; NDL stays **primary** for Japanese projects.
+- Overlap is OK — Grognard dedupes at disambiguation via Q-id / authority id; NDL stays **primary** for Japanese projects.
 
 **Recommendation:** ship **NDL persons** as the Japanese `persName` pack; add **`wikidata-person-ja`** later as an optional checkbox, same pattern as Wikidata beside CBDB for Chinese.
 
@@ -101,16 +101,16 @@ the backend `norbert/` pack compiled from the reduced SQL export.
 | **C**          | C3 publish | **CI pipeline ready** — artifacts on main; Release when ready | [docs/ci-packs.md](../docs/ci-packs.md)                        |
 | **D** DILA     | D0 rules   | **built** — `[dila/README.md](../dila/README.md)`             | 👤 mythical names?                                             |
 | **D**          | D1 compile | **done**                                                      | `packs/dila/` — 49,060 persons, 59,277 places                  |
-| **D**          | D2 overlap | **policy locked** — crosswalk-only auto-merge                 | LJB `authorityOverlap.ts`                                      |
+| **D**          | D2 overlap | **policy locked** — crosswalk-only auto-merge                 | Grognard `authorityOverlap.ts`                                      |
 | **D**          | D3 publish | **CI pipeline ready** — bundled with C3                       | same as C3                                                     |
 | **W** Wikidata | W0–W2      | **done** (persons zh-hant)                                    | Shipped persons: **pre-Ming** (incl. Song/Yuan), Ming, Qing (+ optional Tang `P27`); places/orgs/works/ja built locally |
 | **W**          | W3 report  | **built** (Tang)                                              | `reports/w3-ambiguity.csv` — 👤 review                         |
 | **W**          | W5 publish | **wired in bundle script** — Release when ready               | staged under `packs/wikidata/` or `.upstream/wikidata/`        |
 | **N** NDL      | N1         | **done** (persons + works)                                    | ~1M persons, ~900 works — 👤 validate; **places not built**    |
 | **N**          | N4 publish | **in GitLab bundle** when raw staged                          | same as C3                                                     |
-| **H** CHGIS    | H1–H3      | **built**                                                     | local install only — Settings UI in LJB                        |
+| **H** CHGIS    | H1–H3      | **built**                                                     | local install only — Settings UI in Grognard                        |
 | **T** Tibetan  | T0–T2      | **deferred**                                                  | Wikidata `bo` prototype or THL                                 |
-| **L** LJB      | A2, L1–L2  | **wired** (Chinese + Japanese packs, tag bomb)                | Wikidata + NDL checkboxes; lifecycle download                  |
+| **L** Grognard      | A2, L1–L2  | **wired** (Chinese + Japanese packs, tag bomb)                | Wikidata + NDL checkboxes; lifecycle download                  |
 
 
 **Commands:**
@@ -144,7 +144,7 @@ Each **track** is one authority source (or family). Phases are numbered within t
 | **Build**      | Code or config we implement                                |
 | **👤 Decide**  | You choose policy before we continue                       |
 | **✓ Validate** | You review samples / run gold passage — gate to next phase |
-| **→ LJB**      | Handoff to leaf-writer integration (not built here)        |
+| **→ Grognard**      | Handoff to leaf-writer integration (not built here)        |
 
 
 **Priority order:** Chinese biographical corpora first (CBDB + DILA), then one Wikidata slice to prove generalization, then Japanese (NDL), then global/Tibetan supplements.
@@ -163,7 +163,7 @@ flowchart LR
     W[Wikidata extract]
     N[NDL extract]
   end
-  subgraph ljb ["leaf-writer"]
+  subgraph grognard ["leaf-writer"]
     A[A2–A4 compile + UI]
     M[Matcher / tag bomb]
     R[Review + disambiguation]
@@ -178,7 +178,7 @@ flowchart LR
 
 
 
-| Track | Source        | Best for                           | Extraction repo | LJB integration        |
+| Track | Source        | Best for                           | Extraction repo | Grognard integration        |
 | ----- | ------------- | ---------------------------------- | --------------- | ---------------------- |
 | **C** | CBDB          | Chinese persons, places, offices   | C0–C3           | A2–A5 (partially done) |
 | **D** | DILA          | Chinese persons, places, crosswalk | D0–D3           | A2–A5                  |
@@ -209,7 +209,7 @@ flowchart LR
 - [x] Per-type altname rules (type 4 → 姓+字; 12+13 concat; 18+名; length gates on 3/5/6/15) — see README table
 - [x] Filter symbols/Latin; block 姓+氏 / 姓+某; min **2** code points
 - [x] Mythical persons OK
-- [x] Offices → `kind: office`, tag as `roleName` at match time; LJB also
+- [x] Offices → `kind: office`, tag as `roleName` at match time; Grognard also
   supports disambiguated office entities
 - [x] **Sign off v1 altname policy** → [x]
 
@@ -249,7 +249,7 @@ CBDB. Office source IDs remain source-local.
 **👤 Validate (your turn):**
 
 - [ ] Spot-check 5 known figures in `packs/cbdb/persons.ndjson` (王安石, 李白, 杜甫…)
-- [ ] Import a slice into LJB dictionary / tag one `gold_test.xml` paragraph
+- [ ] Import a slice into Grognard dictionary / tag one `gold_test.xml` paragraph
 
 **Exit:** Golden names match CBDB web UI.
 
@@ -278,7 +278,7 @@ CBDB. Office source IDs remain source-local.
 
 ### C3 — Publish manifest — **next (decision signed 2026-07-05)**
 
-**Decision:** **Pre-compiled packs from GitLab CI** for CBDB + DILA. LJB downloads binaries; users do not compile locally in production.
+**Decision:** **Pre-compiled packs from GitLab CI** for CBDB + DILA. Grognard downloads binaries; users do not compile locally in production.
 
 **Build:**
 
@@ -287,11 +287,11 @@ CBDB. Office source IDs remain source-local.
 - [x] `upstream/pins.json` — pinned CBDB/DILA upstream (mirrors leaf-writer A1)
 - [ ] GitLab Release asset URL (when first release is cut — artifacts suffice until then)
 
-**→ LJB:** Track **A5** fetches pack bundle; track **A6** uses raw sqlite/XML for reference lookup.
+**→ Grognard:** Track **A5** fetches pack bundle; track **A6** uses raw sqlite/XML for reference lookup.
 
 **License note:** CBDB NC-SA and DILA CC-BY-SA allow redistributing compiled packs with attribution. **CHGIS is different** — no redistribution; local Dataverse download only (Track H).
 
-**✓ Validate:** LJB installs bundle beside test entity DB; tag bomb + manifest version check pass.
+**✓ Validate:** Grognard installs bundle beside test entity DB; tag bomb + manifest version check pass.
 
 ---
 
@@ -346,7 +346,7 @@ CBDB. Office source IDs remain source-local.
 
 ### D2 — Overlap with CBDB — **policy locked (2026-07-05)**
 
-**Policy (LJB load-time merge):** Auto-merge **only** when DILA exposes an explicit CBDB crosswalk (`idno type="CBDB"` → `metadata.crosswalk.cbdb`). Same string, no crosswalk → separate suggestions. Implemented in LJB `authorityOverlap.ts`.
+**Policy (Grognard load-time merge):** Auto-merge **only** when DILA exposes an explicit CBDB crosswalk (`idno type="CBDB"` → `metadata.crosswalk.cbdb`). Same string, no crosswalk → separate suggestions. Implemented in Grognard `authorityOverlap.ts`.
 
 **Disambiguation (Phase 4b):** User may manually link proposals from different authorities — no auto-merge beyond crosswalk at tag time.
 
@@ -364,7 +364,7 @@ CBDB. Office source IDs remain source-local.
 
 ### D3 — Publish — **next (bundled with C3)**
 
-Same pipeline as C3: DILA NDJSON included in GitLab pack bundle. License: CC-BY-SA 3.0. **→ LJB** A5 (pack fetch) + A6 (reference lookup from raw XML).
+Same pipeline as C3: DILA NDJSON included in GitLab pack bundle. License: CC-BY-SA 3.0. **→ Grognard** A5 (pack fetch) + A6 (reference lookup from raw XML).
 
 ---
 
@@ -420,7 +420,7 @@ npm run wikidata:sparql -- matrix --language zh-hant
 
 **Status:** Full extract complete — 120.8M entities scanned, **37,038** raw Tang persons; compiled **34,923** (`wikidata-person-zh-hant-tang`). Gap = name-filter drops (李某-style placeholders, bare 字, etc.).
 
-**Build:** `[entityParse.mjs](../wikidata/entityParse.mjs)`, `[extract.mjs](../wikidata/extract.mjs)` → `persons.raw.ndjson`; `[compile.mjs](../wikidata/compile.mjs)` → LJB `persons.ndjson` + manifest.
+**Build:** `[entityParse.mjs](../wikidata/entityParse.mjs)`, `[extract.mjs](../wikidata/extract.mjs)` → `persons.raw.ndjson`; `[compile.mjs](../wikidata/compile.mjs)` → Grognard `persons.ndjson` + manifest.
 
 ```bash
 # Running now — full dump (expect several hours)
@@ -438,7 +438,7 @@ npm run wikidata:compile -- --raw packs/wikidata/raw-tang/persons.raw.ndjson --d
 
 - [x] Run extract; confirm `extract-meta.json` → `personsMatched` ≈ **37k** — **37,038**
 - [x] Run compile; spot-check `persons.ndjson` — **34,923** compiled
-- [ ] Note tuning issues for W3; **do not** expect LJB tag bomb to load this pack yet (track **L**)
+- [ ] Note tuning issues for W3; **do not** expect Grognard tag bomb to load this pack yet (track **L**)
 
 **👤 Decide (later):**
 
@@ -472,7 +472,7 @@ npm run wikidata:compile -- --raw packs/wikidata/raw-tang/persons.raw.ndjson --d
 
 Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 
-**Status:** `build-pack-bundle.mjs` stages Wikidata Tang/Ming/Qing/pre-Ming when compiled packs exist locally. LJB pack IDs wired. GitLab **Release** still pending (same as C3).
+**Status:** `build-pack-bundle.mjs` stages Wikidata Tang/Ming/Qing/pre-Ming when compiled packs exist locally. Grognard pack IDs wired. GitLab **Release** still pending (same as C3).
 
 **👤 Decide:** Which Wikidata packs ship in v1 download bundle (current: Tang + Ming + Qing + pre-Ming persons).
 
@@ -487,7 +487,7 @@ Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 **Raw input:** [NDL batch files](https://id.ndl.go.jp/information/download_en/) (works, NDLSH, GFT) + [SPARQL 1.1](https://id.ndl.go.jp/auth/ndla/sparql) (persons, places, corps).  
 **Target packs:** `ndl-works-ja` (batch), `ndl-persons-ja` (SPARQL), `ndl-places-ja` (SPARQL), `ndl-orgs-ja` (SPARQL, **built** — harvest pending).
 
-**Status (2026-07-07):** N1 **done locally** — `ndl-persons-ja` (~1M persons) + `ndl-works-ja` (~900 著作典拠). LJB wired (L3). GitLab Release (N4) when you bundle. **Places + org SPARQL harvests not started.**
+**Status (2026-07-07):** N1 **done locally** — `ndl-persons-ja` (~1M persons) + `ndl-works-ja` (~900 著作典拠). Grognard wired (L3). GitLab Release (N4) when you bundle. **Places + org SPARQL harvests not started.**
 
 **Scope note:** Person harvest is **all** NDL name authorities (`foaf:Person`), not authors-only — see [NDL vs Wikidata ja](#ndl-vs-wikidata-ja-persons). Works batch is separate from persons.
 
@@ -540,7 +540,7 @@ Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 
 
 
-### N4 — Publish → **→ LJB** track **L3**
+### N4 — Publish → **→ Grognard** track **L3**
 
 **👤 Decide:** Gate pack when `project source language = ja` only?
 
@@ -550,7 +550,7 @@ Manifest, sha256, attribution. Host beside CBDB/DILA packs.
 
 ## Track G — GeoNames — **cancelled (2026-08-02)**
 
-**Won't do:** no GeoNames dump extract, compile, publish, or LJB pack gating.
+**Won't do:** no GeoNames dump extract, compile, publish, or Grognard pack gating.
 Live GeoNames lookup via LINCS in leaf-writer is unrelated and stays.
 
 (Research note only: dump coverage for CJKT alternates is uneven; not a reason
@@ -597,9 +597,9 @@ npm run compile:chgis -- --input ~/Downloads/chgis_layers/ --out packs/chgis
 
 **Results:** county + prefecture layers combined; CBDB/DILA crosswalk counts depend on reference inputs.
 
-**→ LJB:** `authorityChgis.ts` — extract zip → compile → `authority-packs/chgis/`.
+**→ Grognard:** `authorityChgis.ts` — extract zip → compile → `authority-packs/chgis/`.
 
-### H2 — LJB install UI — **built (2026-07-06)**
+### H2 — Grognard install UI — **built (2026-07-06)**
 
 **Settings → Authorities → CHGIS:** license acknowledgment, **Install from download…**, progress bar, Remove.
 
@@ -630,7 +630,7 @@ npm run compile:dila -- --crosswalk reports/chgis-dila-crosswalk.tsv
 
 - [ ] Review crosswalk stats (matched / ambiguous / no-match)
 - [ ] Spot-check 襄陽, 新興郡 in crosswalk output
-- [ ] LJB auto-tag: CHGIS + DILA merge to one suggestion where crosswalk exists
+- [ ] Grognard auto-tag: CHGIS + DILA merge to one suggestion where crosswalk exists
 
 ---
 
@@ -658,7 +658,7 @@ Document format for user-maintained gazetteers → same NDJSON compile path.
 
 
 
-## Track L — LJB integration (leaf-writer)
+## Track L — Grognard integration (leaf-writer)
 
 Not implemented in this repo. Phases live in [authority-databases-phases.md](../leaf-writer/docs/authority-databases-phases.md). **Offline enable/update/delete:** [authority-data-lifecycle.md](../leaf-writer/docs/authority-data-lifecycle.md).
 
@@ -709,7 +709,7 @@ Not implemented in this repo. Phases live in [authority-databases-phases.md](../
 | 2    | C0–C1      | **done**   | 👤 sign off policy                           |
 | 3    | D0–D1      | **done**   | 👤 mythical names?                           |
 | 4    | C2 report  | **built**  | ✓ review CSV                                 |
-| 5    | **LJB A2** | **built**  | sync packs + tag bomb in dialog              |
+| 5    | **Grognard A2** | **built**  | sync packs + tag bomb in dialog              |
 | 6    | D2 overlap | **locked** | crosswalk-only auto-merge; manual link at 4b |
 | 7    | A4 panel   | pending    | ✓ Tang workflow                              |
 | 8    | W1         | pending    | 👤 slice choice                              |
@@ -824,7 +824,7 @@ flowchart TB
 **Office status:**
 
 - [x] CBDB pack → `roleName` at tag time; standoff `office` entity kind is
-  implemented in LJB.
+  implemented in Grognard.
 - [x] Norbert concatenated office strings produce provenance-marked observed
   parent/child relations.
 
@@ -848,6 +848,6 @@ flowchart TB
 
 | Date       | Change                                                                                    |
 | ---------- | ----------------------------------------------------------------------------------------- |
-| 2026-07-06 | **Track H CHGIS** — `chgis/compile.mjs`, LJB Settings install-from-download UI            |
+| 2026-07-06 | **Track H CHGIS** — `chgis/compile.mjs`, Grognard Settings install-from-download UI            |
 | 2026-07-05 | **C1, D1 compile done** — CBDB + DILA NDJSON in `packs/`; tests pass; C2 ambiguity report |
 | 2026-07-05 | Initial phases doc; W0 moved from leaf-writer                                             |

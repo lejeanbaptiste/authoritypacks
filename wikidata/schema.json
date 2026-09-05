@@ -23,11 +23,11 @@
     },
     "packLanguage": {
       "type": "object",
-      "required": ["id", "label", "ljbProjectCodes", "wikidataLabelLanguages"],
+      "required": ["id", "label", "grognardProjectCodes", "wikidataLabelLanguages"],
       "properties": {
         "id": { "type": "string" },
         "label": { "type": "string" },
-        "ljbProjectCodes": { "type": "array", "items": { "type": "string" } },
+        "grognardProjectCodes": { "type": "array", "items": { "type": "string" } },
         "wikidataLabelLanguages": { "type": "array", "items": { "type": "string" } },
         "script": { "type": "string" },
         "defaultForChineseProject": { "type": "boolean" },

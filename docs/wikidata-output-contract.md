@@ -1,11 +1,11 @@
 # Wikidata Output Contract
 
 This document defines the boundary between the Wikidata extraction pipeline and
-its three consumers: LJB tag packs, the Japanese IME data, and `entities.xml`.
+its three consumers: Grognard tag packs, the Japanese IME data, and `entities.xml`.
 
 ## Three outputs
 
-### LJB tag packs
+### Grognard tag packs
 
 Tag packs contain strings that are safe to use for tagging, together with the
 metadata needed for date and period filtering.
@@ -27,8 +27,8 @@ name, a full independently recorded alias, a complete `xing + ming` name, or an
 independent religious, dharma, posthumous, or regnal name. Do not synthesize
 every possible combination of `xing`, `ming`, `zi`, and title. In particular,
 bare surnames, bare courtesy names, style names, birth-order names, and office
-titles should not become LJB search strings. A future Norbert-style name
-generator may use the raw components, but it should not silently change the LJB
+titles should not become Grognard search strings. A future Norbert-style name
+generator may use the raw components, but it should not silently change the Grognard
 tagging policy.
 
 ### IME data
@@ -46,9 +46,9 @@ Kana must not be copied into compiled tagging packs merely because it was useful
 to the IME. The current raw person rows retain `nameInKana` and
 `yomiHiragana`; a later CSV writer can turn those fields into the IME table.
 
-The `entities.xml` enrichment code belongs to LJB, not this repository. This
+The `entities.xml` enrichment code belongs to Grognard, not this repository. This
 repository stops at tag-pack and IME inputs. Authority IDs, URLs, descriptions,
-and Romanized forms should be added by the LJB-side enrichment step.
+and Romanized forms should be added by the Grognard-side enrichment step.
 
 ## Raw extraction fields
 
@@ -83,7 +83,7 @@ The configured language slices are `zh-hant`, `zh-hans`, `lzh`, `ja`, `ko`,
 may fall back according to `wikidata/languages.json`.
 
 Romanization is outside this repository's extraction contract. It belongs in
-the LJB-side `entities.xml` enrichment workflow.
+the Grognard-side `entities.xml` enrichment workflow.
 
 ## Ambiguity and provenance
 

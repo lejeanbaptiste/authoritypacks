@@ -109,7 +109,7 @@ the compiled include, never the raw source.
      `packs/huckbot5000-insiders/` as a **local plugin pack**
      (`plugin.manifest.json` + `translations.ndjson`), every row tagged
      `source: 'Hucker'`, license `local-use-only-do-not-redistribute`.
-     Install in LJB via Tools → Plugins → **Install from folder…**
+     Install in Grognard via Tools → Plugins → **Install from folder…**
      (choose `packs/huckbot5000-insiders`). Never add to a release tarball.
 
 ## Files
@@ -121,7 +121,7 @@ the compiled include, never the raw source.
   (unit-tested in `resolveTargets.test.mjs`). When a Hucker index is
   available, targets whose headword+dynasty are already covered by Hucker's
   own period span are dropped before procedural/LLM work. Headwords that
-  appear in CBDB's `(Hucker)`-tagged OFFICE_CODES are also skipped — LJB
+  appear in CBDB's `(Hucker)`-tagged OFFICE_CODES are also skipped — Grognard
   displays those from the user's CBDB; Huckbot fills true blanks only.
   Hucker's gloss is never copied into *our* redistributable packs.
   The publishable translations pack is staged into release bundles by

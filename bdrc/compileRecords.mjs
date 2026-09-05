@@ -1,5 +1,5 @@
 /**
- * Compile cleaned BDRC name CSV rows → LJB AuthorityCandidate records.
+ * Compile cleaned BDRC name CSV rows → Grognard AuthorityCandidate records.
  *
  * Tagging uses Tibetan script (`bo`) only. Wylie stays in typed `names[]` as
  * `romanization` and is never emitted as a searchString.

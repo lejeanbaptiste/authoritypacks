@@ -1,6 +1,6 @@
 # DILA compile
 
-Streams DILA person + place TEI XML → LJB `AuthorityCandidate` NDJSON.
+Streams DILA person + place TEI XML → Grognard `AuthorityCandidate` NDJSON.
 
 ## v1 policy
 

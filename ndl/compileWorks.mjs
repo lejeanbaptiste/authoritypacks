@@ -1,5 +1,5 @@
 /**
- * N2 — Compile raw NDL work NDJSON → LJB AuthorityCandidate pack.
+ * N2 — Compile raw NDL work NDJSON → Grognard AuthorityCandidate pack.
  */
 import fs from 'node:fs';
 import path from 'node:path';

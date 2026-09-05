@@ -55,7 +55,7 @@ source in `pyewts_vendor/`. The run produced 532 converter warnings across the
 two tables; these are retained as a signal for manual review rather than
 silently corrected.
 
-## Compile to one internal LJB plugin pack
+## Compile to one internal Grognard plugin pack
 
 After the cleaned CSVs exist:
 
@@ -67,20 +67,20 @@ Writes a **single gitignored folder** at `packs/bdrc/`:
 
 | File | Role |
 |------|------|
-| `plugin.manifest.json` | LJB plugin (Tools → Plugins → Install from folder) |
+| `plugin.manifest.json` | Grognard plugin (Tools → Plugins → Install from folder) |
 | `persons.ndjson` | Person tagging strings |
 | `places.ndjson` | Place tagging strings |
 | `manifest.json` | Counts, license, do-not-redistribute policy |
 | `dist/register.mjs` | Stub plugin entry |
 
-LJB still uses two pack ids internally (`bdrc-persons-bo`, `bdrc-places-bo`) because persons and places tag different TEI elements, but they ship as **one** plugin.
+Grognard still uses two pack ids internally (`bdrc-persons-bo`, `bdrc-places-bo`) because persons and places tag different TEI elements, but they ship as **one** plugin.
 
 **Tagging policy:** Tibetan script (`bo`) only in `searchStrings`. Wylie is kept
 in typed `names[]` as `romanization` (`bo-x-ewts`). Person titles
 (`PersonTitle`, `PersonTulkuTitle`, …) are retained for entity intake but
 excluded from auto-tagging seeds.
 
-**Install in LJB:** Tools → Plugins → **Install from folder…** and choose
+**Install in Grognard:** Tools → Plugins → **Install from folder…** and choose
 `packs/bdrc` (the folder that contains `plugin.manifest.json`, not a
 subfolder). Then enable **BDRC authority (internal)** for the project.
 These files must **never** ship in public `authority-packs-tibetan` releases

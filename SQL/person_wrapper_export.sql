@@ -1,7 +1,7 @@
 -- Norbert person-wrapper source export.
 --
 -- These rows are matcher input, not project entities. Keep the component
--- columns separate so the LJB plugin can emit nested TEI:
+-- columns separate so the Grognard plugin can emit nested TEI:
 --   name[type=personWrapper] > roleName / nobleTitle / persName
 --
 -- person_nt layout:

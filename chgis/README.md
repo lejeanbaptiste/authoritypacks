@@ -1,12 +1,12 @@
 # CHGIS compile
 
-Compiles [CHGIS v6](https://dataverse.harvard.edu/dataverse/chgis_v6) shapefiles → LJB `AuthorityCandidate` NDJSON.
+Compiles [CHGIS v6](https://dataverse.harvard.edu/dataverse/chgis_v6) shapefiles → Grognard `AuthorityCandidate` NDJSON.
 
-**License:** academic use only (CHGIS-Academic). Portions of the CHGIS data are folded into LJB's multi-source `chinese` authority pack alongside CBDB/DILA/Wikidata, with mandatory attribution — see `upstream/pins.json`'s `chgis.redistributionNote` for the reasoning. CHGIS is compiled once locally by a maintainer (see below) and the result is checked into this repo via Git LFS; CI ships it pre-compiled like every other source, and end users no longer compile it themselves.
+**License:** academic use only (CHGIS-Academic). Portions of the CHGIS data are folded into Grognard's multi-source `chinese` authority pack alongside CBDB/DILA/Wikidata, with mandatory attribution — see `upstream/pins.json`'s `chgis.redistributionNote` for the reasoning. CHGIS is compiled once locally by a maintainer (see below) and the result is checked into this repo via Git LFS; CI ships it pre-compiled like every other source, and end users no longer compile it themselves.
 
 ## Required source assets
 
-Only these two point layers are required for the LJB historical-place pack. Download both from Harvard Dataverse and place them in one folder before compiling:
+Only these two point layers are required for the Grognard historical-place pack. Download both from Harvard Dataverse and place them in one folder before compiling:
 
 | Dataset | DOI | File |
 |---------|-----|------|
@@ -68,4 +68,4 @@ packs/chgis/
 
 > CHGIS, Version 6. (c) Fairbank Center for Chinese Studies of Harvard University and the Center for Historical Geographical Studies at Fudan University, 2016.
 
-This citation is surfaced in the LJB desktop app via the generic manifest-driven attributions disclosure under the `chinese` authority profile — there is no CHGIS-specific settings UI.
+This citation is surfaced in the Grognard desktop app via the generic manifest-driven attributions disclosure under the `chinese` authority profile — there is no CHGIS-specific settings UI.

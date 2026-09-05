@@ -108,7 +108,7 @@ export function compileHuckbotInsiders(options = {}) {
 }
 
 /**
- * Local-only LJB plugin so Tools → Plugins → Install from folder works.
+ * Local-only Grognard plugin so Tools → Plugins → Install from folder works.
  * @param {string} outputDir
  * @param {number} count
  */
@@ -122,7 +122,7 @@ function writePluginWrapper(outputDir, count) {
       'Private Hucker collision-archive office glosses. Local use only — do not publish or redistribute.',
     author: 'Daniel Patrick Morgan',
     license: 'UNLICENSED',
-    ljb: { minVersion: '0.1.0' },
+    grognard: { minVersion: '0.1.0' },
     languages: ['zh-hant', 'zh-hans', 'lzh'],
     languagePrompt: {
       message:

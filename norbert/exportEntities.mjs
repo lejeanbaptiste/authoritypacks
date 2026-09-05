@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Export the private Norbert dump as a standalone LJB entities.xml.
+ * Export the private Norbert dump as a standalone Grognard entities.xml.
  *
  * This is deliberately an export, not an in-place merge: the generated file
  * uses deterministic Norbert ids and keeps source ids on every imported value.
@@ -127,12 +127,12 @@ function personXml(person, appointments, titles, extraIdnos = {}) {
   }).join('');
   // Namespace the numeric Norbert person id so it cannot collide with office ids
   // that reuse the same integers (`person-12` / `office-12`).
-  return `<person xml:id="${id}" type="person">${text('persName', person.primaryName, ` type="primary" xml:lang="zh-Hant"${provenance()}`)}${names}${text('idno', formatNorbertAuthorityValue('person', person.authorityId), ` type="NORBERT"${provenance()}`)}${externalIdnosXml(extraIdnos)}${description}${nationalities}${origins}${affiliationValues}${cache}${noble}${text('note', new Date().toISOString(), ' type="ljb-changed"')}</person>`;
+  return `<person xml:id="${id}" type="person">${text('persName', person.primaryName, ` type="primary" xml:lang="zh-Hant"${provenance()}`)}${names}${text('idno', formatNorbertAuthorityValue('person', person.authorityId), ` type="NORBERT"${provenance()}`)}${externalIdnosXml(extraIdnos)}${description}${nationalities}${origins}${affiliationValues}${cache}${noble}${text('note', new Date().toISOString(), ' type="grognard-changed"')}</person>`;
 }
 
 function officeXml(office) {
   const id = `office-norbert-${office.authorityId}`;
-  return `<org xml:id="${id}" type="office">${text('orgName', office.primaryName, ` type="primary" xml:lang="zh-Hant"${provenance()}`)}${text('idno', formatNorbertAuthorityValue('office', office.authorityId), ` type="NORBERT"${provenance()}`)}${text('note', office.metadata?.description, ` type="description"${provenance()}`)}${empty('state', ` type="norbert-office" ref="${esc(office.metadata?.entityId ?? office.authorityId)}"`)}${text('note', new Date().toISOString(), ' type="ljb-changed"')}</org>`;
+  return `<org xml:id="${id}" type="office">${text('orgName', office.primaryName, ` type="primary" xml:lang="zh-Hant"${provenance()}`)}${text('idno', formatNorbertAuthorityValue('office', office.authorityId), ` type="NORBERT"${provenance()}`)}${text('note', office.metadata?.description, ` type="description"${provenance()}`)}${empty('state', ` type="norbert-office" ref="${esc(office.metadata?.entityId ?? office.authorityId)}"`)}${text('note', new Date().toISOString(), ' type="grognard-changed"')}</org>`;
 }
 
 function loadConcordanceSources(packsRoot) {
@@ -213,7 +213,7 @@ export async function exportNorbertEntities({
   }).join('');
   const officeXmls = offices.map(officeXml).join('');
   const databaseId = 'norbert-private-import-test';
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<TEI xmlns="http://www.tei-c.org/ns/1.0"><teiHeader><fileDesc><titleStmt><title>Norbert entity database</title></titleStmt><publicationStmt><p>Generated from the private Norbert SQL dump.</p><idno type="ljb-entity-database">${databaseId}</idno></publicationStmt><sourceDesc><p>Norbert authority data.</p></sourceDesc></fileDesc></teiHeader><standOff><listPerson>${personXmls}</listPerson><listPlace/><listOrg/><listOrg type="offices">${officeXmls}</listOrg><listBibl/></standOff></TEI>\n`;
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<TEI xmlns="http://www.tei-c.org/ns/1.0"><teiHeader><fileDesc><titleStmt><title>Norbert entity database</title></titleStmt><publicationStmt><p>Generated from the private Norbert SQL dump.</p><idno type="grognard-entity-database">${databaseId}</idno></publicationStmt><sourceDesc><p>Norbert authority data.</p></sourceDesc></fileDesc></teiHeader><standOff><listPerson>${personXmls}</listPerson><listPlace/><listOrg/><listOrg type="offices">${officeXmls}</listOrg><listBibl/></standOff></TEI>\n`;
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, xml);
 
